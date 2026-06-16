@@ -4,7 +4,7 @@
             <img  src="{{ asset('images/DENR-logo.png') }}">
         </div>
         <div class="text-section">
-            <h1>Obligation Disbursement <br>Monitoring System</h1>
+            <h1>Obligation Disbursement Monitoring System</h1>
             <p><i>DENR CAR Finance Division</i></p>
         </div>
     </div>
