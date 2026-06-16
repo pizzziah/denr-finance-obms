@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
  * TO-DO: update the routing to the actual dashboard and other pages once the database is done.
  */
 
-Route::redirect('/', '/budget/dashboard');
+Route::view('/', 'auth.login')->name('login');
 
 Route::prefix('budget')->group(function () {
     Route::view('/dashboard', 'budget.dashboard')->name('budget.dashboard');
