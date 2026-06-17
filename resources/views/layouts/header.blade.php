@@ -24,7 +24,7 @@
         @endif
 
         {{-- ACCOUNTING --}}
-        @if(Auth::user()->role === 'accountant')
+        @if(in_array(Auth::user()->role, ['accountant', 'bookkeeper']))
             <h5 class="p-3 fw-bold" 
                 style="color: var(--primary); background-color: var(--secondary-variant); border: 1px solid var(--primary); border-radius: 8px;">
                 Accounting Department
