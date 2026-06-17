@@ -44,13 +44,11 @@
         </form>
         </div>
     </div>
-
-    <!--TO-DO: fix placement-->
-    <div class="d-flex justify-content-end">
-      @include('layouts.footer')
-    </div>
   </div>
-
+  
+  <footer class="position-fixed bottom-0 end-0 p-4">
+      @include('layouts.footer')
+  </footer>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
   <script src="{{ asset('js/app.js') }}"></script>
 </body>
