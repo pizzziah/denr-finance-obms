@@ -1,7 +1,6 @@
 @extends('layouts.app')
 
 @section('content')
-
 <div class="container mt-4">
     <div>
         <div class="card">
@@ -30,5 +29,8 @@
         </div>
     </div>
 </div>
-
 @endsection
+
+@php
+    $pageTitle = 'Dashboard';
+@endphp

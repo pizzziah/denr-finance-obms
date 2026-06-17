@@ -16,31 +16,40 @@
     <nav class="d-flex flex-column gap-3 mb-4">
         {{-- ADMIN --}}
         @if(Auth::user()->role === 'admin')
-            <a href="{{ route('admin.dashboard') }}" class="sidebar-link">
+
+            <a href="{{ route('admin.dashboard') }}"
+            class="sidebar-link">
                 <i class="bi bi-columns-gap"></i>
                 Dashboard
             </a>
-            <a href="{{ route('admin.users') }}" class="sidebar-link">
-                <i class="bi bi-people"></i>
+
+            <a href="{{ route('admin.users') }}"
+            class="sidebar-link">
+                <i class="bi bi-people-fill"></i>
                 Users
             </a>
+
         @endif
 
         {{-- ACCOUNTING --}}
         @if(Auth::user()->role === 'accountant')
-            <a href="{{ route('accounting.dashboard') }}" class="sidebar-link">
+            <a href="{{ route('accounting.dashboard') }}"
+            class="sidebar-link">
                 <i class="bi bi-columns-gap"></i>
                 Dashboard
             </a>
-            <a href="{{ route('accounting.logbook') }}" class="sidebar-link">
+            <a href="{{ route('accounting.logbook') }}"
+            class="sidebar-link">
                 <i class="bi bi-file-earmark-spreadsheet"></i>
                 Log Book
             </a>
-            <a href="{{ route('accounting.quarterly-summary') }}" class="sidebar-link">
+            <a href="{{ route('accounting.quarterly-summary') }}"
+            class="sidebar-link">
                 <i class="bi bi-pie-chart"></i>
                 Quarterly Summary
             </a>
-            <a href="{{ route('accounting.cashier-status') }}" class="sidebar-link">
+            <a href="{{ route('accounting.cashier-status') }}"
+            class="sidebar-link">
                 <i class="bi bi-wallet-fill"></i>
                 Cashier Status
             </a>
@@ -48,16 +57,17 @@
 
         {{-- BUDGET --}}
         @if(Auth::user()->role === 'budget')
-            <a href="{{ route('budget.dashboard') }}" class="sidebar-link">
+            <a href="{{ route('budget.dashboard') }}"
+            class="sidebar-link">
                 <i class="bi bi-columns-gap"></i>
                 Dashboard
             </a>
-            <a href="{{ route('budget.logbook') }}" class="sidebar-link">
+            <a href="{{ route('budget.logbook') }}"
+            class="sidebar-link">
                 <i class="bi bi-file-earmark-spreadsheet"></i>
                 Log Book
             </a>
         @endif
-
     </nav>
 
     <div class="mt-auto p-3">

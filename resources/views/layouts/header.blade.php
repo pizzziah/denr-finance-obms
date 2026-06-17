@@ -1,8 +1,7 @@
 <header class="d-flex justify-content-between align-items-center ">
     <div class="d-flex align-items-center gap-3">
-    <!-- TO-DO: update once database is ok { $pageTitle >-->
         <h3 class="fw-bold" style="color: var(--primary);">
-            Tab
+            {{ $pageTitle ?? 'Dashboard' }}
         </h3>
     </div>
 
@@ -16,11 +15,10 @@
         </div>
         <hr style="border-right-width: 1px; border-right-style: solid; border-right-color: var(--text-dark); height: 30px;">
         
-        
         {{-- ADMIN --}}
         @if(Auth::user()->role === 'admin')
             <h5 class="p-3 fw-bold" 
-                style="color: var(--primary); background-color: var(--secondary-variant); border: 1px solid var(--primary); border-radius: 8px; border: 1px solid var(--primary);">
+                style="color: #0B879D;; background-color: #EFF9FA; border: 1px solid #0B879D; border-radius: 8px;">
                 System Admin
             </h5>
         @endif
@@ -28,7 +26,7 @@
         {{-- ACCOUNTING --}}
         @if(Auth::user()->role === 'accountant')
             <h5 class="p-3 fw-bold" 
-                style="color: var(--primary); background-color: var(--secondary-variant); border: 1px solid var(--primary); border-radius: 8px; border: 1px solid var(--primary);">
+                style="color: var(--primary); background-color: var(--secondary-variant); border: 1px solid var(--primary); border-radius: 8px;">
                 Accounting Department
             </h5>
         @endif
@@ -36,11 +34,9 @@
         {{-- BUDGET --}}
         @if(Auth::user()->role === 'budget')
             <h5 class="p-3 fw-bold" 
-                style="color: var(--primary); background-color: var(--secondary-variant); border: 1px solid var(--primary); border-radius: 8px; border: 1px solid var(--primary);">
+                style="color: var(--secondary); background-color: var(--secondary-variant); border: 1px solid var(--secondary); border-radius: 8px; ">
                 Budget Department
             </h5>
         @endif        
-
-        
     </div>
 </header>
