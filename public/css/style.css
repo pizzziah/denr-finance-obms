@@ -24,7 +24,6 @@ body {
 }
 
 a {
-    font-family: 'Inter', sans-serif;
     text-decoration: none !important;
 }
 
@@ -62,173 +61,21 @@ button {
 
 /** MAIN LAYOUT COMPONENTS **/
 /* Sidebar Settings */
-.sidebar{
-    background: var(--surface);
-    display: flex;
-    flex-direction: column;
-    padding: 10px;
-    width: 15%;
-    gap: 0px;
+.sidebar-link{
+    gap: 1em;
+    padding:.9rem 1rem;
+    align-items:center;
+    border:1px solid var(--primary);
+    border-radius:8px;
+    color:var(--primary);
+    transition:.2s;
 }
 
-.logo-section {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 1.2em;
-    width: 70%;
-    height: auto;
-    padding: 0.5em;
+.sidebar-link:hover{
+    background:var(--secondary-variant);
 }
 
-.sdbr-logo img {
-    width: 100px;
-    height: auto;
-}
-
-.text-section {
-    color: var(--primary);
-    padding: 0px;
-}
-
-.text-section h1 {
-    font-size: 1.2rem;
-    font-weight: 700;
-    padding: 0px;
-}
-
-.text-section p {
-    font-size: 0.8em;
-    font-weight: 300;
-    padding: 0px;
-    margin: 0px;
-}
-
-.solid {
-    margin-bottom: 25px;
-    border-top: 1px solid var(--text-dark);
-}
-
-.nav-menu {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    font-size: 1em;
-    align-items: center;
-}
-
-.nav-menu i{
-    margin-right: 1em;
-}
-
-.nav-menu a{
-    text-decoration: none !important;
-    font-family: 'Montserrat', sans-serif;
-}
-
-.tab-item{
-    width: 80%;
-    padding: 1em;
-    background-color: var(--surface);
-    color: var(--primary);
-    border-radius: 8px;
-    border-style: solid;
-    border-width: 1.5px;
-    border-color: var(--primary);
-    transition: background-color 0.3s ease;
-}
-
-.tab-item:active{
-    background-color: var(--primary);
-    color: var(--background);
-    border-style: none;
-    transition: background-color 0.3s ease;
-}
-
-.logout-section{
-    margin-top: auto;
-    display: flex;
-    margin-bottom: 1.2em;
-    justify-content: center;
-}
-
-.logout-bttn{
-    font-size: 1em;
-    width: 80%;
-    font-weight: 700;
-    padding: 1em;
-    background-color: var(--text-dark);
-    color: var(--background);
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.logout-bttn:hover {
-      background-color: #000000;
-}
-
-
-/* Header Settings */
-.header {
-    display: flex;
-    justify-content: space-between; 
-    align-items: center;            
-    width: 100%;
-}
-
-.header h2, .header h3{
-    color: var(--primary);
-}
-
-.header-left {
-    display: flex;
-    align-items: center;
-}
-
-.header-right {
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.solid-v {
-    border-right-width: 1px;
-    border-right-style: solid;
-    border-right-color: var(--text-dark);
-    height: 30px;
-}
-
-.tab-display,
-.user {
-    margin: 0;
-}
-
-.notif-section {
-    font-size: 1.2em;
-}
-
-.notif-bttn {
-    display: flex;
-    gap: 0.3em;
-    flex-direction: row;
-    font-size: 1em;
-    width: 100%;
-    font-weight: 500;
-    background-color: var(--background);
-    color: var(--text-dark);
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.user {
-    background-color: var(--secondary-variant);
-    color: var(--primary);
-    padding: 0.8em;
-    border: 1px solid var(--primary);
-    border-radius: 8px;
+.sidebar-link.active{
+    background:var(--primary);
+    color:white;
 }
