@@ -27,20 +27,24 @@
 
     <div class="card shadow" style="width: 450px">
       <div class="card-body p-4">
-        <form>
-          <div class="mb-3"> 
-            <label class="form-label fw-bold">Email Address</label>
-              <input type="email" class="form-control p-2" placeholder="juandelacruz@denr.gov.ph">
-          </div>
+        <form method="POST" action="{{ route('login.submit') }}">
+        @csrf
 
-          <div class="mb-4">
-            <label class="form-label fw-bold">Password</label>
-              <input type="password" class="form-control p-2" placeholder="********">
-          </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Email Address</label>
+                <input type="email" name="email" class="form-control p-2" placeholder="juandelacruz@denr.gov.ph" required>
+            </div>
 
-          <button type="submit" class="btn w-100 p-2" style="background-color: var(--primary); color: var(--background);">
-            Login
-          </button>
+            <div class="mb-4">
+                <label class="form-label fw-bold">Password</label>
+                <input type="password" name="password" class="form-control p-2" placeholder="********" required>
+            </div>
+
+            <button type="submit"
+                    class="btn w-100 p-2"
+                    style="background-color: var(--primary); color: var(--background);">
+                Login
+            </button>
         </form>
         </div>
     </div>
