@@ -1,40 +1,40 @@
-<aside class="sidebar">
-    <div class="logo-section">
+<aside class=" d-flex flex-column p-3 vh-100 border-end" 
+        style="background-color: var(--surface); width: 280px;">
+    <div class="d-flex align-items-center gap-2 p-1 mt-3">
         <div class="sdbr-logo">
-            <img  src="{{ asset('images/DENR-logo.png') }}">
+            <img  src="{{ asset('images/DENR-logo.png') }}" 
+            class="img-fluid">
         </div>
-        <div class="text-section">
-            <h1>Obligation Disbursement Monitoring System</h1>
-            <p><i>DENR CAR Finance Division</i></p>
+        <div class="d-flex flex-column gap-2" style="color: var(--primary)">
+            <h5 class="mb-0 fw-bold lh-1">Obligation Disbursement Monitoring System</h5>
+            <p class="lh-1"><i><small>DENR CAR Finance Division</small></i></p>
         </div>
     </div>
 
-    <div>
-        <hr class="solid">
-    </div>
+    <hr>    
 
-    <nav class="nav-menu">
+    <nav class="d-flex flex-column gap-3 mb-4">
         <!-- TO-DO: update once database is ok-->
-        <a href="#" class="tab-item active">
+        <a href="#" class="sidebar-link active fw-bold d-flex">
             <i class="bi bi-columns-gap"></i>
             Dashboard
         </a>
-        <a href="#" class="tab-item">
+        <a href="#" class="sidebar-link">
             <i class="bi bi-file-earmark-spreadsheet"></i>
             Log Book
         </a>
-        <a href="#" class="tab-item">
+        <a href="#" class="sidebar-link">
             <i class="bi bi-pie-chart"></i>
             Quarterly Summary
         </a>
-         <a href="#" class="tab-item">
+        <a href="#" class="sidebar-link">
             <i class="bi bi-wallet-fill"></i>
             Cashier Status
         </a>
     </nav>
 
-    <div class="logout-section">
-        <button class="logout-bttn">
+    <div class="mt-auto p-3">
+        <button class="btn btn-dark w-100">
             Log Out
         </button>
     </div>
