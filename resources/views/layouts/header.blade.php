@@ -17,7 +17,7 @@
         <hr style="border-right-width: 1px; border-right-style: solid; border-right-color: var(--text-dark); height: 30px;">
         
         {{-- ADMIN --}}
-        @if(Auth::user()->role === 'Admin')
+        @if(Auth::user()->role === 'admin')
             <h5 class="p-3 fw-bold" 
                 style="color: #0B879D;; background-color: #EFF9FA; border: 1px solid #0B879D; border-radius: 8px;">
                 System Admin
@@ -25,7 +25,7 @@
         @endif
 
         {{-- ACCOUNTING --}}
-        @if(in_array(Auth::user()->role, ['Accountant', 'Book Keeper']))
+        @if(in_array(Auth::user()->role, ['accountant', 'bookkeeper']))
             <h5 class="p-3 fw-bold" 
                 style="color: var(--primary); background-color: var(--secondary-variant); border: 1px solid var(--primary); border-radius: 8px;">
                 Accounting Department
@@ -33,7 +33,7 @@
         @endif
         
         {{-- BUDGET --}}
-        @if(Auth::user()->role === 'Budget')
+        @if(Auth::user()->role === 'budget')
             <h5 class="p-3 fw-bold" 
                 style="color: var(--secondary); background-color: var(--secondary-variant); border: 1px solid var(--secondary); border-radius: 8px; ">
                 Budget Department

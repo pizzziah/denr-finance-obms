@@ -26,28 +26,22 @@ class UserController extends Controller
     {
         $request->validate([
             'department' => 'required',
+            'role' => 'required',
             'email' => 'required|email|unique:users,email',
-            'password' => 'required|min:8',
+            'password' => 'required|min:8'
         ]);
-
-        $role = match ($request->department) {
-            'System Administration' => 'admin',
-            'Accounting' => 'accountant',
-            'Budget' => 'budget',
-            default => 'budget'
-        };
 
         User::create([
             'department' => $request->department,
+            'role' => $request->role,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $role,
-            'is_active' => 'active',
+            'is_active' => 'active'
         ]);
 
         return redirect()
             ->route('admin.users')
-            ->with('success', 'User created successfully.');
+            ->with('success', 'User added successfully.');
     }
 
     /**
@@ -69,13 +63,13 @@ class UserController extends Controller
 
         $request->validate([
             'department' => 'required',
+            'role' => 'required',
             'email' => 'required|email',
-            'role' => 'required'
         ]);
 
         $user->update([
-            'department' => $request->department,
             'email' => $request->email,
+            'department' => $request->department,
             'role' => $request->role,
         ]);
 
@@ -91,12 +85,21 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
 
+        $newStatus = $user->is_active === 'active'
+            ? 'inactive'
+            : 'active';
+
         $user->update([
-            'is_active' => 'inactive'
+            'is_active' => $newStatus
         ]);
 
         return redirect()
             ->route('admin.users')
-            ->with('success', 'User deactivated successfully.');
+            ->with(
+                'success',
+                $newStatus === 'active'
+                    ? 'User reactivated successfully.'
+                    : 'User deactivated successfully.'
+            );
     }
 }

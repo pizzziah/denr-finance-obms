@@ -63,22 +63,29 @@ button {
 /** MAIN LAYOUT COMPONENTS **/
 /* Sidebar Settings */
 .sidebar-link{
+    display: flex;
     gap: 1em;
-    padding:.9rem 1rem;
-    align-items:center;
-    border:1px solid var(--primary);
-    border-radius:8px;
-    color:var(--primary);
-    transition:.2s;
+    padding: .9rem 1rem;
+    align-items: center;
+    border: 1px solid var(--primary);
+    border-radius: 8px;
+    color: var(--primary);
+    transition: .2s;
+    font-size: large;
 }
 
 .sidebar-link:hover{
-    background:var(--secondary-variant);
+    background: var(--secondary-variant);
 }
 
 .sidebar-link.active{
-    background:var(--primary);
-    color:white;
+    background: var(--primary);
+    color: white;
+    font-weight: bold;
+}
+
+.sidebar-link.active i{
+    color: white;
 }
 
 

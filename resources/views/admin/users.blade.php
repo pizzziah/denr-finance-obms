@@ -38,9 +38,17 @@
           <tr>
             <td>{{ $user->email }}</td>
             <td>{{ $user->department }}</td>
-            <td>{{ $user->role }}</td>
+            <td> {{ match(strtolower(str_replace(' ', '', $user->role))) {
+              'admin' => 'Admin',
+              'accountant' => 'Accountant',
+              'budget' => 'Budget',
+              'bookkeeper' => 'Book Keeper',
+              default => ucwords($user->role),
+              }
+            }}
+            </td>
             <td>
-              @if(trim(strtolower($user->is_active)) == 'active')
+              @if($user->is_active === 'active')
                 <span class="p-2 rounded success-bttn">Active</span>
               @else
                 <span class="p-2 rounded alert-bttn">Inactive</span>
@@ -51,21 +59,26 @@
                 <i class="bi bi-pencil-square fs-5"></i>
               </a>
 
-              <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="d-inline">
+              @if(auth()->id() != $user->id)
+
+              <form action="{{ route('admin.users.destroy', $user->id) }}"
+                method="POST"
+                class="d-inline">
+
                 @csrf
                 @method('DELETE')
-            
-                @if($user->is_active == 'Active')
-                <button type="submit" class="btn alert-bttn">
-                  <i class="bi bi-person-fill-lock fs-5"></i>
-                </button>
 
+                @if($user->is_active === 'active')
+                  <button type="submit" class="btn alert-bttn">
+                    <i class="bi bi-person-fill-lock fs-5"></i>
+                  </button>
                 @else
-                <button type="submit" class="btn success-bttn">
-                  <i class="bi bi-person-check-fill fs-5"></i>
-                </button>
+                  <button type="submit" class="btn success-bttn">
+                    <i class="bi bi-person-check-fill fs-5"></i>
+                  </button>
                 @endif
               </form>
+              @endif
             </td>
           </tr>
 
