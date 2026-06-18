@@ -21,10 +21,10 @@ class LoginController extends Controller
             $user = Auth::user();
 
             return match ($user->role) {
-                'admin' => redirect()->route('admin.dashboard'),
-                'accountant' => redirect()->route('accounting.dashboard'),
-                'budget' => redirect()->route('budget.dashboard'),
-                'bookkeeper' => redirect()->route('accounting.dashboard'),
+                'Admin' => redirect()->route('admin.dashboard'),
+                'Accountant' => redirect()->route('accounting.dashboard'),
+                'Budget' => redirect()->route('budget.dashboard'),
+                'Book Keeper' => redirect()->route('accounting.dashboard'),
                 default => redirect('/'),
             };
         }
