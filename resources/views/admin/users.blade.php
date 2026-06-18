@@ -51,18 +51,21 @@
                 <i class="bi bi-pencil-square fs-5"></i>
               </a>
 
-              @if(trim(strtolower($user->is_active)) == 'active')
-              <form action="{{ route('admin.users.destroy', $user->id) }}"
-                method="POST" class="d-inline">
-
+              <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="d-inline">
                 @csrf
                 @method('DELETE')
-
-                <button type="submit" class="btn alert-bttn" onclick="return confirm('Deactivate this user?')">
+            
+                @if($user->is_active == 'Active')
+                <button type="submit" class="btn alert-bttn">
                   <i class="bi bi-person-fill-lock fs-5"></i>
                 </button>
+
+                @else
+                <button type="submit" class="btn success-bttn">
+                  <i class="bi bi-person-check-fill fs-5"></i>
+                </button>
+                @endif
               </form>
-              @endif
             </td>
           </tr>
 
