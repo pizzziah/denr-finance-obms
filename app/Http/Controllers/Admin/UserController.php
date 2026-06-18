@@ -25,17 +25,24 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required',
+            'department' => 'required',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:8',
-            'role' => 'required'
         ]);
 
+        $role = match ($request->department) {
+            'System Administration' => 'admin',
+            'Accounting' => 'accountant',
+            'Budget' => 'budget',
+            default => 'budget'
+        };
+
         User::create([
-            'name' => $request->name,
+            'department' => $request->department,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $request->role,
+            'role' => $role,
+            'is_active' => 'active',
         ]);
 
         return redirect()
@@ -61,13 +68,13 @@ class UserController extends Controller
         $user = User::findOrFail($id);
 
         $request->validate([
-            'name' => 'required',
+            'department' => 'required',
             'email' => 'required|email',
             'role' => 'required'
         ]);
 
         $user->update([
-            'name' => $request->name,
+            'department' => $request->department,
             'email' => $request->email,
             'role' => $request->role,
         ]);
@@ -85,7 +92,7 @@ class UserController extends Controller
         $user = User::findOrFail($id);
 
         $user->update([
-            'is_active' => false
+            'is_active' => 'inactive'
         ]);
 
         return redirect()
