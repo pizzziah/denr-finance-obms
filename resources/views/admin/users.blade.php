@@ -1,91 +1,94 @@
 @extends('layouts.app')
-
 @section('title', 'Users')
-
 @section('content')
+<div class="container-fluid p-0 m-0">
+  <div class="d-flex mb-3">
+    <button class="btn header-bttn" data-bs-toggle="modal" data-bs-target="#addUserModal">
+      <i class="bi bi-person-fill-add"></i>
+      Add User
+    </button>
+  </div>
 
-<div class="container-fluid p-0">
-    <div class="d-flex justify-content-end mb-3">
-        <button class="btn gap-2 fw-bold fs-5" style="background-color: var(--primary); color: var(--background);" 
-            data-bs-toggle="modal" data-bs-target="#addUserModal">
-            <i class="bi bi-person-fill-add"></i> 
-            Add User
-        </button>
+  @if(session('success'))
+    <div class="alert alert-success">
+      {{ session('success') }}
+    </div>
+  @endif
+
+  <div class="card">
+    <h5 class="px-3 pt-3 fw-bold pb-0 m-0">
+      Manage Users
+    </h5>
+
+    <div class="card-body">
+      <table class="table table-bordered align-middle">
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Department</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th width="220">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @forelse($users as $user)
+
+          <tr>
+            <td>{{ $user->email }}</td>
+            <td>{{ $user->department }}</td>
+            <td>{{ $user->role }}</td>
+            <td>
+              @if(trim(strtolower($user->is_active)) == 'active')
+                <span class="p-2 rounded success-bttn">Active</span>
+              @else
+                <span class="p-2 rounded alert-bttn">Inactive</span>
+              @endif
+            </td>
+            <td class="gap-2"> 
+              <a href="{{ route('admin.users.edit', $user->id) }}" class="btn edit-bttn me-2">
+                <i class="bi bi-pencil-square fs-5"></i>
+              </a>
+
+              @if(trim(strtolower($user->is_active)) == 'active')
+              <form action="{{ route('admin.users.destroy', $user->id) }}"
+                method="POST" class="d-inline">
+
+                @csrf
+                @method('DELETE')
+
+                <button type="submit" class="btn alert-bttn" onclick="return confirm('Deactivate this user?')">
+                  <i class="bi bi-person-fill-lock fs-5"></i>
+                </button>
+              </form>
+              @endif
+            </td>
+          </tr>
+
+          @empty
+
+          <tr>
+            <td colspan="5" class="text-center">No users found.</td>
+          </tr>
+
+          @endforelse
+
+        </tbody>
+      </table>
+
+      <div class="mt-3">
+        {{ $users->links() }}
+      </div>
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    <div class="card">
-        <h5 class="px-3 pt-3 fw-bold">User Management</h5>
-        <div class="card-body">
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Status</th>
-                        <th width="200">Actions</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @forelse($users as $user)
-
-                    <tr>
-                        <td>{{ $user->email }}</td>
-                        <td>{{ ucfirst($user->role) }}</td>
-                        <td>
-                            @if($user->is_active)
-                                Active
-                            @else
-                                Inactive
-                            @endif
-                        </td>
-                        <td>
-                            <a
-                                href="{{ route('admin.users.edit', $user->id) }}"
-                                class="btn btn-warning btn-sm">
-                                Edit
-                            </a>
-                            <form
-                                action="{{ route('admin.users.destroy', $user->id) }}"
-                                method="POST"
-                                class="d-inline">
-
-                                @csrf
-                                @method('DELETE')
-
-                                <button
-                                    class="btn btn-danger btn-sm">
-                                    Deactivate
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-
-                    @empty
-
-                    <tr>
-                        <td colspan="5">
-                            No users found.
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-            {{ $users->links() }}
-        </div>
-    </div>
+    
+  </div>
 </div>
 
 @include('admin.partials.add-user-modal')
-
 @endsection
 
 @php
-    $pageTitle = 'Users';
+  $pageTitle = 'Users';
 @endphp
