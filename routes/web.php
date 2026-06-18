@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Admin\UserController;
 
 Route::view('/', 'auth.login')->name('login');
 Route::post('/login', [LoginController::class, 'login']) ->name('login.submit');
@@ -21,7 +22,17 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::prefix('admin')->group(function () {
-        Route::view('/dashboard', 'admin.dashboard')->name('admin.dashboard');
-        Route::view('/users', 'admin.users')->name('admin.users');
-    });
+        Route::view('/dashboard', 'admin.dashboard')
+            ->name('admin.dashboard');
+        Route::get('/users', [UserController::class, 'index'])
+            ->name('admin.users');
+        Route::post('/users', [UserController::class, 'store'])
+            ->name('admin.users.store');
+        Route::get('/users/{id}/edit', [UserController::class, 'edit'])
+            ->name('admin.users.edit');
+        Route::put('/users/{id}', [UserController::class, 'update'])
+            ->name('admin.users.update');
+        Route::delete('/users/{id}', [UserController::class, 'destroy'])
+            ->name('admin.users.destroy');
+    }); 
 });
