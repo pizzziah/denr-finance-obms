@@ -13,11 +13,6 @@
 
 body {
     background-color: var(--background);
-}
-
-
-/* TYPOGRAPHY SETTINGS*/
-body {
     font-family: 'Montserrat', sans-serif;
     background-color: var(--background);
     padding: 0px;
@@ -33,61 +28,6 @@ button {
     border: none;
     outline: none;
 }
-
-
-/** LAYOUT SETTINGS **/
-.app-wrapper {
-    display: flex;
-    min-height: 100vh;
-    padding: 0px;
-    margin: 0px;
-}
-
-.main-wrapper {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-}
-
-.header {
-    width: 100%;
-}
-
-.main-content {
-    flex: 1;
-    padding: 2em;
-    padding-top: 1.5em;
-}
-
-
-/** MAIN LAYOUT COMPONENTS **/
-/* Sidebar Settings */
-.sidebar-link{
-    display: flex;
-    gap: 1em;
-    padding: .9rem 1rem;
-    align-items: center;
-    border: 1px solid var(--primary);
-    border-radius: 8px;
-    color: var(--primary);
-    transition: .2s;
-    font-size: large;
-}
-
-.sidebar-link:hover{
-    background: var(--secondary-variant);
-}
-
-.sidebar-link.active{
-    background: var(--primary);
-    color: white;
-    font-weight: bold;
-}
-
-.sidebar-link.active i{
-    color: white;
-}
-
 
 /** TABLE SETTINGS */
 .table thead th {
@@ -106,52 +46,4 @@ table th:first-child {
 
 table th:last-child {
   border-top-right-radius: 8px;
-}
-
-
-/** BUTTONS **/
-.primary-bttn {
-    gap: 1em;
-    background-color: var(--primary); 
-    color: var(--background);
-}
-
-.secondary-bttn {
-    gap: 1em;
-    background-color: var(--secondary-variant); 
-    color: var(--primary);
-    border: solid 1px var(--primary);
-}
-
-.header-bttn {
-    gap: 1em;
-    font-weight: bold;
-    background-color: var(--secondary-variant); 
-    border: solid 1px var(--primary);
-    color: var(--primary);
-}
-
-.success-bttn {
-    gap: 1em;
-    background-color: var(--secondary-variant); 
-    border: solid 1px var(--primary);
-    color: var(--primary);
-}
-
-.alert-bttn {
-    background-color: #ffe3e3; 
-    border: solid 1px var(--error);
-    color: var(--error);
-}
-
-.edit-bttn{
-    background-color: #FFEECC; 
-    border: solid 1px #9D6B0B;
-    color: #9D6B0B;
-}
-
-.lock-bttn{
-    background-color: #ffe3e3; 
-    border: solid 1px var(--error);
-    color: var(--error);
 }

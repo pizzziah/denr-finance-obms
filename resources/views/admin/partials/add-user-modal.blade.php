@@ -17,7 +17,7 @@
           <div class="mb-3">
             <label class="fw-bold">Password</label>
             <input type="password" name="password" class="form-control" placeholder="********" required>
-            <small class="text-muted"><i>Password should contain at least 8 characters.</small>
+            <small class="text-muted"><i>Password should contain at least 8 characters.</i></small>
           </div>   
 
           <div class="mb-3">
