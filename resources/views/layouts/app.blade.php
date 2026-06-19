@@ -20,13 +20,13 @@
 </head>
 
 <body>
-    <div class="app-wrapper">
+    <div class="app-wrapper d-flex min-vh-100 p-0 m-0">
         @include('layouts.sidebar')
 
-        <div class="main-wrapper">
+        <div class="main-wrapper flex-grow-1 d-flex flex-column">
             @include('layouts.header')
 
-            <main class="main-content">
+            <main class="main-content flex-grow-1 p-5 pt-4">
                 @yield('content')
             </main>
 
