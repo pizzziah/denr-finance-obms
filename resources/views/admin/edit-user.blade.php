@@ -32,8 +32,13 @@
       </div>
 
       <div class="d-flex gap-2"> 
-        <a href="{{ route('admin.users') }}" class="btn secondary-bttn"> Cancel </a> 
-        <button type="submit" class="btn primary-bttn"> Save Changes </button> 
+        <x-button variant="secondary" as="a"
+          href="{{ route('admin.users') }}">
+          Cancel
+        </x-button>
+        <x-button variant="primary" type="submit">
+            Save Changes
+        </x-button>
       </div>
     </form>
   </div>
