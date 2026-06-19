@@ -7,6 +7,22 @@
     <h5 class="fw-bold mb-0">Edit User</h5>
   </div>
 
+    @if(session('success'))
+      <div class="alert alert-success">
+        {{ session('success') }}
+      </div>
+    @endif
+
+    @if($errors->any())
+      <div class="alert alert-danger">
+        <ul class="mb-0">
+          @foreach($errors->all() as $error)
+            <li>{{ $error }}</li>
+          @endforeach
+        </ul>
+      </div>
+    @endif
+
   <div class="card-body">
     <form action="{{ route('admin.users.update', $user->id) }}" method="POST">
       @csrf
