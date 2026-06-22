@@ -11,29 +11,55 @@ class BudgetLogbookController extends Controller
     public function logbook(Request $request)
     {
         $year = $request->year ?? 'all';
+        $status = $request->status ?? 'all';
 
-        if ($year == '2025') {
+        // Convert URL status to database status
+        $statusText = match ($status) {
+            'for_obligation' => 'For Obligation',
+            'forwarded_to_accounting' => 'Forwarded to Accounting',
+            'all' => null,
+            default => ucwords(str_replace('_', ' ', $status))
+        };
+
+        // ALL YEARS
+        if ($year == 'all') {
 
             $records = DB::table('odms_budget_2025')
-                ->orderByDesc('date_received')
-                ->get();
+                ->when($statusText, function ($query) use ($statusText) {
+                    $query->where('status', $statusText);
+                })
+                ->get()
 
-        } elseif ($year == '2026') {
+                ->concat(
+                    DB::table('odms_budget_2026')
+                        ->when($statusText, function ($query) use ($statusText) {
+                            $query->where('status', $statusText);
+                        })
+                        ->get()
+                )
 
-            $records = DB::table('odms_budget_2026')
-                ->orderByDesc('date_received')
-                ->get();
-
-        } else {
-
-            $records2025 = DB::table('odms_budget_2025')->get();
-            $records2026 = DB::table('odms_budget_2026')->get();
-
-            $records = $records2025
-                ->concat($records2026)
                 ->sortByDesc('date_received');
+
         }
 
-        return view('budget.logbook', compact('records', 'year'));
+        // SINGLE YEAR
+        else {
+
+            $table = $year == '2025'
+                ? 'odms_budget_2025'
+                : 'odms_budget_2026';
+
+            $records = DB::table($table)
+                ->when($statusText, function ($query) use ($statusText) {
+                    $query->where('status', $statusText);
+                })
+                ->orderByDesc('date_received')
+                ->get();
+        }
+
+        return view(
+            'budget.logbook',
+            compact('records', 'year', 'status')
+        );
     }
 }
