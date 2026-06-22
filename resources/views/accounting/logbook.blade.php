@@ -7,8 +7,6 @@ $pageTitle = 'Accounting Log Book';
 @section('content')
 
 <div class="container-fluid mt-4">
-
-```
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h3>Accounting Log Book</h3>
 
