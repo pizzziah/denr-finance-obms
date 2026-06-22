@@ -6,13 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class BudgetController extends Controller
+class BudgetLogbookController extends Controller
 {
-    public function dashboard()
-    {
-        return view('budget.dashboard');
-    }
-
     public function logbook(Request $request)
     {
         $year = $request->year ?? 'all';

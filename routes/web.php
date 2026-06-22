@@ -3,7 +3,9 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Budget\BudgetController;
+use App\Http\Controllers\Budget\BudgetLogbookController;
+use App\Http\Controllers\Accounting\AccountingLogbookController;
+use  App\Http\Controllers\DashboardController;
 
 Route::view('/', 'auth.login')->name('login');
 Route::post('/login', [LoginController::class, 'login']) ->name('login.submit');
@@ -11,22 +13,26 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::middleware(['auth'])->group(function () {
     Route::prefix('budget')->group(function () {
-         Route::get('/dashboard', [BudgetController::class, 'dashboard'])
+         Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('budget.dashboard');
-        Route::get('/logbook', [BudgetController::class, 'logbook'])
+        Route::get('/logbook', [BudgetLogbookController::class, 'logbook'])
         ->name('budget.logbook');
     });
 
     Route::prefix('accounting')->group(function () {
-        Route::view('/dashboard', 'accounting.dashboard')->name('accounting.dashboard');
-        Route::view('/logbook', 'accounting.logbook')->name('accounting.logbook');
-        Route::view('/quarterly-summary', 'accounting.quarterly-summary')->name('accounting.quarterly-summary');
-        Route::view('/cashier-status', 'accounting.cashier-status')->name('accounting.cashier-status');
+        Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->name('accounting.dashboard');
+        Route::get('/logbook', [AccountingLogbookController::class, 'logbook'])
+        ->name('accounting.logbook');
+        Route::view('/quarterly-summary', 'accounting.quarterly-summary')
+        ->name('accounting.quarterly-summary');
+        Route::view('/cashier-status', 'accounting.cashier-status')
+        ->name('accounting.cashier-status');
     });
 
     Route::prefix('admin')->group(function () {
-        Route::view('/dashboard', 'admin.dashboard')
-            ->name('admin.dashboard');
+         Route::get('/dashboard', [DashboardController::class, 'index'])
+        ->name('admin.dashboard');
         Route::get('/users', [UserController::class, 'index'])
             ->name('admin.users');
         Route::post('/users', [UserController::class, 'store'])
