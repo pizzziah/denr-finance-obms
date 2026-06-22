@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Budget\BudgetController;
 
 Route::view('/', 'auth.login')->name('login');
 Route::post('/login', [LoginController::class, 'login']) ->name('login.submit');
@@ -10,8 +11,10 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::middleware(['auth'])->group(function () {
     Route::prefix('budget')->group(function () {
-        Route::view('/dashboard', 'budget.dashboard')->name('budget.dashboard');
-        Route::view('/logbook', 'budget.logbook')->name('budget.logbook');
+         Route::get('/dashboard', [BudgetController::class, 'dashboard'])
+        ->name('budget.dashboard');
+        Route::get('/logbook', [BudgetController::class, 'logbook'])
+        ->name('budget.logbook');
     });
 
     Route::prefix('accounting')->group(function () {
