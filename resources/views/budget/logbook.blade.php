@@ -8,6 +8,7 @@ $pageTitle = 'Log Book';
 
 <div class="container-fluid mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
+        @include('layouts.subtab')
         <form method="GET" action="{{ route('budget.logbook') }}">
             <input type="text"name="search"class="form-control"placeholder="Search ORS, Payee, Office..."value="{{ request('search') }}">
             <select name="year"
