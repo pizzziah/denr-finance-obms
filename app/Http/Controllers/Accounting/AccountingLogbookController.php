@@ -8,64 +8,71 @@ use Illuminate\Http\Request;
 
 class AccountingLogbookController extends Controller
 {
-    public function logbook(Request $request)
+     public function logbook(Request $request)
     {
         $month = $request->month ?? 'all';
+        $search = trim($request->search ?? '');
 
-        if ($month == 'january') {
+        $records = collect();
 
-            $records = DB::table('odms_accounting_january')
-                ->orderByDesc('date_processed')
-                ->get();
+        if ($month === 'all') {
 
-        } elseif ($month == 'february') {
-
-            $records = DB::table('odms_accounting_february')
-                ->orderByDesc('date_processed')
-                ->get();
-
-        } elseif ($month == 'march') {
-
-            $records = DB::table('odms_accounting_march')
-                ->orderByDesc('date_processed')
-                ->get();
-
-        } elseif ($month == 'april') {
-
-            $records = DB::table('odms_accounting_april')
-                ->orderByDesc('date_processed')
-                ->get();
-
-        } elseif ($month == 'may') {
-
-            $records = DB::table('odms_accounting_may')
-                ->orderByDesc('date_processed')
-                ->get();
-
-        } elseif ($month == 'june') {
-
-            $records = DB::table('odms_accounting_june')
-                ->orderByDesc('date_processed')
-                ->get();
+            $records = $this->getMonthRecords('odms_accounting_january', $search)
+                ->concat($this->getMonthRecords('odms_accounting_february', $search))
+                ->concat($this->getMonthRecords('odms_accounting_march', $search))
+                ->concat($this->getMonthRecords('odms_accounting_april', $search))
+                ->concat($this->getMonthRecords('odms_accounting_may', $search))
+                ->concat($this->getMonthRecords('odms_accounting_june', $search))
+                ->sortByDesc('date_processed');
 
         } else {
 
-            $recordsjan = DB::table('odms_accounting_january')->get();
-            $recordsfeb = DB::table('odms_accounting_february')->get();
-            $recordsmarch = DB::table('odms_accounting_march')->get();
-            $recordsapril = DB::table('odms_accounting_april')->get();
-            $recordsmay = DB::table('odms_accounting_may')->get();
-            $recordsjune = DB::table('odms_accounting_june')->get();
+            $table = match ($month) {
+                'january' => 'odms_accounting_january',
+                'february' => 'odms_accounting_february',
+                'march' => 'odms_accounting_march',
+                'april' => 'odms_accounting_april',
+                'may' => 'odms_accounting_may',
+                'june' => 'odms_accounting_june',
+                default => null,
+            };
 
-            $records = $recordsjan
-                ->concat($recordsfeb)
-                ->concat($recordsmarch)
-                ->concat($recordsapril)
-                ->concat($recordsmay)
-                ->concat($recordsjune)
-                ->sortByDesc('date_processed');
+            if ($table) {
+                $records = $this->getMonthRecords($table, $search)
+                    ->sortByDesc('date_processed');
+            }
         }
-        return view('accounting.logbook', compact('records', 'month'));
+
+        return view('accounting.logbook', compact(
+            'records',
+            'month',
+            'search'
+        ));
     }
 
+    private function getMonthRecords(string $table, string $search = '')
+    {
+        $query = DB::table($table);
+
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+
+                $q->where('dv_no', 'like', "%{$search}%")
+                ->orWhere('obr_no', 'like', "%{$search}%")
+                ->orWhere('payee', 'like', "%{$search}%")
+                ->orWhere('particulars', 'like', "%{$search}%")
+                ->orWhere('uacs_code', 'like', "%{$search}%")
+                ->orWhere('status', 'like', "%{$search}%")
+                ->orWhere('date_received', 'like', "%{$search}%")
+                ->orWhere('date_processed', 'like', "%{$search}%")
+                ->orWhere('date_signed', 'like', "%{$search}%")
+                ->orWhere('date_forwarded', 'like', "%{$search}%");
+
+            });
+        }
+
+        return $query
+            ->orderByDesc('date_processed')
+            ->get();
+    }
 }

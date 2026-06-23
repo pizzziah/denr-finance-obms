@@ -1,120 +1,147 @@
 @extends('layouts.app')
 
-@php
-$pageTitle = 'Accounting Log Book';
-@endphp
+@section('title', 'Accounting Log Book')
 
 @section('content')
 
-<div class="container-fluid mt-4">
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h3>Accounting Log Book</h3>
+<div class="container mt-5">
 
-    <form method="GET" action="{{ route('accounting.logbook') }}">
-        <select name="month"
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+
+        @include('layouts.subtab')
+        <form method="GET"
+              action="{{ route('accounting.logbook') }}"
+              class="d-flex gap-2 align-items-center">
+
+            <input
+                type="text"
+                name="search"
+                class="form-control"
+                placeholder="Search DV, Payee, Office..."
+                value="{{ $search ?? request('search') }}">
+
+            <select
+                name="month"
                 class="form-select"
-                onchange="this.form.submit()"
-                style="width: 200px;">
-                <option value="all" @selected($month == 'all')>All Months</option>
-                <option value="january" @selected($month ==  'january')>January</option>
-                <option value="february" @selected($month == 'february')>February</option>
-                <option value="march" @selected($month == 'march')>March</option>
-                <option value="april" @selected($month == 'april')>April</option>
-                <option value="may" @selected($month == 'may')>May</option>
-                <option value="june" @selected($month == 'june')>June</option>
+                onchange="this.form.submit()">
 
-        </select>
-    </form>
-</div>
+                <option value="all" {{ $month == 'all' ? 'selected' : '' }}>
+                    All Months
+                </option>
 
-<div class="card shadow-sm">
+                <option value="january" {{ $month == 'january' ? 'selected' : '' }}>
+                    January
+                </option>
 
-    <div class="card-body">
+                <option value="february" {{ $month == 'february' ? 'selected' : '' }}>
+                    February
+                </option>
 
-        <div style="max-height: 600px; overflow-y: auto; overflow-x: auto;">
+                <option value="march" {{ $month == 'march' ? 'selected' : '' }}>
+                    March
+                </option>
 
-            <table class="table table-bordered table-hover table-striped">
+                <option value="april" {{ $month == 'april' ? 'selected' : '' }}>
+                    April
+                </option>
 
-                <thead class="table-dark sticky-top">
-                    <tr>
-                        <th>Date Received</th>
-                        <th>Date Processed</th>
-                        <th>OBR Date</th>
-                        <th>OBR No.</th>
-                        <th>DV No.</th>
-                        <th>Payee</th>
-                        <th>Particulars</th>
-                        <th>UACS Code</th>
-                        <th>Debit</th>
-                        <th>Credit</th>
-                        <th>Tax %</th>
-                        <th>Status</th>
-                        <th>Date Signed</th>
-                        <th>Date Forwarded</th>
-                    </tr>
-                </thead>
+                <option value="may" {{ $month == 'may' ? 'selected' : '' }}>
+                    May
+                </option>
 
-                <tbody>
+                <option value="june" {{ $month == 'june' ? 'selected' : '' }}>
+                    June
+                </option>
 
-                @forelse($records as $record)
+            </select>
 
-                    <tr>
+            <button type="submit" class="btn btn-primary">
+                <i class="bi bi-search"></i>
+            </button>
 
-                        <td>{{ $record->date_received ?? '-' }}</td>
+        </form>
 
-                        <td>{{ $record->date_processed ?? '-' }}</td>
+    </div>
 
-                        <td>{{ $record->obr_date ?? '-' }}</td>
+    <div class="card shadow-sm">
 
-                        <td>{{ $record->obr_no ?? '-' }}</td>
+        <div class="card-body">
 
-                        <td>{{ $record->dv_no ?? '-' }}</td>
+            <!-- SCROLL CONTAINER -->
+            <div class="table-responsive" style="max-height: 70vh; overflow: auto;">
 
-                        <td>{{ $record->payee ?? '-' }}</td>
+                <table class="table table-sm table-bordered table-hover table-striped align-middle">
 
-                        <td>{{ $record->particulars ?? '-' }}</td>
+                    <thead class="table-dark sticky-top">
+                        <tr>
+                            <th>Date Received</th>
+                            <th>Date Processed</th>
+                            <th>OBR Date</th>
+                            <th>OBR No.</th>
+                            <th>DV No.</th>
+                            <th>Payee</th>
+                            <th>Particulars</th>
+                            <th>UACS Code</th>
+                            <th>Debit</th>
+                            <th>Credit</th>
+                            <th>Tax %</th>
+                            <th>Status</th>
+                            <th>Date Signed</th>
+                            <th>Date Forwarded</th>
+                        </tr>
+                    </thead>
 
-                        <td>{{ $record->uacs_code ?? '-' }}</td>
+                    <tbody>
 
-                        <td>
-                            ₱{{ number_format((float) str_replace(',', '', $record->debit ?? 0), 2) }}
-                        </td>
+                    @forelse($records as $record)
 
-                        <td>
-                            ₱{{ number_format((float) str_replace(',', '', $record->credit ?? 0), 2) }}
-                        </td>
+                        <tr>
+                            <td>{{ $record->date_received ?? '-' }}</td>
+                            <td>{{ $record->date_processed ?? '-' }}</td>
+                            <td>{{ $record->obr_date ?? '-' }}</td>
+                            <td>{{ $record->obr_no ?? '-' }}</td>
+                            <td>{{ $record->dv_no ?? '-' }}</td>
+                            <td>{{ $record->payee ?? '-' }}</td>
+                            <td>{{ $record->particulars ?? '-' }}</td>
+                            <td>{{ $record->uacs_code ?? '-' }}</td>
 
-                        <td>{{ $record->tax_percent ?? '-' }}</td>
+                            <td>
+                                ₱{{ number_format((float) str_replace(',', '', $record->debit ?? 0), 2) }}
+                            </td>
 
-                        <td>{{ $record->status ?? '-' }}</td>
+                            <td>
+                                ₱{{ number_format((float) str_replace(',', '', $record->credit ?? 0), 2) }}
+                            </td>
 
-                        <td>{{ $record->date_signed ?? '-' }}</td>
+                            <td>{{ $record->tax_percent ?? '-' }}</td>
+                            <td>{{ $record->status ?? '-' }}</td>
+                            <td>{{ $record->date_signed ?? '-' }}</td>
+                            <td>{{ $record->date_forwarded ?? '-' }}</td>
+                        </tr>
 
-                        <td>{{ $record->date_forwarded ?? '-' }}</td>
+                    @empty
 
-                    </tr>
+                        <tr>
+                            <td colspan="14" class="text-center">
+                                No records found.
+                            </td>
+                        </tr>
 
-                @empty
+                    @endforelse
 
-                    <tr>
-                        <td colspan="14" class="text-center">
-                            No records found.
-                        </td>
-                    </tr>
+                    </tbody>
 
-                @endforelse
+                </table>
 
-                </tbody>
-
-            </table>
+            </div>
 
         </div>
 
     </div>
 
 </div>
-```
-
-</div>
 
 @endsection
+@php
+    $pageTitle = 'Logbook';
+@endphp
