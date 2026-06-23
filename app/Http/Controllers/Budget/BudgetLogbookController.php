@@ -14,6 +14,7 @@ class BudgetLogbookController extends Controller
         $month = $request->month ?? null;
         $status = $request->status ?? 'all';
         $search = $request->search ?? null;
+        $sort = $request->sort ?? 'latest';
 
         $statusText = match ($status) {
             'for_obligation' => 'For Obligation',
@@ -86,8 +87,24 @@ class BudgetLogbookController extends Controller
             }
 
             $records = $query2025->get()
-                ->concat($query2026->get())
-                ->sortByDesc('date_received');
+                ->concat($query2026->get());
+
+            if ($sort == 'ors_asc') {
+
+                $records = $records->sortBy(function ($record) {
+                    return strtoupper($record->ors_no ?? '');
+                });
+
+            } elseif ($sort == 'ors_desc') {
+
+                $records = $records->sortByDesc(function ($record) {
+                    return strtoupper($record->ors_no ?? '');
+                });
+
+            } else {
+
+                $records = $records->sortByDesc('date_received');
+            }
         }
 
         // ================= SINGLE YEAR =================
@@ -132,9 +149,26 @@ class BudgetLogbookController extends Controller
                 });
             }
 
-            $records = $query->orderByDesc('date_received')->get();
+            if ($sort == 'ors_asc') {
+
+                $records = $query
+                    ->orderBy('ors_no', 'asc')
+                    ->get();
+
+            } elseif ($sort == 'ors_desc') {
+
+                $records = $query
+                    ->orderBy('ors_no', 'desc')
+                    ->get();
+
+            } else {
+
+                $records = $query
+                    ->orderByDesc('date_received')
+                    ->get();
+            }
         }
 
-        return view('budget.logbook',compact('records','year','month','status','search'));
+        return view('budget.logbook',compact('records','year','month','status','search', 'sort'));
     }
 }

@@ -220,7 +220,28 @@
 
                     </select>
                 </div>
+                <div class="mb-3">
+                    <label class="form-label">Sort</label>
 
+                    <select name="sort" class="form-select">
+
+                        <option value="latest"
+                            {{ request('sort','latest') == 'latest' ? 'selected' : '' }}>
+                            Latest Date Received
+                        </option>
+
+                        <option value="ors_asc"
+                            {{ request('sort') == 'ors_asc' ? 'selected' : '' }}>
+                            ORS No. (ascend)
+                        </option>
+
+                        <option value="ors_desc"
+                            {{ request('sort') == 'ors_desc' ? 'selected' : '' }}>
+                            ORS No. (descend)
+                        </option>
+
+                    </select>
+                </div>               
             </div>
 
             <div class="modal-footer">
