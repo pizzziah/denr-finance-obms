@@ -3,19 +3,38 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Admin\AdminUser; // Fix import statement here
+use App\Models\Admin\AdminUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
-class AdminUserController extends Controller // Fix class name to match file name
+class AdminUserController extends Controller
 {
     /**
-     * Display all users.
+     * Display all users with search and department filtering applied.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Use AdminUser instead of User
-        $users = AdminUser::latest()->paginate(10);
+        // Instantiating query scope builder
+        $query = AdminUser::query();
+
+        // Target Specific Department Scope via dropdown
+        if ($request->filled('department')) {
+            $dept = $request->input('department');
+            if ($dept === 'System Administration') {
+                $query->whereIn('department', ['System Administration', 'Admin']);
+            } else {
+                $query->where('department', $dept);
+            }
+        }
+
+        // Apply Email Search string matching queries
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where('email', 'LIKE', "%{$search}%");
+        }
+
+        // Apply global sorting scope pipeline before rendering pages
+        $users = $query->latest()->paginate(10);
 
         return view('admin.users', compact('users'));
     }

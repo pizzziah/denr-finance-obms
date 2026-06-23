@@ -28,9 +28,32 @@
   @endif
 
   <div class="card">
-    <h5 class="px-3 pt-3 fw-bold pb-0 m-0">
-      Manage Users
-    </h5>
+    <div class="px-3 pt-3 pb-2 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+      <h5 class="fw-bold m-0">Manage Users</h5>
+      
+      <form action="{{ route('admin.users') }}" method="GET" class="d-flex align-items-center gap-2 m-0 flex-wrap flex-md-nowrap">
+        
+        <select name="department" class="form-select form-select-sm" style="min-width: 160px;" onchange="this.form.submit()">
+          <option value="">All Departments</option>
+          <option value="Accounting" {{ request('department') === 'Accounting' ? 'selected' : '' }}>Accounting</option>
+          <option value="Budget" {{ request('department') === 'Budget' ? 'selected' : '' }}>Budget</option>
+          <option value="System Administration" {{ request('department') === 'System Administration' || request('department') === 'Admin' ? 'selected' : '' }}>System Administration</option>
+        </select>
+
+        <div class="input-group input-group-sm" style="min-width: 240px;">
+          <input type="text" name="search" class="form-control" placeholder="Search email..." value="{{ request('search') }}">
+          <button class="btn btn-outline-secondary" type="submit">
+            <i class="bi bi-search"></i>
+          </button>
+          @if(request('search') || request('department'))
+            <a href="{{ route('admin.users') }}" class="btn btn-outline-danger" title="Clear Filters">
+              <i class="bi bi-x-circle"></i>
+            </a>
+          @endif
+        </div>
+
+      </form>
+    </div>
 
     <div class="card-body">
       <table class="table table-bordered align-middle">
@@ -138,18 +161,16 @@
         </tr>
         @empty
         <tr>
-          <td colspan="5" class="text-center">No users found.</td>
+          <td colspan="5" class="text-center text-muted py-3">No users found matching parameters.</td>
         </tr>
         @endforelse
       </tbody>
       </table>
 
       <div class="mt-3">
-        {{ $users->links() }}
+        {{ $users->withQueryString()->links() }}
       </div>
     </div>
-
-    
   </div>
 </div>
 
