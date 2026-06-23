@@ -13,18 +13,36 @@ class AccountingLogbookController extends Controller
         $month = $request->month ?? 'all';
         $status = $request->status ?? 'all';
         $search = trim($request->search ?? '');
+        $sort = $request->sort ?? 'latest';
 
         $records = collect();
 
         if ($month === 'all') {
-
             $records = $this->getMonthRecords('odms_accounting_january', $search, $status)
                 ->concat($this->getMonthRecords('odms_accounting_february', $search, $status))
                 ->concat($this->getMonthRecords('odms_accounting_march', $search, $status))
                 ->concat($this->getMonthRecords('odms_accounting_april', $search, $status))
                 ->concat($this->getMonthRecords('odms_accounting_may', $search, $status))
-                ->concat($this->getMonthRecords('odms_accounting_june', $search, $status))
-                ->sortByDesc('date_processed');
+                ->concat($this->getMonthRecords('odms_accounting_june', $search, $status));
+
+            if ($sort == 'obr_asc') {
+
+                $records = $records->sortBy(function ($r) {
+                    preg_match('/\d+/', $r->obr_no ?? '', $m);
+                    return (int) ($m[0] ?? 0);
+                });
+
+            } elseif ($sort == 'obr_desc') {
+
+                $records = $records->sortByDesc(function ($r) {
+                    preg_match('/\d+/', $r->obr_no ?? '', $m);
+                    return (int) ($m[0] ?? 0);
+                });
+
+            } else {
+
+                $records = $records->sortByDesc('date_processed');
+            }
 
         } else {
 
@@ -39,17 +57,31 @@ class AccountingLogbookController extends Controller
             };
 
             if ($table) {
-                $records = $this->getMonthRecords($table, $search, $status)
-                    ->sortByDesc('date_processed');
+
+            $records = $this->getMonthRecords($table, $search, $status);
+
+            if ($sort == 'obr_asc') {
+
+                $records = $records->sortBy(function ($r) {
+                    preg_match('/\d+/', $r->obr_no ?? '', $m);
+                    return (int) ($m[0] ?? 0);
+                });
+
+            } elseif ($sort == 'obr_desc') {
+
+                $records = $records->sortByDesc(function ($r) {
+                    preg_match('/\d+/', $r->obr_no ?? '', $m);
+                    return (int) ($m[0] ?? 0);
+                });
+
+            } else {
+
+                $records = $records->sortByDesc('date_processed');
             }
         }
+        }
 
-        return view('accounting.logbook', compact(
-            'records',
-            'month',
-            'status',
-            'search'
-        ));
+        return view('accounting.logbook', compact('records','month','status','search','sort'));
     }
 
     private function getMonthRecords(
