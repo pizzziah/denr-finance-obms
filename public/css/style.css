@@ -34,10 +34,16 @@ button {
     background-color: var(--primary) !important;
     color: var(--background) !important;
     text-align: center;
+    vertical-align: middle;
+    font-family: 'Inter', sans-serif;
+    font-size: small;
 }
 
 .table td {
     text-align: center;
+    vertical-align: middle;
+    font-family: 'Inter', sans-serif;
+    font-size: small;
 }
 
 table th:first-child {

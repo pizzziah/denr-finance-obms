@@ -26,7 +26,7 @@
         <div class="main-wrapper flex-grow-1 d-flex flex-column">
             @include('layouts.header')
 
-            <main class="main-content flex-grow-1 p-5 pt-0">
+            <main class="main-content flex-grow-1 pt-0 pb-0 px-5">
                 @yield('content')
             </main>
 

@@ -1,16 +1,7 @@
 @extends('layouts.app')
 @section('title', 'Users')
 @section('content')
-<div class="container-fluid p-0 m-0">
-  <div class="d-flex mb-3">
-    <x-button variant="header"
-      data-bs-toggle="modal"
-      data-bs-target="#addUserModal">
-      <i class="bi bi-person-fill-add"></i>
-      Add User
-    </x-button>
-  </div>
-
+<div class="container-fluid mt-4 px-4">
   @if(session('success'))
     <div class="alert alert-success">
       {{ session('success') }}
@@ -27,7 +18,7 @@
     </div>
   @endif
 
-  <div class="card">
+  <div class="card p-3">
     <div class="px-3 pt-3 pb-2 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
       <h5 class="fw-bold m-0">Manage Users</h5>
       
@@ -40,9 +31,9 @@
           <option value="System Administration" {{ request('department') === 'System Administration' || request('department') === 'Admin' ? 'selected' : '' }}>System Administration</option>
         </select>
 
-        <div class="input-group input-group-sm" style="min-width: 240px;">
-          <input type="text" name="search" class="form-control" placeholder="Search email..." value="{{ request('search') }}">
-          <button class="btn btn-outline-secondary" type="submit">
+        <div class="input-group input-group-sm" style="min-width: 260px;">
+          <input type="text" name="search" class="form-control fs-6 p-1" style="border-color: var(--text-dark)" placeholder="Search email..." value="{{ request('search') }}">
+          <button class="btn" type="submit" style="border-color: var(--text-dark)">
             <i class="bi bi-search"></i>
           </button>
           @if(request('search') || request('department'))
@@ -51,13 +42,19 @@
             </a>
           @endif
         </div>
-
       </form>
     </div>
 
+    <div class="ms-3">
+      <x-button variant="header" data-bs-toggle="modal" data-bs-target="#addUserModal">
+      <i class="bi bi-person-fill-add"></i>
+      Add User
+      </x-button>
+    </div>
+
     <div class="card-body">
-      <table class="table table-bordered align-middle">
-        <thead>
+      <table class="table table-bordered table-hover align-middle">
+        <thead class="sticky-top">
           <tr>
             <th>Email</th>
             <th>Department</th>

@@ -138,5 +138,5 @@
 @endsection
 
 @php
-    $pageTitle = 'Dashboard';
+  $pageTitle = 'Dashboard';
 @endphp
