@@ -248,11 +248,11 @@
                             </option>
 
                             <option value="obr_asc" {{ request('sort')=='obr_asc' ? 'selected' : '' }}>
-                                OBR No. (ascend)
+                                DV No. (ascend)
                             </option>
 
                             <option value="obr_desc" {{ request('sort')=='obr_desc' ? 'selected' : '' }}>
-                                OBR No. (descend)
+                                DV No. (descend)
                             </option>
 
                         </select>

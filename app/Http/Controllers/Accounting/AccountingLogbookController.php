@@ -28,14 +28,14 @@ class AccountingLogbookController extends Controller
             if ($sort == 'obr_asc') {
 
                 $records = $records->sortBy(function ($r) {
-                    preg_match('/\d+/', $r->obr_no ?? '', $m);
+                    preg_match('/\d+/', $r->dv_no ?? '', $m);
                     return (int) ($m[0] ?? 0);
                 });
 
             } elseif ($sort == 'obr_desc') {
 
                 $records = $records->sortByDesc(function ($r) {
-                    preg_match('/\d+/', $r->obr_no ?? '', $m);
+                    preg_match('/\d+/', $r->dv_no ?? '', $m);
                     return (int) ($m[0] ?? 0);
                 });
 
@@ -63,14 +63,14 @@ class AccountingLogbookController extends Controller
             if ($sort == 'obr_asc') {
 
                 $records = $records->sortBy(function ($r) {
-                    preg_match('/\d+/', $r->obr_no ?? '', $m);
+                    preg_match('/\d+/', $r->dv_no ?? '', $m);
                     return (int) ($m[0] ?? 0);
                 });
 
             } elseif ($sort == 'obr_desc') {
 
                 $records = $records->sortByDesc(function ($r) {
-                    preg_match('/\d+/', $r->obr_no ?? '', $m);
+                    preg_match('/\d+/', $r->dv_no ?? '', $m);
                     return (int) ($m[0] ?? 0);
                 });
 
