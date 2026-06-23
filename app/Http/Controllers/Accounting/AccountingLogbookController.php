@@ -8,21 +8,22 @@ use Illuminate\Http\Request;
 
 class AccountingLogbookController extends Controller
 {
-     public function logbook(Request $request)
+    public function logbook(Request $request)
     {
         $month = $request->month ?? 'all';
+        $status = $request->status ?? 'all';
         $search = trim($request->search ?? '');
 
         $records = collect();
 
         if ($month === 'all') {
 
-            $records = $this->getMonthRecords('odms_accounting_january', $search)
-                ->concat($this->getMonthRecords('odms_accounting_february', $search))
-                ->concat($this->getMonthRecords('odms_accounting_march', $search))
-                ->concat($this->getMonthRecords('odms_accounting_april', $search))
-                ->concat($this->getMonthRecords('odms_accounting_may', $search))
-                ->concat($this->getMonthRecords('odms_accounting_june', $search))
+            $records = $this->getMonthRecords('odms_accounting_january', $search, $status)
+                ->concat($this->getMonthRecords('odms_accounting_february', $search, $status))
+                ->concat($this->getMonthRecords('odms_accounting_march', $search, $status))
+                ->concat($this->getMonthRecords('odms_accounting_april', $search, $status))
+                ->concat($this->getMonthRecords('odms_accounting_may', $search, $status))
+                ->concat($this->getMonthRecords('odms_accounting_june', $search, $status))
                 ->sortByDesc('date_processed');
 
         } else {
@@ -38,7 +39,7 @@ class AccountingLogbookController extends Controller
             };
 
             if ($table) {
-                $records = $this->getMonthRecords($table, $search)
+                $records = $this->getMonthRecords($table, $search, $status)
                     ->sortByDesc('date_processed');
             }
         }
@@ -46,27 +47,38 @@ class AccountingLogbookController extends Controller
         return view('accounting.logbook', compact(
             'records',
             'month',
+            'status',
             'search'
         ));
     }
 
-    private function getMonthRecords(string $table, string $search = '')
-    {
+    private function getMonthRecords(
+        string $table,
+        string $search = '',
+        string $status = 'all'
+    ) {
         $query = DB::table($table);
 
+        // STATUS FILTER
+        if ($status !== 'all') {
+            $query->where('status', $status);
+        }
+
+        // SEARCH FILTER
         if (!empty($search)) {
+
             $query->where(function ($q) use ($search) {
 
                 $q->where('dv_no', 'like', "%{$search}%")
-                ->orWhere('obr_no', 'like', "%{$search}%")
-                ->orWhere('payee', 'like', "%{$search}%")
-                ->orWhere('particulars', 'like', "%{$search}%")
-                ->orWhere('uacs_code', 'like', "%{$search}%")
-                ->orWhere('status', 'like', "%{$search}%")
-                ->orWhere('date_received', 'like', "%{$search}%")
-                ->orWhere('date_processed', 'like', "%{$search}%")
-                ->orWhere('date_signed', 'like', "%{$search}%")
-                ->orWhere('date_forwarded', 'like', "%{$search}%");
+                    ->orWhere('obr_no', 'like', "%{$search}%")
+                    ->orWhere('payee', 'like', "%{$search}%")
+                    ->orWhere('particulars', 'like', "%{$search}%")
+                    ->orWhere('uacs_code', 'like', "%{$search}%")
+                    ->orWhere('status', 'like', "%{$search}%")
+                    ->orWhere('date_received', 'like', "%{$search}%")
+                    ->orWhere('date_processed', 'like', "%{$search}%")
+                    ->orWhere('date_signed', 'like', "%{$search}%")
+                    ->orWhere('date_forwarded', 'like', "%{$search}%");
 
             });
         }
