@@ -61,9 +61,10 @@
 
     <div class="col-12 col-lg-3">
       <div class="card shadow p-2 m-0 rounded" >
-        <div class="card-header bg-white py-3 border-0">
-          <h4 class="fw-bold mb-0 text-dark">
-            <i class="bi bi-pie-chart-fill me-2 text-secondary" style="background-color: var(--primary)"></i>User Distribution
+        <div class="card-header bg-white py-3 border-0" >
+          <h4 class="fw-bold mb-0" style="color: var(--primary)">
+            <i class="bi bi-pie-chart-fill me-2" style="color: var(--primary)"></i>
+            User Distribution
           </h4>
         </div>
 
