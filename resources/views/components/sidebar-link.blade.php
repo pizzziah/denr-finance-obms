@@ -12,7 +12,7 @@
     
 .sidebar {
     width: 280px;
-    background: var(--surface);
+    background: var(--background);
     transition: width .3s ease;
     overflow-x: hidden;
     flex-shrink: 0;  
@@ -45,7 +45,7 @@
 
 .sidebar.collapsed .sdbr-logo {
     margin: auto !important;
-    max-width: 45px; /* Keeps the DENR logo from looking huge when text vanishes */
+    max-width: 45px;
 }
 
 .sidebar.collapsed .collapsed-icon {

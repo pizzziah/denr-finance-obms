@@ -1,4 +1,4 @@
-<header class="d-flex w-100 justify-content-between align-items-center shadow-sm pt-4 px-4 pb-3 m-0" style="background-color: var(--background);">
+<header class="d-flex w-100 justify-content-between align-items-center shadow-sm pt-4 px-4 pb-3 m-0" style="background-color: transparent;">
   <div class="d-flex align-items-center gap-3">
     <h4 class="fw-bold" style="color: var(--primary);">
       {{ $pageTitle ?? 'Dashboard' }}

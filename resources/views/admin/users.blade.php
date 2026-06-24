@@ -18,7 +18,7 @@
     </div>
   @endif
 
-  <div class="card p-3">
+  <div class="card glass-card p-3"">
     <div class="px-3 pt-3 pb-2 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
       <h5 class="fw-bold m-0">Manage Users</h5>
       
@@ -52,7 +52,7 @@
       </x-button>
     </div>
 
-    <div class="card-body">
+    <div class="card-body" stle="background-color: transparent;">
       <table class="table table-bordered table-hover align-middle">
         <thead class="sticky-top">
           <tr>

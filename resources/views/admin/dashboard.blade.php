@@ -4,7 +4,7 @@
 <div class="container-fluid mt-4 px-4">
   <div class="row g-4">
     <div class="col-12 col-lg-9 d-flex flex-column gap-3">
-      <div class="card shadow-sm m-0 text-white" style="background-color: var(--primary);">
+      <div class="card glass-card shadow-sm m-0" style="color: var(--primary);">
         <div class="card-body p-4">
         <h4 class="fw-bold mb-1">
           Welcome Back,
