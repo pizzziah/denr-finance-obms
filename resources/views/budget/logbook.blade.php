@@ -58,9 +58,9 @@
               <th rowspan="2" style="min-width:150px;">Status</th>
 
               {{-- GROUP 1 --}}
-              <th colspan="2" style="background-color: #EFDFFF; color: #7909FF">Returned to End User</th>
+              <th colspan="3" style="background-color: #EFDFFF; color: #7909FF">Returned to End User</th>
               {{-- GROUP 2 --}}
-              <th colspan="2" style="background-color: #FFEECC; color: #9D6B0B">Forwarded</th>
+              <th colspan="3" style="background-color: #FFEECC; color: #9D6B0B">Forwarded</th>
               {{-- GROUP 3 --}}
               <th colspan="2" style="background-color: #EBFEFF; color: #0B879D">Returned by Accounting</th>
 
@@ -74,11 +74,13 @@
             <tr class="header-sub">
               {{-- Returned to End User --}}
               <th style="background-color: #EFDFFF; color: #7909FF">Date Returned</th>
+              <th style="background-color: #EFDFFF; color: #7909FF">Remarks</th>
               <th style="background-color: #EFDFFF; color: #7909FF">Date Received</th>
 
               {{-- Forwarded --}}
               <th style="background-color: #FFEECC; color: #9D6B0B">Date Forwarded</th>
               <th style="background-color: #FFEECC; color: #9D6B0B">Date ORS Received</th>
+              <th style="background-color: #FFEECC; color: #9D6B0B">Remarks</th>
 
               {{-- Returned by Accounting --}}
               <th style="background-color: #EBFEFF; color: #0B879D">Date Returned</th>
@@ -99,10 +101,12 @@
                 <td><strong>₱{{ number_format((float) str_replace(',', '', $record->amount ?? 0), 2) }}</strong></td>
                 <td>{{ $record->status ?? '-' }}</td>
                 <td>{{ $record->date_returned_1 ?? '-' }}</td>
+                <td>{{ $record->remarks_1 ?? '-' }}</td>
                 <td>{{ $record->date_received_1 ?? '-' }}</td>
                 <td>{{ $record->date_forwarded_1 ?? '-' }}</td>
                 <td>{{ $record->date_ors_received ?? '-' }}</td>
                 <td>{{ $record->date_returned_2 ?? '-' }}</td>
+                <td>{{ $record->remarks_2 ?? '-' }}</td>
                 <td>{{ $record->date_received_2 ?? '-' }}</td>
                 <td>{{ $record->date_forwarded_accounting ?? '-' }}</td>
                 <td>{{ $record->total_time_budget ?? '-' }}</td>
