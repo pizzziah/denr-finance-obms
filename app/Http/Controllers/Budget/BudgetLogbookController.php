@@ -29,139 +29,156 @@ class BudgetLogbookController extends Controller
         if ($year == 'all') {
 
             $query2025 = DB::table('odms_budget_2025');
+            $query2025_2 = DB::table('odms_budget_2025_2');
             $query2026 = DB::table('odms_budget_2026');
 
             // STATUS FILTER
             if ($statusText) {
                 $query2025->where('status', $statusText);
+                $query2025_2->where('status', $statusText);
                 $query2026->where('status', $statusText);
             }
 
             // MONTH FILTER
             if ($month) {
-                $query2025->whereRaw("CAST(SUBSTRING_INDEX(date_received, '/', 1) AS UNSIGNED) = ?",[(int)$month]);
-                $query2026->whereRaw("CAST(SUBSTRING_INDEX(date_received, '/', 1) AS UNSIGNED) = ?",[(int)$month]);
+                foreach ([$query2025, $query2025_2, $query2026] as $q) {
+                    $q->whereRaw(
+                        "CAST(SUBSTRING_INDEX(date_received, '/', 1) AS UNSIGNED) = ?",
+                        [(int)$month]
+                    );
+                }
             }
 
             // SEARCH FILTER
             if ($search) {
 
-                $query2025->where(function ($q) use ($search) {
+                $applySearch = function ($q) use ($search) {
                     $q->where('ors_no', 'like', "%{$search}%")
-                        ->orWhere('payee', 'like', "%{$search}%")
-                        ->orWhere('issuing_office', 'like', "%{$search}%")
-                        ->orWhere('classification', 'like', "%{$search}%")
-                        ->orWhere('particulars', 'like', "%{$search}%")
-                        ->orWhere('status', 'like', "%{$search}%")
-                        ->orWhere('final_remarks', 'like', "%{$search}%")
-                        ->orWhere('date_returned_1', 'like', "%{$search}%")
-                        ->orWhere('date_received_1', 'like', "%{$search}%")
-                        ->orWhere('date_forwarded_1', 'like', "%{$search}%")
-                        ->orWhere('date_ors_received', 'like', "%{$search}%")
-                        ->orWhere('date_returned_2', 'like', "%{$search}%")
-                        ->orWhere('date_received_2', 'like', "%{$search}%")
-                        ->orWhere('date_forwarded_accounting', 'like', "%{$search}%")
-                        ->orWhere('total_time_budget', 'like', "%{$search}%")
-                        ->orWhere('total_time', 'like', "%{$search}%");
-                });
+                    ->orWhere('payee', 'like', "%{$search}%")
+                    ->orWhere('issuing_office', 'like', "%{$search}%")
+                    ->orWhere('classification', 'like', "%{$search}%")
+                    ->orWhere('particulars', 'like', "%{$search}%")
+                    ->orWhere('status', 'like', "%{$search}%")
+                    ->orWhere('final_remarks', 'like', "%{$search}%");
+                };
 
-                $query2026->where(function ($q) use ($search) {
-                    $q->where('ors_no', 'like', "%{$search}%")
-                        ->orWhere('payee', 'like', "%{$search}%")
-                        ->orWhere('issuing_office', 'like', "%{$search}%")
-                        ->orWhere('classification', 'like', "%{$search}%")
-                        ->orWhere('particulars', 'like', "%{$search}%")
-                        ->orWhere('particulars_remark', 'like', "%{$search}%")
-                        ->orWhere('status', 'like', "%{$search}%")
-                        ->orWhere('final_remarks', 'like', "%{$search}%")
-                        ->orWhere('date_returned_1', 'like', "%{$search}%")
-                        ->orWhere('date_received_1', 'like', "%{$search}%")
-                        ->orWhere('date_forwarded_1', 'like', "%{$search}%")
-                        ->orWhere('date_ors_received', 'like', "%{$search}%")
-                        ->orWhere('date_returned_2', 'like', "%{$search}%")
-                        ->orWhere('date_received_2', 'like', "%{$search}%")
-                        ->orWhere('date_forwarded_accounting', 'like', "%{$search}%")
-                        ->orWhere('total_time_budget', 'like', "%{$search}%")
-                        ->orWhere('total_time', 'like', "%{$search}%");
-                });
+                $applySearch($query2025);
+                $applySearch($query2025_2);
+                $applySearch($query2026);
             }
 
-            $records = $query2025->get()
-                ->concat($query2026->get());
+            // MERGE ALL
+            $records = $query2025->get()->map(function ($r) {
+                $r->budget_year = '2025';
+                return $r;
+            })
+            ->concat(
+                $query2025_2->get()->map(function ($r) {
+                    $r->budget_year = '2025';
+                    return $r;
+                })
+            )
+            ->concat(
+                $query2026->get()->map(function ($r) {
+                    $r->budget_year = '2026';
+                    return $r;
+                })
+            );
 
-            if ($sort == 'ors_asc') {
+            // SORT (ONLY ONCE!)
+            $records = $records->sortByDesc(function ($item) {
+                return strtotime($item->date_received ?? '1970-01-01');
+            });
 
-                $records = $records->sortBy(function ($record) {
-                    return strtoupper($record->ors_no ?? '');
-                });
+            // OVERRIDE SORT OPTIONS
+            if ($sort == 'ors_2025_asc') {
 
-            } elseif ($sort == 'ors_desc') {
+                $records = $records
+                    ->where('budget_year', '2025')
+                    ->sortBy(function ($record) {
+                        return (int) preg_replace('/[^0-9]/', '', $record->ors_no ?? '');
+                    });
 
-                $records = $records->sortByDesc(function ($record) {
-                    return strtoupper($record->ors_no ?? '');
-                });
+            } elseif ($sort == 'ors_2025_desc') {
+
+                $records = $records
+                    ->where('budget_year', '2025')
+                    ->sortByDesc(function ($record) {
+                        return (int) preg_replace('/[^0-9]/', '', $record->ors_no ?? '');
+                    });
+
+            } elseif ($sort == 'ors_2026_asc') {
+
+                $records = $records
+                    ->where('budget_year', '2026')
+                    ->sortBy(function ($record) {
+                        return (int) preg_replace('/[^0-9]/', '', $record->ors_no ?? '');
+                    });
+
+            } elseif ($sort == 'ors_2026_desc') {
+
+                $records = $records
+                    ->where('budget_year', '2026')
+                    ->sortByDesc(function ($record) {
+                        return (int) preg_replace('/[^0-9]/', '', $record->ors_no ?? '');
+                    });
 
             } else {
 
-                $records = $records->sortByDesc('date_received');
+                $records = $records->sortByDesc(function ($item) {
+                    return strtotime($item->date_received ?? '');
+                });
             }
         }
-
         // ================= SINGLE YEAR =================
         else {
 
-            $table = $year == '2025'
-                ? 'odms_budget_2025'
-                : 'odms_budget_2026';
+            if ($year == '2025') {
 
-            $query = DB::table($table);
+                $query2025 = DB::table('odms_budget_2025');
+                $query2025_2 = DB::table('odms_budget_2025_2');
 
-            // STATUS FILTER
-            if ($statusText) {
-                $query->where('status', $statusText);
-            }
+                // STATUS FILTER
+                if ($statusText) {
+                    $query2025->where('status', $statusText);
+                    $query2025_2->where('status', $statusText);
+                }
 
-            // MONTH FILTER
-            if ($month) {
-                $query->whereRaw("CAST(SUBSTRING_INDEX(date_received, '/', 1) AS UNSIGNED) = ?",[(int)$month]);
-            }
- 
-            // SEARCH FILTER
-            if ($search) {
-                $query->where(function ($q) use ($search) {
-                    $q->where('ors_no', 'like', "%{$search}%")
-                        ->orWhere('payee', 'like', "%{$search}%")
-                        ->orWhere('issuing_office', 'like', "%{$search}%")
-                        ->orWhere('classification', 'like', "%{$search}%")
-                        ->orWhere('particulars', 'like', "%{$search}%")
-                        ->orWhere('particulars_remark', 'like', "%{$search}%")
-                        ->orWhere('status', 'like', "%{$search}%")
-                        ->orWhere('final_remarks', 'like', "%{$search}%")
-                        ->orWhere('date_returned_1', 'like', "%{$search}%")
-                        ->orWhere('date_received_1', 'like', "%{$search}%")
-                        ->orWhere('date_forwarded_1', 'like', "%{$search}%")
-                        ->orWhere('date_ors_received', 'like', "%{$search}%")
-                        ->orWhere('date_returned_2', 'like', "%{$search}%")
-                        ->orWhere('date_received_2', 'like', "%{$search}%")
-                        ->orWhere('date_forwarded_accounting', 'like', "%{$search}%")
-                        ->orWhere('total_time_budget', 'like', "%{$search}%")
-                        ->orWhere('total_time', 'like', "%{$search}%");
-                });
-            }
+                // MONTH FILTER
+                if ($month) {
+                    $query2025->whereRaw(
+                        "CAST(SUBSTRING_INDEX(date_received, '/', 1) AS UNSIGNED) = ?",
+                        [(int)$month]
+                    );
 
-            if ($sort == 'ors_asc') {
+                    $query2025_2->whereRaw(
+                        "CAST(SUBSTRING_INDEX(date_received, '/', 1) AS UNSIGNED) = ?",
+                        [(int)$month]
+                    );
+                }
 
-                $records = $query
-                    ->orderBy('ors_no', 'asc')
-                    ->get();
+                $records = $query2025->get()
+                    ->concat($query2025_2->get());
 
-            } elseif ($sort == 'ors_desc') {
-
-                $records = $query
-                    ->orderBy('ors_no', 'desc')
-                    ->get();
+                if ($sort == 'ors_asc') {
+                    $records = $records->sortBy('ors_no');
+                } elseif ($sort == 'ors_desc') {
+                    $records = $records->sortByDesc('ors_no');
+                } else {
+                    $records = $records->sortByDesc(function ($item) {
+                        return strtotime($item->date_received ?? '');
+                    });
+                }
 
             } else {
+
+                $table = ($year == '2026')
+                    ? 'odms_budget_2026'
+                    : 'odms_budget_2025_2';
+
+                $query = DB::table($table);
+
+                // existing filters...
 
                 $records = $query
                     ->orderByDesc('date_received')
