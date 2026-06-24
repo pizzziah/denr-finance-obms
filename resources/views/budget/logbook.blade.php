@@ -188,21 +188,10 @@
           <div class="mb-3">
               <label class="form-label fw-semibold small">Sort Order</label>
               <select name="sort" class="form-select">
-                  <option value="latest" @selected(request('sort', 'latest') == 'latest')>
-                      Latest Date Received
-                  </option>
-
-                  <option value="ors_2025_asc" @selected(request('sort') == 'ors_2025_asc')>
-                      ORS No. 2025 (Ascending)
-                  </option>
-
-                  <option value="ors_2025_desc" @selected(request('sort') == 'ors_2025_desc')>
-                      ORS No. 2025 (Descending)
-                  </option>
-
-                  <option value="ors_2026_asc" @selected(request('sort') == 'ors_2026_asc')>
-                      ORS No. 2026 (Ascending)
-                  </option>
+                  <option value="latest" @selected(request('sort', 'latest') == 'latest')>Latest Date Received</option>
+                  <option value="ors_2025_asc" @selected(request('sort') == 'ors_2025_asc')>ORS No. 2025 (Ascending)</option>
+                  <option value="ors_2025_desc" @selected(request('sort') == 'ors_2025_desc')>ORS No. 2025 (Descending)</option>
+                  <option value="ors_2026_asc" @selected(request('sort') == 'ors_2026_asc')>ORS No. 2026 (Ascending)</option>
                   <option value="ors_2026_desc" @selected(request('sort') == 'ors_2026_desc')>ORS No. 2026 (Descending)</option>
               </select>
           </div>           
