@@ -4,8 +4,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminDashboardController;
-use App\Http\Controllers\Budget\BudgetLogbookController;
 use App\Http\Controllers\Accounting\AccountingLogbookController;
+use App\Http\Controllers\Budget\BudgetLogbookController;
+use App\Http\Controllers\Budget\BudgetDashboardController;
 use App\Http\Controllers\DashboardController;
 
 Route::view('/', 'auth.login')->name('login');

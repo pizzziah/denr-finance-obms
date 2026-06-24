@@ -1,17 +1,26 @@
 <?php
 
-namespace App\Http\Controllers\Budget;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\Budget\BudgetDashboard;
 use Illuminate\Http\Request;
+use App\Models\Budget\BudgetDashboard; 
+use Illuminate\Support\Facades\Auth;
 
-class BudgetDashboardController extends Controller
+class DashboardController extends Controller 
 {
-    public static function dashboard()
+    public function index() 
     {
-        $metrics = BudgetDashboard::getMetrics();
+        $user = Auth::user();
 
-        return view('budget.dashboard', compact('metrics'));
+        return match ($user->role) {
+            'admin' => view('admin.dashboard'),
+            'accountant' => view('accounting.dashboard'),
+            'bookkeeper' => view('accounting.dashboard'),
+            'budget' => view('budget.dashboard', [
+                'user' => $user,
+                'metrics' => BudgetDashboard::getMetrics()
+            ]),
+            default => abort(403, 'Unauthorized role'),
+        };
     }
 }
