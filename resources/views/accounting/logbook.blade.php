@@ -180,15 +180,9 @@
           <div class="mb-3">
             <label class="form-label">Sort</label>
             <select name="sort" class="form-select">
-              <option value="latest" @selected(request('sort','latest')=='latest')>
-                Latest Date Processed
-              </option>
-              <option value="obr_asc" @selected(request('sort')=='obr_asc')>
-                DV No. (Asc)
-              </option>
-              <option value="obr_desc" @selected(request('sort')=='obr_desc')>
-                DV No. (Desc)
-              </option>
+              <option value="latest" @selected(request('sort','latest')=='latest')>Latest Date Processed</option>
+              <option value="obr_asc" @selected(request('sort')=='obr_asc')>DV No. (Asc)</option>
+              <option value="obr_desc" @selected(request('sort')=='obr_desc')>DV No. (Desc)</option>
             </select>
           </div>
 
