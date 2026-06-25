@@ -4,7 +4,6 @@ namespace App\Models\Budget;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Carbon\Carbon;
 
 class BudgetDashboard {
   public static function getMetrics() {
@@ -44,19 +43,18 @@ class BudgetDashboard {
         $recordYear = null;
 
         if (!empty($row->date_received)) {
-
-            $cleanedDate = trim($row->date_received);
-            if (preg_match('/\b(20\d{2})\b/', $cleanedDate, $matches)) {
-                $recordYear = (int) $matches[1];
-            }
+          $cleanedDate = trim($row->date_received);
+          if (preg_match('/\b(20\d{2})\b/', $cleanedDate, $matches)) {
+            $recordYear = (int) $matches[1];
+          }
         }
 
         if ($recordYear !== $currentYear) {
-            continue;
+          continue;
         }
 
         $totalTransactions++;
-       $rawAmount = trim($row->amount ?? '0');
+        $rawAmount = trim($row->amount ?? '0');
         $amount = (float) str_replace([',', '₱', ' '], '', $rawAmount);
         
         $status = strtolower(trim($row->status ?? ''));
@@ -111,12 +109,5 @@ class BudgetDashboard {
       'statusCounts'         => $statusCounts,
       'officeAmounts'        => $officeAmounts,
     ];
-  }
-}
-
-// Helper utility function for regex fallback matching
-if (!function_exists('preg_regexp')) {
-  function preg_regexp($pattern, $subject, &$matches) {
-    return preg_match($pattern, $subject, $matches);
   }
 }
