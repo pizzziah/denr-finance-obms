@@ -21,7 +21,7 @@
       <div class="row mb-4">
         {{-- CARD C --}}
         <div class="col-md-4">
-          <div class="card glass-card card-c p-0 h-80 border-0 border-start border-4" style="border-color: var(--primary) !important;">
+          <div class="card glass-card-hover card-c p-0 h-80 border-0 border-start border-4" style="border-color: var(--primary) !important;">
             <div class="card-body d-flex align-items-center justify-content-between">
               <div>
                 <h6 class="text-uppercase fw-bold p-0 m-0" style="color: var(--primary)">
@@ -31,7 +31,7 @@
                   <small><i>{{ now()->year }}</i></small>
                 </p>
                 <h2 class="fw-bold fs-2 m-0" style="color: var(--primary)">
-                  ₱{{ number_format($metrics['amountInProcess'], 2) }}
+                  ₱{{ number_format($metrics['amountInProcess'] ?? 0, 2) }}
                 </h2>
               </div>
               <div class="fs-1 opacity-60" style="color: var(--primary);">
@@ -43,7 +43,7 @@
 
         {{-- CARD D --}}
         <div class="col-md-4">
-          <div class="card glass-card card-c p-0 h-80 border-0 border-start border-4" style="border-color: var(--secondary) !important;">
+          <div class="card glass-card-hover card-c p-0 h-80 border-0 border-start border-4" style="border-color: var(--secondary) !important;">
             <div class="card-body d-flex align-items-center justify-content-between">
               <div>
                 <h6 class="text-uppercase fw-bold p-0 m-0" style="color: var(--secondary)">
@@ -53,7 +53,7 @@
                   <small><i>{{ now()->year }}</i></small>
                 </p>
                 <h2 class="fw-bold fs-2 m-0" style="color: var(--secondary)">
-                  ₱{{ number_format($metrics['amountForwarded'], 2) }}
+                  ₱{{ number_format($metrics['amountForwarded'] ?? 0, 2) }}
                 </h2>
               </div>
               <div class="fs-1 opacity-60" style="color: var(--secondary);">
@@ -65,7 +65,7 @@
 
         {{-- CARD E --}}
         <div class="col-md-4">
-          <div class="card glass-card card-c p-0 h-80 border-0 border-start border-4" style="border-color: var(--primary-variant) !important;">
+          <div class="card glass-card-hover card-c p-0 h-80 border-0 border-start border-4" style="border-color: var(--primary-variant) !important;">
             <div class="card-body d-flex align-items-center justify-content-between">
               <div>
                 <h6 class="text-uppercase fw-bold p-0 m-0" style="color: var(--primary-variant)">
@@ -75,7 +75,7 @@
                   <small><i>{{ now()->year }}</i></small>
                 </p>
                 <h2 class="fw-bold fs-2 m-0" style="color: var(--primary-variant)">
-                  ₱{{ number_format($metrics['totalAmountPaid'], 2) }}
+                  ₱{{ number_format($metrics['totalAmountPaid'] ?? 0, 2) }}
                 </h2>
               </div>
               <div class="fs-1 opacity-60" style="color: var(--primary-variant);">
@@ -112,7 +112,7 @@
     {{-- RIGHT-SIDE COLUMN --}}
     <div class="col-lg-3">
       {{-- CARD B --}}
-      <div class="card glass-card card-b p-3 border-0 text-center mb-4">
+      <div class="card glass-card-hover card-b p-3 border-0 text-center mb-4">
         <h6 class="fw-bold mb-0 text-uppercase" style="color: var(--primary)">
           Total Transactions
         </h6>
@@ -120,107 +120,72 @@
           <small><i>{{ now()->year }}</i></small>
         </p>
         <h2 class="display-4 fw-bold p-0 m-0" style="color: var(--primary)">
-          {{ $metrics['totalTransactions'] }}
+          {{ $metrics['totalTransactions'] ?? 0 }}
         </h2>
       </div>
       
       {{-- CARD H --}}
       <div class="card glass-card card-h p-3">
-        <h6 class="fw-bold mb-0 text-center text-uppercase" style="color: var(--primary)">
+        <h6 class="fw-bold mb-0 p-0 text-center text-uppercase" style="color: var(--primary)">
           Workflow Status
         </h6>
-        <p class="mb-2 text-center">
+        <p class="mb-3 text-center">
           <small><i>{{ now()->year }}</i></small>
         </p>
+
         <div class="row g-3 text-center">
-          
-          <div class="col-6">
-            <div class="p-2 border rounded h-100 d-flex flex-column align-items-center justify-content-center" style="border-color: #17a2b8 !important;">
-              <div class="rounded-circle d-flex align-items-center justify-content-center border border-3 border-info fw-bold mb-1 text-info" style="width: 45px; height: 45px; font-size: 1.1rem;">
-                {{ $metrics['statusCounts']['for_review'] }}
+          @php
+            // Configuration array to map statuses dynamically with your exact styles and percentages
+            $statuses = [
+              ['key' => 'for_review', 'label' => 'For Review', 'color' => '#0B879D', 'bg' => '#EFF9FA'],
+              ['key' => 'pending', 'label' => 'Pending', 'color' => '#9D6B0B', 'bg' => '#FFFBF3'],
+              ['key' => 'processing', 'label' => 'Processing', 'color' => '#fd7e14', 'bg' => '#FFF6EF'],
+              ['key' => 'for_obligation', 'label' => 'For Obligation', 'color' => '#271ECE', 'bg' => '#BCC3F6'],
+              ['key' => 'returned', 'label' => 'Returned', 'color' => '#6f42c1', 'bg' => '#EFDFFF'],
+              ['key' => 'cancelled', 'label' => 'Cancelled', 'color' => '#C61919', 'bg' => '#FFC2C2'],
+              ['key' => 'forwarded', 'label' => 'Forwarded', 'color' => 'var(--primary)', 'bg' => '#E5F2D7'],
+              ['key' => 'paid', 'label' => 'Paid', 'color' => 'var(--secondary)', 'bg' => '#EDFADF'],
+            ];
+
+            // Calculate total for percentages (prevent division by zero)
+            $totalSum = array_sum($metrics['statusCounts'] ?? []);
+            $totalSum = $totalSum > 0 ? $totalSum : 1;
+          @endphp
+
+          @foreach($statuses as $status)
+            @php
+              $count = $metrics['statusCounts'][$status['key']] ?? 0;
+              // Calculate the SVG stroke dashoffset based on circle circumference (2 * pi * r => 2 * 3.1416 * 18 = ~113)
+              $percentage = ($count / $totalSum) * 100;
+              $offset = 113 - (113 * $percentage) / 100;
+            @endphp
+            <div class="col-6">
+              <div class="p-0 py-2 border rounded h-100 d-flex flex-column align-items-center justify-content-center" 
+                  style="border-color: {{ $status['color'] }} !important; background: {{ $status['bg'] }};">
+                
+                <div class="position-relative mb-2" style="width: 60px; height: 60px;">
+                  <svg class="w-100 h-100" viewBox="0 0 40 40" style="transform: rotate(-90deg);">
+                    <circle cx="20" cy="20" r="18" fill="transparent" stroke="rgba(0,0,0,0.05)" stroke-width="3"></circle>
+                    <circle cx="20" cy="20" r="18" fill="transparent" 
+                            stroke="{{ $status['color'] }}" 
+                            stroke-width="3" 
+                            stroke-dasharray="113" 
+                            stroke-dashoffset="{{ $offset }}"
+                            stroke-linecap="round"
+                            style="transition: stroke-dashoffset 0.5s ease-in-out;">
+                    </circle>
+                  </svg>
+                  <div class="position-absolute top-50 start-50 translate-middle fw-bold" style="color: {{ $status['color'] }}; font-size: 1.1rem;">
+                    {{ $count }}
+                  </div>
+                </div>
+
+                <span class="small text-muted d-block fw-semibold" style="font-size: 0.75rem; color: {{ $status['color'] }} !important;">
+                  {{ $status['label'] }}
+                </span>
               </div>
-              <span class="small text-muted d-block" style="font-size: 0.75rem;">
-                For Review
-              </span>
             </div>
-          </div>
-          
-          <div class="col-6">
-            <div class="p-2 border rounded  h-100 d-flex flex-column align-items-center justify-content-center" style="border-color: #ffc107 !important;">
-              <div class="rounded-circle d-flex align-items-center justify-content-center border border-3 border-warning fw-bold mb-1 text-warning" style="width: 45px; height: 45px; font-size: 1.1rem;">
-                {{ $metrics['statusCounts']['pending'] }}
-              </div>
-              <span class="small text-muted d-block" style="font-size: 0.75rem;">
-                Pending
-              </span>
-            </div>
-          </div>
-          
-          <div class="col-6">
-            <div class="p-2 border rounded h-100 d-flex flex-column align-items-center justify-content-center" style="border-color: #fd7e14 !important;">
-              <div class="rounded-circle d-flex align-items-center justify-content-center border border-3 fw-bold mb-1" style="width: 45px; height: 45px; font-size: 1.1rem; color: #fd7e14; border-color: #fd7e14 !important;">
-                {{ $metrics['statusCounts']['processing'] }}
-              </div>
-              <span class="small text-muted d-block" style="font-size: 0.75rem;">
-                Processing
-              </span>
-            </div>
-          </div>
-          
-          <div class="col-6">
-            <div class="p-2 border rounded h-100 d-flex flex-column align-items-center justify-content-center" style="border-color: #0d6efd !important;">
-              <div class="rounded-circle d-flex align-items-center justify-content-center border border-3 border-primary fw-bold mb-1 text-primary" style="width: 45px; height: 45px; font-size: 1.1rem;">
-                {{ $metrics['statusCounts']['for_obligation'] }}
-              </div>
-              <span class="small text-muted d-block" style="font-size: 0.75rem;">
-                For Obligation
-              </span>
-            </div>
-          </div>
-          
-          <div class="col-6">
-            <div class="p-2 border rounded h-100 d-flex flex-column align-items-center justify-content-center" style="border-color: #6f42c1 !important;">
-              <div class="rounded-circle d-flex align-items-center justify-content-center border border-3 fw-bold mb-1" style="width: 45px; height: 45px; font-size: 1.1rem; color: #6f42c1; border-color: #6f42c1 !important;">
-                {{ $metrics['statusCounts']['returned'] }}
-              </div>
-              <span class="small text-muted d-block" style="font-size: 0.75rem;">
-                Returned
-              </span>
-            </div>
-          </div>
-          
-          <div class="col-6">
-            <div class="p-2 border rounded h-100 d-flex flex-column align-items-center justify-content-center" style="border-color: #dc3545 !important;">
-              <div class="rounded-circle d-flex align-items-center justify-content-center border border-3 border-danger fw-bold mb-1 text-danger" style="width: 45px; height: 45px; font-size: 1.1rem;">
-                {{ $metrics['statusCounts']['cancelled'] }}
-              </div>
-              <span class="small text-muted d-block" style="font-size: 0.75rem;">
-                Cancelled
-              </span>
-            </div>
-          </div>
-          
-          <div class="col-6">
-            <div class="p-2 border rounded h-100 d-flex flex-column align-items-center justify-content-center" style="border-color: #198754 !important;">
-              <div class="rounded-circle d-flex align-items-center justify-content-center border border-3 border-success fw-bold mb-1 text-success" style="width: 45px; height: 45px; font-size: 1.1rem;">
-                {{ $metrics['statusCounts']['forwarded'] }}
-              </div>
-              <span class="small text-muted d-block" style="font-size: 0.75rem;">
-                Forwarded
-              </span>
-            </div>
-          </div>
-          
-          <div class="col-6">
-            <div class="p-2 border rounded h-100 d-flex flex-column align-items-center justify-content-center" style="border-color: #198754 !important;">
-              <div class="rounded-circle d-flex align-items-center justify-content-center border border-3 border-success fw-bold mb-1 text-success" style="width: 45px; height: 45px; font-size: 1.1rem;">
-                {{ $metrics['statusCounts']['paid'] }}
-              </div>
-              <span class="small text-muted d-block" style="font-size: 0.75rem;">
-                Paid
-              </span>
-            </div>
-          </div>
+          @endforeach
         </div>
       </div>
     </div>
@@ -232,51 +197,64 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-  const ctx = document.getElementById('officeChart');
-  
-  if (ctx) {
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: {!! json_encode(array_keys($metrics['officeAmounts'])) !!},
-        datasets: [{
-          label: 'Forwarded to Accounting Amount',
-          data: {!! json_encode(array_values($metrics['officeAmounts'])) !!},
-          backgroundColor: 'rgba(54, 162, 235, 0.6)', // added subtle default color
-          borderColor: 'rgba(54, 162, 235, 1)',
-          borderWidth: 1
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: false
-          },
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                return '₱' + Number(context.raw).toLocaleString('en-PH', {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2
-                });
+  Chart.defaults.font.family = "'Montserrat', 'Inter', sans-serif";
+
+  const officeCtx = document.getElementById('officeChart');
+  if (officeCtx) {
+    const officeAmountsData = {!! json_encode($metrics['officeAmounts'] ?? json_decode('{}')) !!};
+    
+    const officeLabels = Object.keys(officeAmountsData);
+    const officeData = Object.values(officeAmountsData);
+
+    if (officeLabels.length === 0) {
+      const ctxText = officeCtx.getContext('2d');
+      officeCtx.style.display = 'none';
+      const noDataDiv = document.createElement('div');
+      noDataDiv.className = 'text-center py-5';
+      noDataDiv.innerHTML = '<i class="bi bi-graph-down display-6 d-block mb-2"></i> No data recorded for this filtered timeline.';
+      officeCtx.parentNode.appendChild(noDataDiv);
+    } else {
+      new Chart(officeCtx, {
+        type: 'bar',
+        data: {
+          labels: officeLabels,
+          datasets: [{
+            label: 'Forwarded Amount',
+            data: officeData,
+            backgroundColor: 'rgb(240, 255, 230)',
+            borderColor: '#044709',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return '₱' + Number(context.raw).toLocaleString('en-PH', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  });
+                }
               }
             }
-          }
-        }, // Fixed missing structural brace here
-        scales: {
-          y: {
-            beginAtZero: true,
-            ticks: {
-              callback: function(value) {
-                return '₱' + Number(value).toLocaleString();
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return '₱' + Number(value).toLocaleString();
+                }
               }
             }
           }
         }
-      }
-    });
+      });
+    }
   }
 });
 </script>
