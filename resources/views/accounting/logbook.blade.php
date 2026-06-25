@@ -336,3 +336,6 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 @endsection
+@php
+    $pageTitle = 'Logbook';
+@endphp
