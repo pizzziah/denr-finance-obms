@@ -123,7 +123,6 @@
                 <td>
                       @if(!empty($record->dv_no))
                       <div class="d-flex gap-1">
-
                           <button type="button"
                                   class="btn btn-sm btn-outline-info action-btn"
                                   data-action="view"
@@ -135,7 +134,6 @@
                                   data-bs-target="#actionModal">
                               <i class="bi bi-eye"></i>
                           </button>
-
                           <button type="button"
                                   class="btn btn-sm btn-outline-primary action-btn"
                                   data-action="edit"
@@ -145,7 +143,6 @@
                                   data-bs-target="#actionModal">
                               <i class="bi bi-pencil"></i>
                           </button>
-
                           <button type="button"
                                   class="btn btn-sm btn-outline-danger action-btn"
                                   data-action="delete"
@@ -154,25 +151,21 @@
                                   data-bs-target="#actionModal">
                               <i class="bi bi-trash"></i>
                           </button>
-
                       </div>
                       @else
                           <span class="text-muted">No DV No.</span>
-
                       @endif
                   </td>
               </tr>
             @empty
               <tr>
-                <td colspan="16" class="text-center text-muted py-3">
+                <td colspan="15" class="text-center text-muted py-3">
                   No records found matching parameters.
                 </td>
               </tr>
             @endforelse
-
           </tbody>
         </table>
-
       </div>
     </div>
   </div>
@@ -187,12 +180,10 @@
 
         {{-- preserve search --}}
         <input type="hidden" name="search" value="{{ request('search') }}">
-
         <div class="modal-header">
           <h5 class="modal-title fw-bold">Filter Accounting Logbook</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-
         <div class="modal-body">
 
           {{-- MONTH --}}
@@ -229,9 +220,8 @@
               <option value="obr_desc" @selected(request('sort')=='obr_desc')>DV No. (Desc)</option>
             </select>
           </div>
-
         </div>
-
+        
         <div class="modal-footer">
           <a href="{{ route('accounting.logbook') }}" class="btn btn-secondary">
             Reset
@@ -240,59 +230,42 @@
             Apply Filters
           </button>
         </div>
-
       </form>
-
     </div>
   </div>
 </div>
 <div class="modal fade" id="actionModal" tabindex="-1">
-
     <div class="modal-dialog">
-
         <div class="modal-content">
-
             <div class="modal-header">
                 <h5 class="modal-title" id="actionTitle"></h5>
-
                 <button type="button"
                         class="btn-close"
                         data-bs-dismiss="modal">
                 </button>
             </div>
-
             <div class="modal-body" id="actionBody">
             </div>
-
             <div class="modal-footer" id="actionFooter">
             </div>
-
         </div>
-
     </div>
-
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-
     document.querySelectorAll('.action-btn').forEach(button => {
-
         button.addEventListener('click', function () {
-
             let action = this.dataset.action;
             let dv = this.dataset.dv;
             let obr = this.dataset.obr ?? '';
             let payee = this.dataset.payee ?? '';
             let status = this.dataset.status ?? '';
-
             let title = document.getElementById('actionTitle');
             let body = document.getElementById('actionBody');
             let footer = document.getElementById('actionFooter');
 
             if(action === 'view'){
-
                 title.innerHTML = 'View Transaction';
-
                 body.innerHTML = `
                     <p><strong>DV No:</strong> ${dv}</p>
                     <p><strong>OBR No:</strong> ${obr}</p>
@@ -321,17 +294,11 @@ document.addEventListener('DOMContentLoaded', function () {
                         @method('PUT')
 
                         <label class="form-label">Status</label>
-
                         <select name="status" class="form-select">
-
                             <option value="Pending">Pending</option>
-
                             <option value="Processing">Processing</option>
-
                             <option value="Completed">Completed</option>
-
                         </select>
-
                     </form>
                 `;
 
@@ -344,9 +311,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             if(action === 'delete'){
-
                 title.innerHTML = 'Delete Transaction';
-
                 body.innerHTML = `
                     Are you sure you want to delete
                     <strong>${dv}</strong>?
@@ -355,21 +320,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 footer.innerHTML = `
                     <form method="POST"
                           action="/accounting/logbook/${dv}/destroy">
-
                         @csrf
                         @method('DELETE')
-
                         <button class="btn btn-danger">
                             Delete
                         </button>
                     </form>
                 `;
             }
-
         });
-
     });
-
 });
 </script>
 @endsection
