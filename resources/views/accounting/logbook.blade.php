@@ -122,43 +122,41 @@
                 <td>{{ $record->date_forwarded ?? '-' }}</td>
                 <td>
                       @if(!empty($record->dv_no))
+                      <div class="d-flex gap-1">
 
-                          <div class="d-flex gap-1">
+                          <button type="button"
+                                  class="btn btn-sm btn-outline-info action-btn"
+                                  data-action="view"
+                                  data-dv="{{ $record->dv_no }}"
+                                  data-obr="{{ $record->obr_no }}"
+                                  data-payee="{{ $record->payee }}"
+                                  data-status="{{ $record->status }}"
+                                  data-bs-toggle="modal"
+                                  data-bs-target="#actionModal">
+                              <i class="bi bi-eye"></i>
+                          </button>
 
-                              {{-- VIEW --}}
-                              <a href="{{ route('accounting.logbook.show', ['dv_no' => $record->dv_no]) }}"
-                                class="btn btn-sm btn-outline-info"
-                                title="View">
-                                  <i class="bi bi-eye"></i>
-                              </a>
+                          <button type="button"
+                                  class="btn btn-sm btn-outline-primary action-btn"
+                                  data-action="edit"
+                                  data-dv="{{ $record->dv_no }}"
+                                  data-status="{{ $record->status }}"
+                                  data-bs-toggle="modal"
+                                  data-bs-target="#actionModal">
+                              <i class="bi bi-pencil"></i>
+                          </button>
 
-                              {{-- EDIT --}}
-                              <a href="{{ route('accounting.logbook.edit', ['dv_no' => $record->dv_no]) }}"
-                                class="btn btn-sm btn-outline-primary"
-                                title="Edit">
-                                  <i class="bi bi-pencil"></i>
-                              </a>
+                          <button type="button"
+                                  class="btn btn-sm btn-outline-danger action-btn"
+                                  data-action="delete"
+                                  data-dv="{{ $record->dv_no }}"
+                                  data-bs-toggle="modal"
+                                  data-bs-target="#actionModal">
+                              <i class="bi bi-trash"></i>
+                          </button>
 
-                              {{-- DELETE --}}
-                              <form action="{{ route('accounting.logbook.destroy', ['dv_no' => $record->dv_no]) }}"
-                                    method="POST"
-                                    onsubmit="return confirm('Delete this transaction?')">
-
-                                  @csrf
-                                  @method('DELETE')
-
-                                  <button type="submit"
-                                          class="btn btn-sm btn-outline-danger"
-                                          title="Delete">
-                                      <i class="bi bi-trash"></i>
-                                  </button>
-
-                              </form>
-
-                          </div>
-
+                      </div>
                       @else
-
                           <span class="text-muted">No DV No.</span>
 
                       @endif
@@ -248,5 +246,130 @@
     </div>
   </div>
 </div>
+<div class="modal fade" id="actionModal" tabindex="-1">
 
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="actionTitle"></h5>
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+
+            <div class="modal-body" id="actionBody">
+            </div>
+
+            <div class="modal-footer" id="actionFooter">
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    document.querySelectorAll('.action-btn').forEach(button => {
+
+        button.addEventListener('click', function () {
+
+            let action = this.dataset.action;
+            let dv = this.dataset.dv;
+            let obr = this.dataset.obr ?? '';
+            let payee = this.dataset.payee ?? '';
+            let status = this.dataset.status ?? '';
+
+            let title = document.getElementById('actionTitle');
+            let body = document.getElementById('actionBody');
+            let footer = document.getElementById('actionFooter');
+
+            if(action === 'view'){
+
+                title.innerHTML = 'View Transaction';
+
+                body.innerHTML = `
+                    <p><strong>DV No:</strong> ${dv}</p>
+                    <p><strong>OBR No:</strong> ${obr}</p>
+                    <p><strong>Payee:</strong> ${payee}</p>
+                    <p><strong>Status:</strong> ${status}</p>
+                `;
+
+                footer.innerHTML = `
+                    <button class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+                        Close
+                    </button>
+                `;
+            }
+
+            if(action === 'edit'){
+
+                title.innerHTML = 'Edit Status';
+
+                body.innerHTML = `
+                    <form id="editForm"
+                          method="POST"
+                          action="/accounting/logbook/${dv}/update">
+
+                        @csrf
+                        @method('PUT')
+
+                        <label class="form-label">Status</label>
+
+                        <select name="status" class="form-select">
+
+                            <option value="Pending">Pending</option>
+
+                            <option value="Processing">Processing</option>
+
+                            <option value="Completed">Completed</option>
+
+                        </select>
+
+                    </form>
+                `;
+
+                footer.innerHTML = `
+                    <button form="editForm"
+                            class="btn btn-success">
+                        Save
+                    </button>
+                `;
+            }
+
+            if(action === 'delete'){
+
+                title.innerHTML = 'Delete Transaction';
+
+                body.innerHTML = `
+                    Are you sure you want to delete
+                    <strong>${dv}</strong>?
+                `;
+
+                footer.innerHTML = `
+                    <form method="POST"
+                          action="/accounting/logbook/${dv}/destroy">
+
+                        @csrf
+                        @method('DELETE')
+
+                        <button class="btn btn-danger">
+                            Delete
+                        </button>
+                    </form>
+                `;
+            }
+
+        });
+
+    });
+
+});
+</script>
 @endsection
