@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Budget\BudgetDashboard;
+use App\Models\Accounting\AccountingDashboard;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller {
@@ -12,8 +13,10 @@ class DashboardController extends Controller {
 
         return match ($user->role) {
             'admin' => view('admin.dashboard'),
-            'accountant' => view('accounting.dashboard'),
-            'bookkeeper' => view('accounting.dashboard'),
+            'accountant', 'bookkeeper' => view('accounting.dashboard', [
+                'user'    => $user,
+                'metrics' => AccountingDashboard::getMetrics()
+            ]),
             'budget' => view('budget.dashboard', [
                 'user' => $user,
                 'metrics' => BudgetDashboard::getMetrics()

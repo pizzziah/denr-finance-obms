@@ -85,7 +85,7 @@
                                 </td>
                                 <td class="fw-bold text-secondary">{{ Str::limit($row->payee ?? '-', 15) }}</td>
                                 <td><small class="text-muted">{{ Str::limit($row->particulars ?? '-', 25) }}</small></td>
-                                <td class="fw-bold text-dark">₱{{ number_format($row->debit ?? $row->amount ?? 0, 2) }}</td>
+                                <td class="fw-bold text-dark">₱{{ number_format((float)($row->debit ?? $row->amount ?? 0), 2) }}</td>
                             </tr>
                             @empty
                             <tr>
