@@ -171,7 +171,7 @@
   </div>
 </div>
 
-{{-- FILTER MODAL --}}
+  {{-- FILTER MODAL --}}
 <div class="modal fade" id="filterModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -222,6 +222,7 @@
           </div>
         </div>
         
+  {{-- ACTION MODAL --}}
         <div class="modal-footer">
           <a href="{{ route('accounting.logbook') }}" class="btn btn-secondary">
             Reset
@@ -251,6 +252,8 @@
         </div>
     </div>
 </div>
+
+{{-- ACTION SCRIPT --}}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.action-btn').forEach(button => {
