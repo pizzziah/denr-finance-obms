@@ -10,8 +10,9 @@ class BudgetDashboard{
     $tables = ['odms_budget_2025', 'odms_budget_2025_2', 'odms_budget_2026'];
 
     $currentYear = now()->year;
+    $officeAmounts = [];
         
-    $totalRequests = 0;
+    $totalTransactions = 0;
     $totalRequestedAmount = 0;
     $amountInProcess = 0;
     $amountForwarded = 0;
@@ -32,7 +33,7 @@ class BudgetDashboard{
       if (!Schema::hasTable($table)) continue;
 
       $rows = DB::table($table)->get();
-      $totalRequests += $rows->count();
+      $totalTransactions += $rows->count();
 
       foreach ($rows as $row) {
         $recordYear = null;
@@ -51,6 +52,17 @@ class BudgetDashboard{
 
         $amount = (float)($row->amount ?? 0);
         $status = strtolower(trim($row->status ?? ''));
+
+        $office = trim($row->issuing_office ?? '');
+        if (
+          $status === 'forwarded to accounting' &&
+          !empty($office)
+        ) {
+          if (!isset($officeAmounts[$office])) {
+            $officeAmounts[$office] = 0;
+          }
+          $officeAmounts[$office] += $amount;
+        }
 
         $totalRequestedAmount += $amount;
 
@@ -96,14 +108,17 @@ class BudgetDashboard{
 
     $recentLogs = $recentLogs->sortByDesc('date_received')->take(5);
 
+    arsort($officeAmounts);
+
     return [
-        'totalRequests' => $totalRequests,
+        'totalTransactions' => $totalTransactions,
         'totalRequestedAmount' => $totalRequestedAmount,
         'amountInProcess' => $amountInProcess,
         'amountForwarded' => $amountForwarded,
         'totalAmountPaid' => $totalAmountPaid,
         'statusCounts' => $statusCounts,
-        'recentLogs' => $recentLogs
+        'recentLogs' => $recentLogs,
+        'officeAmounts' => $officeAmounts,
     ];
   }
 }
