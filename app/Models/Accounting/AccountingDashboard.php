@@ -5,18 +5,16 @@ namespace App\Models\Accounting;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class AccountingDashboard
-{
-    public static function getMetrics()
-    {
-        $table = 'odms_accounting';
+class AccountingDashboard {
+  public static function getMetrics() {
+    $table = 'odms_accounting';
         
-        $totalRequests = 0;
-        $totalRequestedAmount = 0; // mapped from gross_amount or total_amount/debit if applicable. Let's inspect column named 'debit' or 'amount' safely using structural fallbacks.
-        $amountInProcess = 0;
-        $amountPaid = 0;
+    $totalRequests = 0;
+    $totalRequestedAmount = 0; // mapped from gross_amount or total_amount/debit if applicable. Let's inspect column named 'debit' or 'amount' safely using structural fallbacks.
+    $amountInProcess = 0;
+    $amountPaid = 0;
 
-        $statusCounts = [
+      $statusCounts = [
             'for_review' => 0,
             'pending' => 0,
             'processing' => 0,

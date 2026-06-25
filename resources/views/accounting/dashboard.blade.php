@@ -2,199 +2,264 @@
 
 @section('content')
 <div class="container-fluid mt-4 px-4">
-    <div class="row">
-        
-        <div class="col-lg-9">
-            
-            <div class="card glass-card-green card-a p-4 mb-4" style="color: var(--background);">
-                <h4 class="fw-bold mb-1">
-                    Welcome Back, 
-                    {{ ucwords(str_replace('_', ' ', $user->role ?? 'Accounting')) }}!
-                </h4>
-                <h6 class="date mb-0 opacity-75">
-                    <i class="bi bi-calendar3 me-2"></i>
-                    {{ now()->format('F d, Y') }}
+  <div class="row">
+
+  {{-- WELCOME CARD --}}
+    <div class="col-lg-9">
+      <div class="card glass-card-green card-a p-4 mb-4 text-white">
+        <h4 class="fw-bold mb-1">
+          Welcome Back,
+          {{ ucwords(str_replace('_', ' ', $user->role ?? 'Accountant')) }}!
+        </h4>
+        <h6 class="date mb-0 opacity-75">
+          <i class="bi bi-calendar3 me-2"></i>
+          {{ now()->format('F d, Y') }}
+        </h6>
+      </div>
+
+      {{-- ROW 2/METRICS CARD --}}
+      <div class="row mb-4">
+        {{-- CARD C --}}
+        <div class="col-md-4">
+          <div class="card glass-card-hover card-c p-0 h-80 border-0 border-start border-4" style="border-color: var(--primary) !important;">
+            <div class="card-body d-flex align-items-center justify-content-between">
+              <div>
+                <h6 class="text-uppercase fw-bold p-0 m-0" style="color: var(--primary)">
+                  Amount in Process
                 </h6>
+                <p class="mb-2">
+                  <small><i>{{ now()->year }}</i></small>
+                </p>
+                <h2 class="fw-bold fs-2 m-0" style="color: var(--primary)">
+                  ₱{{ number_format($metrics['amountInProcess'] ?? 0, 2) }}
+                </h2>
+              </div>
+              <div class="fs-1 opacity-60" style="color: var(--primary);">
+                <i class="bi bi-database-exclamation"></i>
+              </div>  
             </div>
-
-            <div class="row mb-4">
-                <div class="col-md-4">
-                    <div class="card glass-card card-c p-4 h-100">
-                        <h6 class="text-uppercase fw-bold p-0 m-0">Title</h6>
-                        <p class="mb-2"><i>Gross Disbursed</i></p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card glass-card card-d p-4 h-100">
-                        <h6 class="text-uppercase fw-bold p-0 m-0">Title</h6>
-                        <p class="mb-2"><i>Pending Approval</i></p>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card glass-card card-e p-4 h-100">
-                        <h6 class="text-uppercase fw-bold p-0 m-0">Title</h6>
-                        <p class="mb-2"><i>Released Payments</i></p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card glass-card card-f p-4 mb-4">
-                <h5 class="fw-bold text-success mb-3">Accounting allocation per Unit</h5>
-                <div class="p-5 text-center text-muted border border-dashed rounded">
-                     Office Visualizations/Graph Insertion Area
-                </div>
-            </div>
-
-            <div class="card glass-card-green card-g p-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4 class="fw-bold m-0" style="color: var(--background);">Recent Accounting Workflows</h4>
-                </div>
-                
-                <div class="table-responsive bg-white rounded shadow-sm p-2">
-                    <table class="table table-striped align-middle text-center m-0" style="font-size: 0.85rem;">
-                        <thead class="text-white" style="background-color: #0b5929;">
-                            <tr>
-                                <th>Date Received</th>
-                                <th>Date Processed</th>
-                                <th>OBR No.</th>
-                                <th>DV No.</th>
-                                <th>Status</th>
-                                <th>Payee</th>
-                                <th>Particulars</th>
-                                <th>Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($metrics['recentLogs'] as $row)
-                            <tr>
-                                <td>{{ $row->date_received ?? '-' }}</td>
-                                <td>{{ $row->date_processed ?? '-' }}</td>
-                                <td>{{ $row->obr_no ?? '-' }}</td>
-                                <td><span class="badge bg-dark px-2 py-1">{{ $row->dv_no ?? $row->id ?? '-' }}</span></td>
-                                <td>
-                                    @php
-                                        $badgeColor = match(strtolower($row->status ?? '')) {
-                                            'processing' => 'bg-warning text-dark',
-                                            'forwarded to cashier', 'forwarded', 'paid' => 'bg-success',
-                                            'returned' => 'bg-purple text-white',
-                                            'pending' => 'bg-secondary',
-                                            default => 'bg-info text-dark'
-                                        };
-                                    @endphp
-                                    <span class="badge {{ $badgeColor }}">{{ $row->status ?? 'N/A' }}</span>
-                                </td>
-                                <td class="fw-bold text-secondary">{{ Str::limit($row->payee ?? '-', 15) }}</td>
-                                <td><small class="text-muted">{{ Str::limit($row->particulars ?? '-', 25) }}</small></td>
-                                <td class="fw-bold text-dark">₱{{ number_format((float)($row->debit ?? $row->amount ?? 0), 2) }}</td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="8" class="text-center py-4 text-muted">No accounting transactions encountered.</td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-                
-                <div class="d-flex justify-content-end mt-3">
-                    <a href="{{ route('accounting.logbook') }}" class="btn btn-light px-4 py-2 fw-bold shadow-sm" style="border-radius: 6px; color: #0b5929;">
-                        View Full Log Book
-                    </a>
-                </div>
-            </div>
+          </div>
         </div>
 
-        <div class="col-lg-3">
-            
-            <div class="card glass-card card-b p-4 pb-2 border-0 text-center mb-4">
-                <h4 class="fw-bold mb-0">Total Transactions</h4>
-                <small><i>Ledger Count</i></small>
-                <h2 class="display-4 fw-bold p-0 m-0 text-dark">{{ $metrics['totalRequests'] }}</h2>
+        {{-- CARD D --}}
+        <div class="col-md-4">
+          <div class="card glass-card-hover card-c p-0 h-80 border-0 border-start border-4" style="border-color: var(--secondary) !important;">
+            <div class="card-body d-flex align-items-center justify-content-between">
+              <div>
+                <h6 class="text-uppercase fw-bold p-0 m-0" style="color: var(--secondary)">
+                  Forwarded to Cashier
+                </h6>
+                <p class="mb-2">
+                  <small><i>{{ now()->year }}</i></small>
+                </p>
+                <h2 class="fw-bold fs-2 m-0" style="color: var(--secondary)">
+                  ₱{{ number_format($metrics['amountForwarded'] ?? 0, 2) }}
+                </h2>
+              </div>
+              <div class="fs-1 opacity-60" style="color: var(--secondary);">
+                <i class="bi bi-database-fill-up"></i>
+              </div>  
             </div>
-
-            <div class="card glass-card card-h p-4">
-                <h6 class="fw-bold mb-4 text-secondary text-uppercase tracking-wider text-center">Journal Status</h6>
-                
-                <div class="row g-3 text-center">
-                    <div class="col-6">
-                        <div class="p-2 border rounded bg-white h-100 d-flex flex-column align-items-center justify-content-center" style="border-color: #17a2b8 !important;">
-                            <div class="rounded-circle d-flex align-items-center justify-content-center border border-3 border-info fw-bold mb-1 text-info" style="width: 45px; height: 45px; font-size: 1.1rem;">
-                                {{ $metrics['statusCounts']['for_review'] }}
-                            </div>
-                            <span class="small text-muted d-block" style="font-size: 0.75rem;">For Review</span>
-                        </div>
-                    </div>
-
-                    <div class="col-6">
-                        <div class="p-2 border rounded bg-white h-100 d-flex flex-column align-items-center justify-content-center" style="border-color: #ffc107 !important;">
-                            <div class="rounded-circle d-flex align-items-center justify-content-center border border-3 border-warning fw-bold mb-1 text-warning" style="width: 45px; height: 45px; font-size: 1.1rem;">
-                                {{ $metrics['statusCounts']['pending'] }}
-                            </div>
-                            <span class="small text-muted d-block" style="font-size: 0.75rem;">Pending</span>
-                        </div>
-                    </div>
-
-                    <div class="col-6">
-                        <div class="p-2 border rounded bg-white h-100 d-flex flex-column align-items-center justify-content-center" style="border-color: #fd7e14 !important;">
-                            <div class="rounded-circle d-flex align-items-center justify-content-center border border-3 fw-bold mb-1" style="width: 45px; height: 45px; font-size: 1.1rem; color: #fd7e14; border-color: #fd7e14 !important;">
-                                {{ $metrics['statusCounts']['processing'] }}
-                            </div>
-                            <span class="small text-muted d-block" style="font-size: 0.75rem;">Processing</span>
-                        </div>
-                    </div>
-
-                    <div class="col-6">
-                        <div class="p-2 border rounded bg-white h-100 d-flex flex-column align-items-center justify-content-center" style="border-color: #0d6efd !important;">
-                            <div class="rounded-circle d-flex align-items-center justify-content-center border border-3 border-primary fw-bold mb-1 text-primary" style="width: 45px; height: 45px; font-size: 1.1rem;">
-                                {{ $metrics['statusCounts']['for_obligation'] }}
-                            </div>
-                            <span class="small text-muted d-block" style="font-size: 0.75rem;">Obligated</span>
-                        </div>
-                    </div>
-
-                    <div class="col-6">
-                        <div class="p-2 border rounded bg-white h-100 d-flex flex-column align-items-center justify-content-center" style="border-color: #6f42c1 !important;">
-                            <div class="rounded-circle d-flex align-items-center justify-content-center border border-3 fw-bold mb-1" style="width: 45px; height: 45px; font-size: 1.1rem; color: #6f42c1; border-color: #6f42c1 !important;">
-                                {{ $metrics['statusCounts']['returned'] }}
-                            </div>
-                            <span class="small text-muted d-block" style="font-size: 0.75rem;">Returned</span>
-                        </div>
-                    </div>
-
-                    <div class="col-6">
-                        <div class="p-2 border rounded bg-white h-100 d-flex flex-column align-items-center justify-content-center" style="border-color: #dc3545 !important;">
-                            <div class="rounded-circle d-flex align-items-center justify-content-center border border-3 border-danger fw-bold mb-1 text-danger" style="width: 45px; height: 45px; font-size: 1.1rem;">
-                                {{ $metrics['statusCounts']['cancelled'] }}
-                            </div>
-                            <span class="small text-muted d-block" style="font-size: 0.75rem;">Cancelled</span>
-                        </div>
-                    </div>
-
-                    <div class="col-6">
-                        <div class="p-2 border rounded bg-white h-100 d-flex flex-column align-items-center justify-content-center" style="border-color: #198754 !important;">
-                            <div class="rounded-circle d-flex align-items-center justify-content-center border border-3 border-success fw-bold mb-1 text-success" style="width: 45px; height: 45px; font-size: 1.1rem;">
-                                {{ $metrics['statusCounts']['forwarded'] }}
-                            </div>
-                            <span class="small text-muted d-block" style="font-size: 0.75rem;">Forwarded</span>
-                        </div>
-                    </div>
-
-                    <div class="col-6">
-                        <div class="p-2 border rounded bg-white h-100 d-flex flex-column align-items-center justify-content-center" style="border-color: #198754 !important;">
-                            <div class="rounded-circle d-flex align-items-center justify-content-center border border-3 border-success fw-bold mb-1 text-success" style="width: 45px; height: 45px; font-size: 1.1rem;">
-                                {{ $metrics['statusCounts']['paid'] }}
-                            </div>
-                            <span class="small text-muted d-block" style="font-size: 0.75rem;">Paid</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+          </div>
         </div>
+
+        {{-- CARD E --}}
+        <div class="col-md-4">
+          <div class="card glass-card-hover card-c p-0 h-80 border-0 border-start border-4" style="border-color: var(--primary-variant) !important;">
+            <div class="card-body d-flex align-items-center justify-content-between">
+              <div>
+                <h6 class="text-uppercase fw-bold p-0 m-0" style="color: var(--primary-variant)">
+                  Total Amount Paid
+                </h6>
+                <p class="mb-2">
+                  <small><i>{{ now()->year }}</i></small>
+                </p>
+                <h2 class="fw-bold fs-2 m-0" style="color: var(--primary-variant)">
+                  ₱{{ number_format($metrics['totalAmountPaid'] ?? 0, 2) }}
+                </h2>
+              </div>
+              <div class="fs-1 opacity-60" style="color: var(--primary-variant);">
+                <i class="bi bi-database-fill-check"></i>
+              </div>  
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {{-- ROW 3/VISUALIZATION CARD --}}
+      <div class="card glass-card card-f p-3 m-0">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="fw-bold m-0 text-uppercase" style="color: var(--primary)">
+            Amount Per Office
+          </h6>
+          <form method="GET" class="m-0" style="min-width: 120px;">
+            <select name="year" class="form-select form-select-sm" onchange="this.form.submit()">
+              @for($year = now()->year; $year >= 2025; $year--)
+                <option value="{{ $year }}" {{ request('year', now()->year) == $year ? 'selected' : '' }}>
+                  {{ $year }}
+                </option>
+              @endfor
+            </select>
+          </form>
+        </div>
+
+        <div class="p-1" style="height: 350px; position: relative;">
+          <canvas id="officeChart"></canvas>
+        </div>
+      </div>
     </div>
+
+    {{-- RIGHT-SIDE COLUMN --}}
+    <div class="col-lg-3">
+      {{-- CARD B --}}
+      <div class="card glass-card-hover card-b p-3 border-0 text-center mb-4">
+        <h6 class="fw-bold mb-0 text-uppercase" style="color: var(--primary)">
+          Total Transactions
+        </h6>
+        <p class="mb-0">
+          <small><i>{{ now()->year }}</i></small>
+        </p>
+        <h2 class="display-4 fw-bold p-0 m-0" style="color: var(--primary)">
+          {{ $metrics['totalTransactions'] ?? 0 }}
+        </h2>
+      </div>
+      
+      {{-- CARD H --}}
+      <div class="card glass-card card-h p-3">
+        <h6 class="fw-bold mb-0 p-0 text-center text-uppercase" style="color: var(--primary)">
+          Workflow Status
+        </h6>
+        <p class="mb-3 text-center">
+          <small><i>{{ now()->year }}</i></small>
+        </p>
+
+        <div class="row g-3 text-center">
+          @php
+            // Configuration array to map statuses dynamically with your exact styles and percentages
+            $statuses = [
+              ['key' => 'for_review', 'label' => 'For Review', 'color' => '#0B879D', 'bg' => '#EFF9FA'],
+              ['key' => 'pending', 'label' => 'Pending', 'color' => '#9D6B0B', 'bg' => '#FFFBF3'],
+              ['key' => 'processing', 'label' => 'Processing', 'color' => '#fd7e14', 'bg' => '#FFF6EF'],
+              ['key' => 'for_obligation', 'label' => 'For Obligation', 'color' => '#271ECE', 'bg' => '#BCC3F6'],
+              ['key' => 'returned', 'label' => 'Returned', 'color' => '#6f42c1', 'bg' => '#EFDFFF'],
+              ['key' => 'cancelled', 'label' => 'Cancelled', 'color' => '#C61919', 'bg' => '#FFC2C2'],
+              ['key' => 'forwarded', 'label' => 'Forwarded', 'color' => 'var(--primary)', 'bg' => '#E5F2D7'],
+              ['key' => 'paid', 'label' => 'Paid', 'color' => 'var(--secondary)', 'bg' => '#EDFADF'],
+            ];
+
+            // Calculate total for percentages (prevent division by zero)
+            $totalSum = array_sum($metrics['statusCounts'] ?? []);
+            $totalSum = $totalSum > 0 ? $totalSum : 1;
+          @endphp
+
+          @foreach($statuses as $status)
+            @php
+              $count = $metrics['statusCounts'][$status['key']] ?? 0;
+              // Calculate the SVG stroke dashoffset based on circle circumference (2 * pi * r => 2 * 3.1416 * 18 = ~113)
+              $percentage = ($count / $totalSum) * 100;
+              $offset = 113 - (113 * $percentage) / 100;
+            @endphp
+            <div class="col-6">
+              <div class="p-0 py-2 border rounded h-100 d-flex flex-column align-items-center justify-content-center" 
+                  style="border-color: {{ $status['color'] }} !important; background: {{ $status['bg'] }};">
+                
+                <div class="position-relative mb-2" style="width: 60px; height: 60px;">
+                  <svg class="w-100 h-100" viewBox="0 0 40 40" style="transform: rotate(-90deg);">
+                    <circle cx="20" cy="20" r="18" fill="transparent" stroke="rgba(0,0,0,0.05)" stroke-width="3"></circle>
+                    <circle cx="20" cy="20" r="18" fill="transparent" 
+                            stroke="{{ $status['color'] }}" 
+                            stroke-width="3" 
+                            stroke-dasharray="113" 
+                            stroke-dashoffset="{{ $offset }}"
+                            stroke-linecap="round"
+                            style="transition: stroke-dashoffset 0.5s ease-in-out;">
+                    </circle>
+                  </svg>
+                  <div class="position-absolute top-50 start-50 translate-middle fw-bold" style="color: {{ $status['color'] }}; font-size: 1.1rem;">
+                    {{ $count }}
+                  </div>
+                </div>
+
+                <span class="small text-muted d-block fw-semibold" style="font-size: 0.75rem; color: {{ $status['color'] }} !important;">
+                  {{ $status['label'] }}
+                </span>
+              </div>
+            </div>
+          @endforeach
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 @endsection
 
+@section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  Chart.defaults.font.family = "'Montserrat', 'Inter', sans-serif";
+
+  const officeCtx = document.getElementById('officeChart');
+  if (officeCtx) {
+    const officeAmountsData = {!! json_encode($metrics['officeAmounts'] ?? json_decode('{}')) !!};
+    
+    const officeLabels = Object.keys(officeAmountsData);
+    const officeData = Object.values(officeAmountsData);
+
+    if (officeLabels.length === 0) {
+      const ctxText = officeCtx.getContext('2d');
+      officeCtx.style.display = 'none';
+      const noDataDiv = document.createElement('div');
+      noDataDiv.className = 'text-center py-5';
+      noDataDiv.innerHTML = '<i class="bi bi-graph-down display-6 d-block mb-2"></i> No data recorded for this filtered timeline.';
+      officeCtx.parentNode.appendChild(noDataDiv);
+    } else {
+      new Chart(officeCtx, {
+        type: 'bar',
+        data: {
+          labels: officeLabels,
+          datasets: [{
+            label: 'Forwarded Amount',
+            data: officeData,
+            backgroundColor: 'rgb(240, 255, 230)',
+            borderColor: '#044709',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return '₱' + Number(context.raw).toLocaleString('en-PH', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  });
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return '₱' + Number(value).toLocaleString();
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+  }
+});
+</script>
+@endsection
+
 @php
-    $pageTitle = 'Accounting Dashboard';
+    $pageTitle = 'Dashboard';
 @endphp
