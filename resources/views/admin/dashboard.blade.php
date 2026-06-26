@@ -27,7 +27,7 @@
 
         <!-- Total Accounts -->
         <div class="col-12 col-md-4 ps-0">
-          <div class="card glass-card shadow p-2 m-0 rounded">
+          <div class="card glass-card-hover shadow p-2 m-0 rounded">
             <div class="card-body d-flex align-items-center justify-content-between">
               <div>
                 <h6 class="text-uppercase mb-1 small fw-bold">
@@ -48,7 +48,7 @@
 
         <!-- Active Sessions -->
         <div class="col-12 col-md-4">
-          <div class="card glass-card shadow p-2 m-0 rounded">
+          <div class="card glass-card-hover shadow p-2 m-0 rounded">
             <div class="card-body d-flex align-items-center justify-content-between">
               <div>
                 <h6 class="text-uppercase mb-1 small fw-bold">
@@ -69,7 +69,7 @@
 
         <!-- Deactivated Accounts -->
         <div class="col-12 col-md-4 pe-0">
-          <div class="card glass-card shadow p-2 m-0 rounded">
+          <div class="card glass-card-hover shadow p-2 m-0 rounded">
             <div class="card-body d-flex align-items-center justify-content-between">
               <div>
                 <h6 class="text-uppercase mb-1 small fw-bold">
