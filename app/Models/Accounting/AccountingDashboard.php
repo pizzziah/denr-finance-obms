@@ -53,21 +53,22 @@ class AccountingDashboard {
 
       $actualYear = $parsedDate ? $parsedDate->year : $recordYear;
 
-      // 1. Core Year Filter
+      // 1. Core Filter: Must match the dropdown selection year
       if ($actualYear !== $currentYear) {
         continue;
       }
 
-      // 2. May 2026 Restriction (Only applies to 2026 records and beyond)
+      // 2. May 2026 Global Filter (Only applies to records belonging to 2026 and later)
       if ($actualYear >= 2026 && $parsedDate && $parsedDate->greaterThanOrEqualTo(Carbon::create(2026, 5, 1, 0, 0, 0))) {
         continue;
       }
 
       $totalTransactions++;
 
-      // 3. Extract and Clean Debit + Credit Fields
+      // 3. String Sanitization Logic for VARCHAR Column Types (Debit and Credit)
       $rawDebit = trim($row->debit ?? '0');
       $rawCredit = trim($row->credit ?? '0');
+      
       $debit = (float) str_replace([',', '₱', ' '], '', $rawDebit);
       $credit = (float) str_replace([',', '₱', ' '], '', $rawCredit);
       $combinedAmount = $debit + $credit;
@@ -76,7 +77,7 @@ class AccountingDashboard {
       $payee = strtoupper(trim($row->payee ?? ''));
       $status = strtolower(trim($row->status ?? ''));
 
-      // --- RULE 1: Handle 2025 Data overrides ---
+      // --- RULE 1: FORCE ALL 2025 RECORDS INTO PAID ---
       if ($actualYear === 2025) {
         $totalAmountPaid += $combinedAmount;
         $statusCounts['paid']++;
@@ -84,10 +85,12 @@ class AccountingDashboard {
         if (!empty($payee)) {
           $payeeAmounts[$payee] = ($payeeAmounts[$payee] ?? 0) + $combinedAmount;
         }
-        continue; // Skip the standard 2026+ filters
+        continue; // Bypasses lower status logic blocks for 2025 context
       }
 
-      // Top 10 Payees calculation based on Forwarded to Cashier status
+      // --- RULE 2: 2026 AND FUTURE TIMELINE ---
+
+      // Process elements for Chart Data (Top 10 Payees based on Forwarded status)
       if ($status === 'forwarded to cashier' && !empty($payee)) {
         $payeeAmounts[$payee] = ($payeeAmounts[$payee] ?? 0) + $combinedAmount;
       }
@@ -102,7 +105,7 @@ class AccountingDashboard {
         $amountForwarded += $combinedAmount;
       }
 
-      // TOTAL AMOUNT PAID (Paid - with strict March 2026 limit)
+      // TOTAL AMOUNT PAID (Paid with strict March 2026 limit)
       $isPaid = ($status === 'paid');
       if ($isPaid && $parsedDate && $parsedDate->greaterThanOrEqualTo(Carbon::create(2026, 3, 1, 0, 0, 0))) {
         $isPaid = false; 
@@ -112,7 +115,7 @@ class AccountingDashboard {
         $totalAmountPaid += $combinedAmount;
       }
 
-      // Status counters for 2026+
+      // Set Status Counter Values
       if ($status === 'pending') $statusCounts['pending']++;
       elseif ($status === 'processing') $statusCounts['processing']++;
       elseif (str_contains($status, 'returned')) $statusCounts['returned']++;

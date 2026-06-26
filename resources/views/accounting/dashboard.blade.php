@@ -117,7 +117,7 @@
       <div class="card glass-card card-f p-3 m-0">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h6 class="fw-bold m-0 text-uppercase" style="color: var(--primary)">
-            Top 10 Payees Breakdown
+            Top 10 Payees Breakdown (Debit + Credit)
           </h6>
         </div>
 
@@ -230,7 +230,7 @@ document.addEventListener("DOMContentLoaded", function () {
         data: {
           labels: payeeLabels,
           datasets: [{
-            label: 'Total Amount',
+            label: 'Total Combined Amount (Debit + Credit)',
             data: payeeData,
             backgroundColor: 'rgb(240, 255, 230)',
             borderColor: '#044709',
