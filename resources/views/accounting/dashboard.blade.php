@@ -4,17 +4,44 @@
 <div class="container-fluid mt-4 px-4">
   <div class="row">
 
-  {{-- WELCOME CARD --}}
+    {{-- WELCOME CARD & MASTER CONTROL ROW --}}
     <div class="col-lg-9">
       <div class="card glass-card-green card-a p-4 mb-4 text-white">
-        <h4 class="fw-bold mb-1">
-          Welcome Back,
-          {{ ucwords(str_replace('_', ' ', $user->role ?? 'Accountant')) }}!
-        </h4>
-        <h6 class="date mb-0 opacity-75">
-          <i class="bi bi-calendar3 me-2"></i>
-          {{ now()->format('F d, Y') }}
-        </h6>
+        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3">
+          <div>
+            <h4 class="fw-bold mb-1">
+              Welcome Back,
+              @php
+                $displayRole = $user->role ?? 'accounting';
+                if (in_array(strtolower($displayRole), ['accountant', 'bookkeeper'])) {
+                    $displayRole = ucwords(strtolower($displayRole));
+                } else {
+                    $displayRole = 'Accounting Team';
+                }
+              @endphp
+              {{ $displayRole }}!
+            </h4>
+            <h6 class="date mb-0 opacity-75">
+              <i class="bi bi-calendar3 me-2"></i>
+              {{ now()->format('F d, Y') }}
+            </h6>
+          </div>
+          
+          <div class="bg-white p-2 rounded shadow-sm d-flex align-items-center gap-2 m-0" style="min-width: 160px;">
+            <label class="small text-muted fw-bold text-uppercase mb-0 ps-1" style="font-size: 0.65rem; color: #044709 !important;">
+              Filter Dashboard:
+            </label>
+            <form method="GET" class="m-0 flex-grow-1">
+              <select name="year" class="form-select form-select-sm border-0 fw-bold" onchange="this.form.submit()" style="color: #044709; cursor: pointer; focus: none;">
+                @for($year = now()->year; $year >= 2025; $year--)
+                  <option value="{{ $year }}" {{ request('year', now()->year) == $year ? 'selected' : '' }}>
+                    {{ $year }} Data
+                  </option>
+                @endfor
+              </select>
+            </form>
+          </div>
+        </div>
       </div>
 
       {{-- ROW 2/METRICS CARD --}}
@@ -28,7 +55,7 @@
                   Amount in Process
                 </h6>
                 <p class="mb-2">
-                  <small><i>{{ now()->year }}</i></small>
+                  <small><i>{{ request('year', now()->year) }}</i></small>
                 </p>
                 <h2 class="fw-bold fs-2 m-0" style="color: var(--primary)">
                   ₱{{ number_format($metrics['amountInProcess'] ?? 0, 2) }}
@@ -50,7 +77,7 @@
                   Forwarded to Cashier
                 </h6>
                 <p class="mb-2">
-                  <small><i>{{ now()->year }}</i></small>
+                  <small><i>{{ request('year', now()->year) }}</i></small>
                 </p>
                 <h2 class="fw-bold fs-2 m-0" style="color: var(--secondary)">
                   ₱{{ number_format($metrics['amountForwarded'] ?? 0, 2) }}
@@ -72,7 +99,7 @@
                   Total Amount Paid
                 </h6>
                 <p class="mb-2">
-                  <small><i>{{ now()->year }}</i></small>
+                  <small><i>{{ request('year', now()->year) }}</i></small>
                 </p>
                 <h2 class="fw-bold fs-2 m-0" style="color: var(--primary-variant)">
                   ₱{{ number_format($metrics['totalAmountPaid'] ?? 0, 2) }}
@@ -90,21 +117,12 @@
       <div class="card glass-card card-f p-3 m-0">
         <div class="d-flex justify-content-between align-items-center mb-3">
           <h6 class="fw-bold m-0 text-uppercase" style="color: var(--primary)">
-            Amount Per Office
+            Top 10 Payees Breakdown
           </h6>
-          <form method="GET" class="m-0" style="min-width: 120px;">
-            <select name="year" class="form-select form-select-sm" onchange="this.form.submit()">
-              @for($year = now()->year; $year >= 2025; $year--)
-                <option value="{{ $year }}" {{ request('year', now()->year) == $year ? 'selected' : '' }}>
-                  {{ $year }}
-                </option>
-              @endfor
-            </select>
-          </form>
         </div>
 
         <div class="p-1" style="height: 350px; position: relative;">
-          <canvas id="officeChart"></canvas>
+          <canvas id="payeeChart"></canvas>
         </div>
       </div>
     </div>
@@ -117,7 +135,7 @@
           Total Transactions
         </h6>
         <p class="mb-0">
-          <small><i>{{ now()->year }}</i></small>
+          <small><i>{{ request('year', now()->year) }}</i></small>
         </p>
         <h2 class="display-4 fw-bold p-0 m-0" style="color: var(--primary)">
           {{ $metrics['totalTransactions'] ?? 0 }}
@@ -130,24 +148,19 @@
           Workflow Status
         </h6>
         <p class="mb-3 text-center">
-          <small><i>{{ now()->year }}</i></small>
+          <small><i>{{ request('year', now()->year) }}</i></small>
         </p>
 
         <div class="row g-3 text-center">
           @php
-            // Configuration array to map statuses dynamically with your exact styles and percentages
             $statuses = [
-              ['key' => 'for_review', 'label' => 'For Review', 'color' => '#0B879D', 'bg' => '#EFF9FA'],
               ['key' => 'pending', 'label' => 'Pending', 'color' => '#9D6B0B', 'bg' => '#FFFBF3'],
               ['key' => 'processing', 'label' => 'Processing', 'color' => '#fd7e14', 'bg' => '#FFF6EF'],
-              ['key' => 'for_obligation', 'label' => 'For Obligation', 'color' => '#271ECE', 'bg' => '#BCC3F6'],
               ['key' => 'returned', 'label' => 'Returned', 'color' => '#6f42c1', 'bg' => '#EFDFFF'],
-              ['key' => 'cancelled', 'label' => 'Cancelled', 'color' => '#C61919', 'bg' => '#FFC2C2'],
-              ['key' => 'forwarded', 'label' => 'Forwarded', 'color' => 'var(--primary)', 'bg' => '#E5F2D7'],
+              ['key' => 'forwarded', 'label' => 'Forwarded to Cashier', 'color' => 'var(--primary)', 'bg' => '#E5F2D7'],
               ['key' => 'paid', 'label' => 'Paid', 'color' => 'var(--secondary)', 'bg' => '#EDFADF'],
             ];
 
-            // Calculate total for percentages (prevent division by zero)
             $totalSum = array_sum($metrics['statusCounts'] ?? []);
             $totalSum = $totalSum > 0 ? $totalSum : 1;
           @endphp
@@ -155,7 +168,6 @@
           @foreach($statuses as $status)
             @php
               $count = $metrics['statusCounts'][$status['key']] ?? 0;
-              // Calculate the SVG stroke dashoffset based on circle circumference (2 * pi * r => 2 * 3.1416 * 18 = ~113)
               $percentage = ($count / $totalSum) * 100;
               $offset = 113 - (113 * $percentage) / 100;
             @endphp
@@ -180,7 +192,7 @@
                   </div>
                 </div>
 
-                <span class="small text-muted d-block fw-semibold" style="font-size: 0.75rem; color: {{ $status['color'] }} !important;">
+                <span class="small text-muted d-block fw-semibold text-center px-1" style="font-size: 0.70rem; color: {{ $status['color'] }} !important; line-height: 1.1;">
                   {{ $status['label'] }}
                 </span>
               </div>
@@ -199,28 +211,27 @@
 document.addEventListener("DOMContentLoaded", function () {
   Chart.defaults.font.family = "'Montserrat', 'Inter', sans-serif";
 
-  const officeCtx = document.getElementById('officeChart');
-  if (officeCtx) {
-    const officeAmountsData = {!! json_encode($metrics['officeAmounts'] ?? json_decode('{}')) !!};
+  const payeeCtx = document.getElementById('payeeChart');
+  if (payeeCtx) {
+    const payeeAmountsData = {!! json_encode($metrics['payeeAmounts'] ?? json_decode('{}')) !!};
     
-    const officeLabels = Object.keys(officeAmountsData);
-    const officeData = Object.values(officeAmountsData);
+    const payeeLabels = Object.keys(payeeAmountsData);
+    const payeeData = Object.values(payeeAmountsData);
 
-    if (officeLabels.length === 0) {
-      const ctxText = officeCtx.getContext('2d');
-      officeCtx.style.display = 'none';
+    if (payeeLabels.length === 0) {
+      payeeCtx.style.display = 'none';
       const noDataDiv = document.createElement('div');
-      noDataDiv.className = 'text-center py-5';
+      noDataDiv.className = 'text-center py-5 text-muted';
       noDataDiv.innerHTML = '<i class="bi bi-graph-down display-6 d-block mb-2"></i> No data recorded for this filtered timeline.';
-      officeCtx.parentNode.appendChild(noDataDiv);
+      payeeCtx.parentNode.appendChild(noDataDiv);
     } else {
-      new Chart(officeCtx, {
+      new Chart(payeeCtx, {
         type: 'bar',
         data: {
-          labels: officeLabels,
+          labels: payeeLabels,
           datasets: [{
-            label: 'Forwarded Amount',
-            data: officeData,
+            label: 'Total Amount',
+            data: payeeData,
             backgroundColor: 'rgb(240, 255, 230)',
             borderColor: '#044709',
             borderWidth: 2
