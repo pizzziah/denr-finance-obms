@@ -87,8 +87,6 @@ class AccountingDashboard {
         continue; // Skip the standard 2026+ filters
       }
 
-      // --- RULE 2: 2026 and Coming Years logic ---
-      
       // Top 10 Payees calculation based on Forwarded to Cashier status
       if ($status === 'forwarded to cashier' && !empty($payee)) {
         $payeeAmounts[$payee] = ($payeeAmounts[$payee] ?? 0) + $combinedAmount;
