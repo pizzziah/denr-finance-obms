@@ -1,81 +1,238 @@
-
-{{-- ACTION SCRIPT --}}
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
+
     document.querySelectorAll('.action-btn').forEach(button => {
+
         button.addEventListener('click', function () {
-            let action = this.dataset.action;
-            let ors = this.dataset.ors;
-            let payee = this.dataset.payee ?? '';
-            let status = this.dataset.status ?? '';
-            let title = document.getElementById('actionTitle');
-            let body = document.getElementById('actionBody');
-            let footer = document.getElementById('actionFooter');
 
-            if(action === 'view'){
-                title.innerHTML = 'View Transaction';
-                body.innerHTML = `
-                    <p><strong>ORS No:</strong> ${ors}</p>
-                    <p><strong>Payee:</strong> ${payee}</p>
-                    <p><strong>Status:</strong> ${status}</p>
-                `;
+            const action = this.dataset.action;
+            const ors = this.dataset.ors;
+            const payee = this.dataset.payee ?? '';
+            const status = this.dataset.status ?? '';
 
-                footer.innerHTML = `
-                    <button class="btn btn-secondary"
-                            data-bs-dismiss="modal">
-                        Close
-                    </button>
-                `;
+            const title = document.getElementById('actionTitle');
+            const body = document.getElementById('actionBody');
+            const footer = document.getElementById('actionFooter');
+
+            switch(action){
+
+                case 'view':
+                    openView(title, body, footer, ors, payee, status);
+                    break;
+
+                case 'edit':
+                    openEdit(title, body, footer, payee, status);
+                    break;
+
+                case 'delete':
+                    openDelete(title, body, footer, payee);
+                    break;
+
             }
 
-            if(action === 'edit'){
-
-                title.innerHTML = 'Edit Status';
-
-                body.innerHTML = `
-                    <form id="editForm"
-                          method="POST"
-                          action="/accounting/logbook/${payee}/update">
-
-                        @csrf
-                        @method('PUT')
-
-                        <label class="form-label">Status</label>
-                        <select name="status" class="form-select">
-                            <option value="Pending">Pending</option>
-                            <option value="Processing">Processing</option>
-                            <option value="Completed">Completed</option>
-                        </select>
-                    </form>
-                `;
-
-                footer.innerHTML = `
-                    <button form="editForm"
-                            class="btn btn-success">
-                        Save
-                    </button>
-                `;
-            }
-
-            if(action === 'delete'){
-                title.innerHTML = 'Delete Transaction';
-                body.innerHTML = `
-                    Are you sure you want to delete
-                    <strong>${ors}</strong>?
-                `;
-
-                footer.innerHTML = `
-                    <form method="POST"
-                          action="/accounting/logbook/${payee}/destroy">
-                        @csrf
-                        @method('DELETE')
-                        <button class="btn btn-danger">
-                            Delete
-                        </button>
-                    </form>
-                `;
-            }
         });
+
     });
+
 });
+
+
+function openView(title, body, footer, ors, payee, status){
+
+    title.innerHTML = 'View Transaction';
+
+    body.innerHTML = `
+        <p><strong>ORS No.</strong> ${ors}</p>
+        <p><strong>Payee</strong> ${payee}</p>
+        <p><strong>Status</strong> ${status}</p>
+    `;
+
+    footer.innerHTML = `
+        <button class="btn btn-secondary"
+                data-bs-dismiss="modal">
+            Close
+        </button>
+    `;
+
+}
+
+
+function openEdit(title, body, footer, payee, status){
+
+    title.innerHTML = 'Edit Status';
+
+    body.innerHTML = `
+        <form
+            id="editForm"
+            method="POST"
+            action="/budget/logbook/${payee}/update">
+
+            @csrf
+            @method('PUT')
+
+            <label class="form-label">
+                Status
+            </label>
+
+            <select
+                name="status"
+                class="form-select">
+
+                <option value="Pending"
+                    ${status==='Pending' ? 'selected':''}>
+                    Pending
+                </option>
+
+                <option value="Processing"
+                    ${status==='Processing' ? 'selected':''}>
+                    Processing
+                </option>
+
+                <option value="For Review"
+                    ${status==='For Review' ? 'selected':''}>
+                    For Review
+                </option>
+
+                <option value="For Obligation"
+                    ${status==='For Obligation' ? 'selected':''}>
+                    For Obligation
+                </option>
+
+                <option value="Forwarded to Accounting"
+                    ${status==='Forwarded to Accounting' ? 'selected':''}>
+                    Forwarded to Accounting
+                </option>
+
+                <option value="Returned"
+                    ${status==='Returned' ? 'selected':''}>
+                    Returned
+                </option>
+
+                <option value="Canceled"
+                    ${status==='Canceled' ? 'selected':''}>
+                    Canceled
+                </option>
+
+            </select>
+
+        </form>
+    `;
+
+    footer.innerHTML = `
+        <button
+            form="editForm"
+            class="btn btn-success">
+            Save Changes
+        </button>
+    `;
+
+}
+
+
+function openDelete(title, body, footer, payee){
+
+    title.innerHTML = 'Delete Record';
+
+    body.innerHTML = `
+        Are you sure you want to delete
+        <strong>${payee}</strong>?
+    `;
+
+    footer.innerHTML = `
+        <form
+            method="POST"
+            action="/budget/logbook/${payee}/destroy">
+
+            @csrf
+            @method('DELETE')
+
+            <button
+                class="btn btn-danger">
+                Delete
+            </button>
+
+        </form>
+
+        <button
+            class="btn btn-secondary"
+            data-bs-dismiss="modal">
+            Cancel
+        </button>
+    `;
+
+}
+function openBudgetDetails(ors){
+
+    const modal = new bootstrap.Modal(
+        document.getElementById('detailsModal')
+    );
+
+    modal.show();
+
+    document.getElementById('detailsBody').innerHTML =
+        '<div class="text-center p-5"><div class="spinner-border"></div></div>';
+
+    fetch('/budget/logbook/' + encodeURIComponent(ors) + '/details')
+        .then(res => res.json())
+        .then(data => {
+
+            let row = data;
+
+            let html = `
+            <div class="row">
+
+                <div class="col-md-4">
+                    <strong>ORS No.</strong><br>
+                    ${row.ors_no}
+                </div>
+
+                <div class="col-md-4">
+                    <strong>Date Received</strong><br>
+                    ${row.date_received ?? '-'}
+                </div>
+
+                <div class="col-md-4">
+                    <strong>Status</strong><br>
+                    ${row.status}
+                </div>
+
+                <div class="col-md-6 mt-3">
+                    <strong>Payee</strong><br>
+                    ${row.payee}
+                </div>
+
+                <div class="col-md-6 mt-3">
+                    <strong>Issuing Office</strong><br>
+                    ${row.issuing_office}
+                </div>
+
+                <div class="col-md-12 mt-3">
+                    <strong>Particulars</strong><br>
+                    ${row.particulars}
+                </div>
+
+                <div class="col-md-4 mt-3">
+                    <strong>Classification</strong><br>
+                    ${row.classification}
+                </div>
+
+                <div class="col-md-4 mt-3">
+                    <strong>UACS Code</strong><br>
+                    ${row.uac_codes}
+                </div>
+
+                <div class="col-md-4 mt-3">
+                    <strong>Amount</strong><br>
+                    ₱${Number(row.amount).toLocaleString()}
+                </div>
+
+                <!-- Continue with Returned, Forwarded,
+                     Remarks, Total Time, Final Remarks... -->
+
+            </div>
+            `;
+
+            document.getElementById('detailsBody').innerHTML = html;
+        });
+}
 </script>

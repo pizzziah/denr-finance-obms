@@ -94,6 +94,21 @@ class BudgetLogbookController extends Controller
         return response()->json($record);
     }
 
+    public function details($ors)
+    {
+        $record = DB::table('odms_budget')
+            ->where('ors_no', $ors)
+            ->first();
+
+        if (!$record) {
+            return response()->json([
+                'message' => 'Record not found'
+            ], 404);
+        }
+
+        return response()->json($record);
+    }
+
     public function update(Request $request, $budget_id)
     {
         $request->validate([

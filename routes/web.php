@@ -23,6 +23,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/logbook', [BudgetLogbookController::class, 'logbook'])->name('budget.logbook');
         Route::get('/logbook/{ors_no}/show',[BudgetLogbookController::class, 'show'])->name('budget.logbook.show');
         Route::put('/logbook/{ors_no}/update',[BudgetLogbookController::class, 'update'])->name('budget.logbook.update');
+        Route::get('/logbook/{ors_no}/details',[BudgetLogbookController::class, 'details'])->name('budget.logbook.details');
         Route::delete('/logbook/{ors_no}/destroy',[BudgetLogbookController::class, 'destroy'])->name('budget.logbook.destroy');
     });
 
@@ -39,9 +40,9 @@ Route::middleware(['auth'])->group(function () {
         
         Route::view('/cashier-status', 'accounting.cashier-status')->name('accounting.cashier-status');
         Route::get('/logbook/{dv_no}/details', [AccountingLogbookController::class, 'show'])->name('accounting.logbook.details');
-    Route::get('/logbook/{dv_no}/edit', [AccountingLogbookController::class, 'edit'])->name('accounting.logbook.edit');
-    Route::put('/logbook/{dv_no}/update', [AccountingLogbookController::class, 'update'])->name('accounting.logbook.update');
-    Route::delete('/logbook/{dv_no}/destroy', [AccountingLogbookController::class, 'destroy'])->name('accounting.logbook.destroy');
+        Route::get('/logbook/{dv_no}/edit', [AccountingLogbookController::class, 'edit'])->name('accounting.logbook.edit');
+        Route::put('/logbook/{dv_no}/update', [AccountingLogbookController::class, 'update'])->name('accounting.logbook.update');
+        Route::delete('/logbook/{dv_no}/destroy', [AccountingLogbookController::class, 'destroy'])->name('accounting.logbook.destroy');
     });
 
     /* -----------

@@ -175,7 +175,7 @@
                   <td>
                       @if(!empty($record->payee))
                       <div class="d-flex gap-1 justify-content-center">
-                          <button type="button" class="btn btn-sm btn-outline-info action-btn" data-action="view" data-ors="{{ $record->ors_no }}" data-payee="{{ $record->payee }}" data-status="{{ $record->status }}" data-bs-toggle="modal" data-bs-target="#actionModal"><i class="bi bi-eye"></i></button>
+                          <button class="btn btn-sm btn-outline-info" onclick="openBudgetDetails('{{ $record->ors_no }}')"><i class="bi bi-eye"></i></button>
                           <button type="button" class="btn btn-sm btn-outline-primary action-btn" data-action="edit" data-ors="{{ $record->ors_no }}" data-status="{{ $record->status }}" data-bs-toggle="modal" data-bs-target="#actionModal"><i class="bi bi-pencil"></i></button>
                           <button type="button" class="btn btn-sm btn-outline-danger action-btn" data-action="delete" data-ors="{{ $record->ors_no }}" data-bs-toggle="modal" data-bs-target="#actionModal"><i class="bi bi-trash"></i></button>
                       </div>
