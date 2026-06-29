@@ -17,80 +17,164 @@ class AccountingLogbookController extends Controller
 
         $query = DB::table('odms_accounting');
 
-        // ================= ALL YEARS =================
-        if ($status !== 'all') {
+        // ================= STATUS FILTER =================
+        if ($status !== 'all' && !empty($status)) {
             $query->where('status', $status);
         }
 
+        // ================= MONTH FILTER =================
         if ($month !== 'all' && !empty($month)) {
-            $query->whereMonth('date_received', $month);
+            $query->whereMonth('date_received', (int)$month);
         }
 
         // ================= SEARCH =================
         if (!empty($search)) {
             $query->where(function ($q) use ($search) {
-                $q->where('dv_no', 'like', "%$search%")
-                  ->orWhere('obr_no', 'like', "%$search%")
-                  ->orWhere('payee', 'like', "%$search%")
-                  ->orWhere('particulars', 'like', "%$search%")
-                  ->orWhere('uac_codes', 'like', "%$search%")
-                  ->orWhere('status', 'like', "%$search%");
+                $q->where('dv_no', 'like', "%{$search}%")
+                    ->orWhere('obr_no', 'like', "%{$search}%")
+                    ->orWhere('payee', 'like', "%{$search}%")
+                    ->orWhere('particulars', 'like', "%{$search}%")
+                    ->orWhere('uac_codes', 'like', "%{$search}%")
+                    ->orWhere('status', 'like', "%{$search}%");
             });
         }
 
-        // ================= SORT =================
-        if ($sort === 'obr_asc') {
-            $query->orderByRaw("CAST(REGEXP_REPLACE(dv_no, '[^0-9]', '') AS UNSIGNED) ASC");
-        } elseif ($sort === 'obr_desc') {
-            $query->orderByRaw("CAST(REGEXP_REPLACE(dv_no, '[^0-9]', '') AS UNSIGNED) DESC");
-        } else {
-            $query->orderByDesc('date_processed');
+        // SORT
+        switch ($sort) {
+
+            case 'obr_asc':
+                $query->orderByRaw("
+                    CAST(REGEXP_REPLACE(dv_no,'[^0-9]','') AS UNSIGNED) ASC
+                ");
+                break;
+
+            case 'obr_desc':
+                $query->orderByRaw("
+                    CAST(REGEXP_REPLACE(dv_no,'[^0-9]','') AS UNSIGNED) DESC
+                ");
+                break;
+
+            default:
+                $query->orderByDesc(DB::raw('MAX(date_processed)'));
+                break;
         }
 
-        // ================= GET DATA =================
-        $records = $query->get();
+        $records = $query
+            ->select(
+                'dv_no',
 
-        return view('accounting.logbook', compact('records','month','status','search','sort'));
+                DB::raw('MAX(accounting_id) accounting_id'),
+                DB::raw('MAX(obr_no) obr_no'),
+                DB::raw('MAX(payee) payee'),
+                DB::raw('MAX(particulars) particulars'),
+                DB::raw('MAX(particulars_remark) particulars_remark'),
+                DB::raw('MAX(status) status'),
+
+                DB::raw('MAX(date_received) date_received'),
+                DB::raw('MAX(date_processed) date_processed'),
+                DB::raw('MAX(obr_date) obr_date'),
+                DB::raw('MAX(date_signed) date_signed'),
+                DB::raw('MAX(date_forwarded) date_forwarded'),
+
+                DB::raw('MAX(signed_by_accountant) signed_by_accountant'),
+
+                DB::raw('COUNT(*) total_entries'),
+
+                DB::raw("
+                    SUM(
+                        CAST(
+                            REPLACE(COALESCE(debit,0), ',', '') 
+                        AS DECIMAL(15,2))
+                    ) as total_debit
+                "),
+                DB::raw("
+                    SUM(
+                        CAST(
+                            REPLACE(COALESCE(credit,0), ',', '') 
+                        AS DECIMAL(15,2))
+                    ) as total_credit
+                "),
+            )
+            ->groupBy('dv_no')
+            ->get();
+
+        return view(
+            'accounting.logbook',
+            compact(
+                'records',
+                'month',
+                'status',
+                'search',
+                'sort'
+            )
+        );
     }
-        public function show($dv_no)
-        {
-            $records = DB::table('odms_accounting')
-                ->where('dv_no', $dv_no)
-                ->get();
 
-            return view('accounting.show', compact('records', 'dv_no'));
-        }
+    // ================= VIEW =================
+    public function show($dv_no)
+    {
+        $records = DB::table('odms_accounting')
+            ->where('dv_no', $dv_no)
+            ->get();
 
-        public function edit($dv_no)
-        {
-            $records = DB::table('odms_accounting')
-                ->where('dv_no', $dv_no)
-                ->get();
+        $summary = [
+            'dv_no' => $dv_no,
+            'payee' => $records->first()->payee ?? '',
+            'status' => $records->first()->status ?? '',
+            'entries' => $records->count(),
+            'total_debit' => $records->sum(function ($r) {
+                return (float) str_replace(',', '', $r->debit ?? 0);
+            }),
+            'total_credit' => $records->sum(function ($r) {
+                return (float) str_replace(',', '', $r->credit ?? 0);
+            }),
+        ];
 
-            return view('accounting.edit', compact('records', 'dv_no'));
-        }
+        return response()->json([
+            'summary' => $summary,
+            'details' => $records
+        ]);
+    }
+    // ================= EDIT =================
 
-        public function update(Request $request, $dv_no)
-        {
-            DB::table('odms_accounting')
-                ->where('dv_no', $dv_no)
-                ->update([
-                    'status' => $request->status,
-                ]);
+    public function edit($dv_no)
+    {
+        $records = DB::table('odms_accounting')
+            ->where('dv_no', $dv_no)
+            ->get();
 
-            return redirect()
-                ->route('accounting.logbook')
-                ->with('success', 'Transaction updated successfully.');
-        }
+        return view('accounting.edit', compact('records', 'dv_no'));
+    }
 
-        public function destroy($dv_no)
-        {
-            DB::table('odms_accounting')
-                ->where('dv_no', $dv_no)
-                ->delete();
+    // ================= UPDATE =================
 
-            return redirect()
-                ->route('accounting.logbook')
-                ->with('success', 'Transaction deleted successfully.');
-        }
+    public function update(Request $request, $dv_no)
+    {
+        $request->validate([
+            'status' => 'required'
+        ]);
+
+        DB::table('odms_accounting')
+            ->where('dv_no', $dv_no)
+            ->update([
+                'status' => $request->status
+            ]);
+
+        return redirect()
+            ->route('accounting.logbook')
+            ->with('success', 'Transaction updated successfully.');
+    }
+
+    // ================= DELETE =================
+
+    public function destroy($dv_no)
+    {
+        DB::table('odms_accounting')
+            ->where('dv_no', $dv_no)
+            ->delete();
+
+        return redirect()
+            ->route('accounting.logbook')
+            ->with('success', 'Transaction deleted successfully.');
+    }
 }

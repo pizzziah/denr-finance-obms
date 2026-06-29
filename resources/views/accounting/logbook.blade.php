@@ -81,12 +81,9 @@
               <th style="min-width: 160px;">Payee</th>
               <th style="min-width: 300px;">Particulars</th>
               <th style="min-width: 160px;">Particulars Remark</th>
+              <th style="min-width:130px;">Amount</th>
               <th style="min-width: 150px;">Status</th>
-              <th style="min-width: 100px;">UACS Code</th>
-              <th style="min-width: 110px;">Debit</th>
-              <th style="min-width: 110px;">Credit</th>
-              <th style="min-width: 80px;">Tax %</th>
-              <th style="min-width: 120px;">Tax Remarks</th>
+              <th style="min-width:120px;">Accounting Entries</th>
               <th style="min-width: 100px;">Signed</th>
               <th>Date Signed</th>
               <th>Date Forwarded</th>
@@ -105,7 +102,9 @@
                 <td><strong>{{ $record->payee ?? '-' }}</strong></td>
                 <td><strong>{{ $record->particulars ?? '-' }}</strong></td>
                 <td><i>{{ $record->particulars_remark ?? '-' }}</i></td>
-                
+                <td class="text-end fw-bold">
+                    ₱{{ number_format((float) str_replace(',', '', $record->total_debit ?? 0), 2) }}
+                </td>
                 {{-- STATUS COLUMN --}}
                 <td>
                   @if(!empty($record->status))
@@ -126,13 +125,11 @@
                   @endif
                 </td>
 
-                <td>{{ $record->uac_codes ?? '-' }}</td>
-                <td>₱{{ number_format((float) str_replace(',', '', $record->debit ?? 0), 2) }}</td>
-                <td>₱{{ number_format((float) str_replace(',', '', $record->credit ?? 0), 2) }}</td>
-                <td>{{ $record->tax_percent ?? '-' }}</td>
-                
-                {{-- TAX REMARKS COLUMN --}}
-                <td>{{ $record->tax_remarks ?? '-' }}</td>
+                <td class="text-center">
+                    <span class="badge bg-primary">
+                        {{ $record->total_entries }} Entries
+                    </span>
+                </td>
                 
                 {{-- SIGNED COLUMN (Ready for Yes/No DB field addition) --}}
                 <td>
@@ -161,7 +158,8 @@
                               class="btn btn-sm btn-outline-info action-btn"
                               data-action="view"
                               data-dv="{{ $record->dv_no }}"
-                              data-obr="{{ $record->obr_no }}"
+                              data-entries="{{ $record->total_entries }}"
+                              data-amount="{{ $record->total_debit }}"
                               data-payee="{{ $record->payee }}"
                               data-status="{{ $record->status }}"
                               data-bs-toggle="modal"
@@ -193,7 +191,7 @@
               </tr>
             @empty
               <tr>
-                <td colspan="18" class="text-center text-muted py-3">
+                <td colspan="14" class="text-center text-muted py-3">
                   No records found matching parameters.
                 </td>
               </tr>
@@ -347,6 +345,32 @@
         </div>
     </div>
 </div>
+<!-- DETAILS MODAL -->
+<div class="modal fade" id="detailsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Accounting Details
+                </h5>
+
+                <button class="btn-close"
+                        data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body" id="detailsBody">
+
+                <div class="text-center py-5">
+                    <div class="spinner-border text-success"></div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
 
 {{-- ACTION SCRIPT --}}
 <script>
@@ -361,18 +385,58 @@ document.addEventListener('DOMContentLoaded', function () {
             let title = document.getElementById('actionTitle');
             let body = document.getElementById('actionBody');
             let footer = document.getElementById('actionFooter');
+            let entries = this.dataset.entries;
+            let amount = this.dataset.amount;
+            const safeDv = encodeURIComponent(dv);
 
             if(action === 'view'){
                 title.innerHTML = 'View Transaction';
                 body.innerHTML = `
-                    <p><strong>DV No:</strong> ${dv}</p>
-                    <p><strong>OBR No:</strong> ${obr}</p>
-                    <p><strong>Payee:</strong> ${payee}</p>
-                    <p><strong>Status:</strong> ${status}</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>DV No.</strong><br>${dv}
+                    </div>
+
+                    <div class="col-md-6">
+                        <strong>Status</strong><br>${status}
+                    </div>
+
+                    <div class="col-md-12 mt-3">
+                        <strong>Payee</strong><br>${payee}
+                    </div>
+
+                    <div class="col-md-12 mt-3">
+                        <strong>Total Accounting Entries</strong><br>
+                        <span class="badge bg-primary">${entries}</span>
+                    </div>
+                    <div class="col-md-6 mt-3">
+                        <strong>Total Amount</strong><br>
+                        ₱${Number(amount).toLocaleString(undefined,{
+                            minimumFractionDigits:2,
+                            maximumFractionDigits:2
+                        })}
+                    </div>
+
+                    <div class="col-md-12 mt-4">
+                        <div class="alert alert-info mb-0">
+                            Click <strong>Open Details</strong> to view every UACS, Debit, Credit and Tax entry.
+                        </div>
+                    </div>
+                </div>
                 `;
 
                 footer.innerHTML = `
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button
+                    class="btn btn-primary"
+                    onclick="openDetails('${safeDv}')">
+                    Open Details
+                </button>
+
+                <button
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+                    Close
+                </button>
                 `;
             }
 
@@ -410,7 +474,138 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
+function openDetails(dv) {
+
+    // close first modal
+    bootstrap.Modal.getInstance(
+        document.getElementById('actionModal')
+    ).hide();
+
+    // open second modal
+    const detailsModal =
+        new bootstrap.Modal(
+            document.getElementById('detailsModal')
+        );
+
+    detailsModal.show();
+
+    // loading
+    document.getElementById('detailsBody').innerHTML = `
+        <div class="text-center py-5">
+            <div class="spinner-border text-success"></div>
+        </div>
+    `;
+
+    fetch('/accounting/logbook/' + encodeURIComponent(dv) + '/details')
+        .then(response => response.json())
+        .then(data => {
+
+            let summary = data.summary;
+            let rows = data.details;
+
+            let html = `
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="row">
+
+                            <div class="col-md-6">
+                                <strong>DV No.</strong><br>
+                                ${summary.dv_no}
+                            </div>
+
+                            <div class="col-md-6">
+                                <strong>Status</strong><br>
+                                ${summary.status}
+                            </div>
+
+                            <div class="col-md-12 mt-2">
+                                <strong>Payee</strong><br>
+                                ${summary.payee}
+                            </div>
+
+                            <div class="col-md-4 mt-3">
+                                <strong>Total Entries</strong><br>
+                                ${summary.entries}
+                            </div>
+
+                            <div class="col-md-4 mt-3">
+                                <strong>Total Debit</strong><br>
+                                ₱${Number(summary.total_debit).toLocaleString(undefined,{
+                                    minimumFractionDigits:2,
+                                    maximumFractionDigits:2
+                                })}
+                            </div>
+
+                            <div class="col-md-4 mt-3">
+                                <strong>Total Credit</strong><br>
+                                ₱${Number(summary.total_credit).toLocaleString(undefined,{
+                                    minimumFractionDigits:2,
+                                    maximumFractionDigits:2
+                                })}
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <table class="table table-bordered table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>UACS</th>
+                            <th>Debit</th>
+                            <th>Credit</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            rows.forEach(row => {
+
+                html += `
+                    <tr>
+                        <td>${row.uac_codes ?? '-'}</td>
+
+                        <td class="text-end">
+                            ₱${Number(row.debit ?? 0).toLocaleString(undefined,{
+                                minimumFractionDigits:2,
+                                maximumFractionDigits:2
+                            })}
+                        </td>
+
+                        <td class="text-end">
+                            ₱${Number(row.credit ?? 0).toLocaleString(undefined,{
+                                minimumFractionDigits:2,
+                                maximumFractionDigits:2
+                            })}
+                        </td>
+
+                        <td>${row.particulars_remark ?? '-'}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                    </tbody>
+                </table>
+            `;
+
+            document.getElementById('detailsBody').innerHTML = html;
+
+        })
+        .catch(() => {
+
+            document.getElementById('detailsBody').innerHTML = `
+                <div class="alert alert-danger">
+                    Unable to load transaction details.
+                </div>
+            `;
+
+        });
+
+}
 </script>
+
 @endsection
 
 @php
