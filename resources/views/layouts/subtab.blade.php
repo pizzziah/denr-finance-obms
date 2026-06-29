@@ -5,8 +5,7 @@
         <x-subtab-link status="pending" label="Pending"/>
         <x-subtab-link status="processing" label="Processing"/>
         <x-subtab-link status="returned" label="Returned"/>
-        <x-subtab-link status="forwarded_to_cashier"
-            label="Forwarded to Cashier"/>
+        <x-subtab-link status="Forwarded to Cashier" label="Forwarded to Cashier"/>
         <x-subtab-link status="paid" label="Paid"/>
     @endif
 
