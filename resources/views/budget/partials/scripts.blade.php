@@ -298,4 +298,43 @@ function openBudgetDetails(ors){
             document.getElementById('detailsBody').innerHTML = html;
         });
 }
+document.querySelectorAll('.edit-btn').forEach(button => {
+
+    button.addEventListener('click', function () {
+
+        const ors = this.dataset.ors;
+
+        fetch(`/budget/logbook/${ors}/details`)
+            .then(res => res.json())
+            .then(row => {
+
+                document.getElementById('editForm').action =
+                    `/budget/logbook/${ors}/update`;
+
+                document.getElementById('edit_ors_no').value = row.ors_no ?? '';
+                document.getElementById('edit_date_received').value = row.date_received ?? '';
+                document.getElementById('edit_payee').value = row.payee ?? '';
+                document.getElementById('edit_issuing_office').value = row.issuing_office ?? '';
+                document.getElementById('edit_classification').value = row.classification ?? '';
+                document.getElementById('edit_particulars').value = row.particulars ?? '';
+                document.getElementById('edit_uac_codes').value = row.uac_codes ?? '';
+                document.getElementById('edit_amount').value = row.amount ?? '';
+
+                document.getElementById('edit_date_returned_1').value = row.date_returned_1 ?? '';
+                document.getElementById('edit_date_received_1').value = row.date_received_1 ?? '';
+                document.getElementById('edit_remarks_1').value = row.remarks_1 ?? '';
+
+                document.getElementById('edit_date_forwarded_1').value = row.date_forwarded_1 ?? '';
+                document.getElementById('edit_date_ors_received').value = row.date_ors_received ?? '';
+                document.getElementById('edit_remarks_2').value = row.remarks_2 ?? '';
+
+                document.getElementById('edit_status').value = row.status ?? '';
+                document.getElementById('edit_final_remarks').value = row.final_remarks ?? '';
+
+                new bootstrap.Modal(document.getElementById('editModal')).show();
+            });
+
+    });
+
+});
 </script>
