@@ -1,5 +1,5 @@
 <footer class="footer">
-    <div class="d-flex justify-content-end align-items-center">
+    <div class="d-flex justify-content-end align-items-center me-2 mb-2 ">
         <div class="text-end me-2 lh-1">
             <small> In Collaboration With </small> <br> <strong>Saint Louis University</strong>
         </div>

@@ -52,8 +52,8 @@ button {
 .glass-card-green {
     background: linear-gradient(
         135deg,
-        rgba(4, 71, 9, 0.75),
-        rgba(76, 175, 80, 0.45)
+        rgba(0, 88, 6, 0.966),
+        rgba(0, 88, 6, 0.966)
     ) !important;
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
