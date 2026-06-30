@@ -1,26 +1,19 @@
-<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="editModal" tabindex="-1">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
 
-            <form id="editForm" method="POST">
+            <div class="modal-header">
+                <h4 class="fw-bold">Edit Budget Record</h4>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
 
-                @csrf
-                @method('PUT')
+            <div class="modal-body">
 
-                {{-- Header --}}
-                <div class="modal-header">
-                    <h4 class="modal-title fw-bold">
-                        Edit Budget Record
-                    </h4>
+                <form id="editForm" method="POST">
+                    @csrf
+                    @method('PUT')
 
-                    <button type="button"
-                            class="btn-close"
-                            data-bs-dismiss="modal">
-                    </button>
-                </div>
-
-                {{-- Body --}}
-                <div class="modal-body">
+                   <div class="modal-body">
 
                     {{-- Record Information --}}
                     <h5 class="fw-bold mb-3">Record Information</h5>
@@ -256,9 +249,9 @@
 
                 </div>
 
-                {{-- Footer --}}
-                <div class="modal-footer">
+            </div>
 
+            <div class="modal-footer">
                     <button type="button"
                             class="btn btn-secondary"
                             data-bs-dismiss="modal">
@@ -269,10 +262,8 @@
                             class="btn btn-success">
                         Save Changes
                     </button>
-
-                </div>
-
-            </form>
+                </form>
+            </div>
 
         </div>
     </div>
