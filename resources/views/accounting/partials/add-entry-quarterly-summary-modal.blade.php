@@ -13,19 +13,19 @@
         <div class="modal-body">
           {{-- DATE INPUT (Datepicker) --}}
           <div class="mb-3">
-            <label class="fw-bold">Date</label>
+            <label class="fw-bold">Date <span class="fw-medium" style="color: var(--error);">*</span></label>
             <input type="date" name="emds_date" class="form-control" value="{{ now()->format('n/j/Y H:i:s') }}" required>
           </div>
 
           {{-- PARTICULARS INPUT --}}
           <div class="mb-3">
-            <label class="fw-bold">Particulars</label>
-            <textarea name="particulars" class="form-control" rows="2" placeholder="Enter ledger context..." required></textarea>
+            <label class="fw-bold">Particulars <span class="fw-medium" style="color: var(--error);">*</span></label>
+            <textarea name="particulars" class="form-control" rows="2" placeholder="Enter Particulars Details..." required></textarea>
           </div>
 
           {{-- AMOUNT INPUT WITH LIVE VISUAL FORMATTER --}}
           <div class="mb-3">
-            <label class="fw-bold">Amount</label>
+            <label class="fw-bold">Amount <span class="fw-medium" style="color: var(--error);">*</span></label>
             <div class="input-group">
               <span class="input-group-text bg-white">₱</span>
               <input type="number" name="amount" id="amount_input" step="0.01" class="form-control font-monospace" placeholder="0.00" required>
@@ -37,33 +37,31 @@
 
           {{-- TRANSACTION TYPE SELECTOR --}}
           <div class="mb-3">
-            <label class="fw-bold d-block mb-1">Transaction Type</label>
-            <div class="form-check form-check-inline">
+            <label class="fw-bold d-block mb-1">Transaction Type <span class="fw-medium" style="color: var(--error);">*</span></label>
+            <div class="form-check">
               <input class="form-check-input" type="radio" name="transaction_type" id="type_received" value="received" checked required>
-              <label class="form-check-label fw-semibold text-success" for="type_received">NCA/NTA Received</label>
+              <label class="form-check-label text-warning" for="type_received">NCA/NTA Received</label>
             </div>
-            <div class="form-check form-check-inline">
+            <div class="form-check">
               <input class="form-check-input" type="radio" name="transaction_type" id="type_downloaded" value="downloaded">
-              <label class="form-check-label fw-semibold text-danger" for="type_downloaded">NCA/NTA Downloaded</label>
+              <label class="form-check-label text-danger" for="type_downloaded">NCA/NTA Downloaded</label>
             </div>
-            <div class="form-check form-check-inline">
+            <div class="form-check">
               <input class="form-check-input" type="radio" name="transaction_type" id="type_adjustment" value="adjustment">
-              <label class="form-check-label fw-semibold text-warning" for="type_adjustment">Adjustment</label>
+              <label class="form-check-label text-success" for="type_adjustment">Adjustment</label>
             </div>
           </div>
-
-
 
           {{-- ADA CHECK NO INPUT --}}
           <div class="mb-3">
             <label class="fw-bold">ADA Check No.</label>
-            <input type="text" name="ada_check_no" class="form-control font-monospace" placeholder="Enter tracking instrument id...">
+            <input type="text" name="ada_no" class="form-control" placeholder="Enter ADA Check Number...">
           </div>
 
           {{-- REMARKS INPUT --}}
           <div class="mb-3">
             <label class="fw-bold">Remarks</label>
-            <textarea name="remarks" class="form-control" rows="2" placeholder="Optional audit tracking metadata updates..."></textarea>
+            <textarea name="remarks" class="form-control" rows="2" placeholder="Enter remarks (if any)..."></textarea>
           </div>
         </div>
         

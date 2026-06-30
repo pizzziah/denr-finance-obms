@@ -143,16 +143,19 @@
           </thead>
 
           <tbody>
-            @forelse($records as $record)
+@forelse($records as $record)
 
-              @php
-                  $rowId = $record->getKey();
+    @php
+        $rowId = $record->getKey();
 
-                  $cleanReceived = \App\Models\Accounting\AccountingQuarterlySummary::parseMoney($record->nca_nta_received);
-                  $cleanDownloaded = \App\Models\Accounting\AccountingQuarterlySummary::parseMoney($record->nca_nta_downloaded);
-                  
-                  $txType = $cleanReceived > 0 ? 'received' : 'downloaded';
-              @endphp
+        $cleanReceived = \App\Models\Accounting\AccountingQuarterlySummary::parseMoney($record->nca_nta_received);
+        $cleanDownloaded = \App\Models\Accounting\AccountingQuarterlySummary::parseMoney($record->nca_nta_downloaded);
+        
+        $txType = $cleanReceived > 0 ? 'received' : 'downloaded';
+
+        // 🌟 ADD THIS LINE BELOW TO FIX THE UNDEFINED VARIABLE ERROR
+        $rawAmount = (float)str_replace(',', '', $record->amount ?? 0);
+    @endphp
 
               <tr>
                 <td class="small">{{ $record->emds_date ?? '-' }}</td>
@@ -191,25 +194,7 @@
 
               {{-- INLINE EDIT MODAL GENERATOR PER ROW --}}
               @if(!$isLocked)
-                @php
-    $rowId = $record->getKey();
-
-    $received = \App\Models\Accounting\AccountingQuarterlySummary::parseMoney(
-        $record->nca_nta_received
-    );
-
-    $downloaded = \App\Models\Accounting\AccountingQuarterlySummary::parseMoney(
-        $record->nca_nta_downloaded
-    );
-
-    if ($received > 0) {
-        $txType = 'received';
-        $rawAmount = $received;
-    } else {
-        $txType = 'downloaded';
-        $rawAmount = $downloaded;
-    }
-@endphp
+                @include('accounting.partials.edit-entry-quarterly-summary-modal', ['record' => $record, 'rowId' => $rowId, 'txType' => $txType, 'rawAmount' => $rawAmount])
               @endif
             @empty
               <tr>
