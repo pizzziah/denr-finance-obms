@@ -319,6 +319,5 @@ function printDetails() {
         printWindow.close();
 
     },500);
-
 }
 </script>
