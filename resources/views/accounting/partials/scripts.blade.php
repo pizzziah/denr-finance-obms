@@ -171,33 +171,27 @@ function openDetails(dv) {
                     <div class="row">
 
                         <div class="col-md-3">
-                            <strong>Date Received</strong><br>
-                            ${rows[0].date_received ?? '-'}
+                            <strong>Date Received:</strong> ${rows[0].date_received ?? '-'}
                         </div>
 
                         <div class="col-md-3">
-                            <strong>OBR Date</strong><br>
-                            ${rows[0].obr_date ?? '-'}
+                            <strong>OBR Date:</strong> ${rows[0].obr_date ?? '-'}
                         </div>
 
                         <div class="col-md-6">
-                            <strong>Payee</strong><br>
-                            ${summary.payee}
+                            <strong>Payee:</strong> ${summary.payee}
                         </div>
 
                         <div class="col-md-3 mt-3">
-                            <strong>OBR No.</strong><br>
-                            ${rows[0].obr_no}
+                            <strong>OBR No.:</strong> ${rows[0].obr_no}
                         </div>
 
                         <div class="col-md-9 mt-3">
-                            <strong>Particulars</strong><br>
-                            ${rows[0].particulars}
+                            <strong>Particulars:</strong> ${rows[0].particulars}
                         </div>
 
                         <div class="col-md-12 mt-3">
-                            <strong>Particular Remark</strong><br>
-                            ${rows[0].particulars_remark ?? '-'}
+                            <strong>Particular Remark:</strong> ${rows[0].particulars_remark ?? '-'}
                         </div>
 
                     </div>
@@ -222,42 +216,35 @@ function openDetails(dv) {
             <div class="row">
 
             <div class="col-md-3">
-            <strong>Date Processed</strong><br>
-            ${row.date_processed ?? '-'}
+            <strong>Date Processed:</strong> ${row.date_processed ?? '-'}
             </div>
 
             <div class="col-md-2">
-            <strong>DV No.</strong><br>
-            ${row.dv_no}
+            <strong>DV No.:</strong> ${row.dv_no}
             </div>
 
             <div class="col-md-3">
-            <strong>UACS Code</strong><br>
-            ${row.uac_codes ?? '-'}
+            <strong>UACS Code:</strong> ${row.uac_codes ?? '-'}
             </div>
 
             <div class="col-md-4">
-            <strong>Debit</strong><br>
-            ₱${Number(row.debit ?? 0).toLocaleString(undefined,{
+            <strong>Debit:</strong> ₱${Number(row.debit ?? 0).toLocaleString(undefined,{
             minimumFractionDigits:2
             })}
             </div>
 
             <div class="col-md-4 mt-3">
-            <strong>Credit</strong><br>
-            ₱${Number(row.credit ?? 0).toLocaleString(undefined,{
+            <strong>Credit:</strong> ₱${Number(row.credit ?? 0).toLocaleString(undefined,{
             minimumFractionDigits:2
             })}
             </div>
 
             <div class="col-md-4 mt-3">
-            <strong>% Tax</strong><br>
-            ${row.tax_percent ?? '-'}
+            <strong>% Tax:</strong> ${row.tax_percent ?? '-'}
             </div>
 
             <div class="col-md-4 mt-3">
-            <strong>Tax Remarks</strong><br>
-            ${row.tax_remarks ?? '-'}
+            <strong>Tax Remarks:</strong> ${row.tax_remarks ?? '-'}
             </div>
 
             </div>
@@ -284,13 +271,11 @@ function openDetails(dv) {
                     <div class="row">
 
                         <div class="col-md-4">
-                            <strong>Signed</strong><br>
-                            ${rows[0].signed_by_accountant ?? '-'}
+                            <strong>Signed:</strong> ${rows[0].signed_by_accountant ?? '-'}
                         </div>
 
                         <div class="col-md-4">
-                            <strong>Date Signed</strong><br>
-                            ${rows[0].date_signed ?? '-'}
+                            <strong>Date Signed:</strong> ${rows[0].date_signed ?? '-'}
                         </div>
 
                     </div>
@@ -309,13 +294,11 @@ function openDetails(dv) {
                     <div class="row">
 
                         <div class="col-md-4">
-                            <strong>Status</strong><br>
-                            ${summary.status}
+                            <strong>Status:</strong> ${summary.status}
                         </div>
 
                         <div class="col-md-4">
-                            <strong>Date Forwarded</strong><br>
-                            ${rows[0].date_forwarded ?? '-'}
+                            <strong>Date Forwarded:</strong> ${rows[0].date_forwarded ?? '-'}
                         </div>
 
                     </div>
