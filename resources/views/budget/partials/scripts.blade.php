@@ -43,48 +43,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="row">
 
                     <div class="col-md-4 mb-3">
-                        <strong>ORS No.</strong><br>
-                        ${row.ors_no ?? '-'}
+                        <strong>ORS No:</strong> ${row.ors_no ?? '-'}
                     </div>
 
                     <div class="col-md-4 mb-3">
-                        <strong>Date Received</strong><br>
-                        ${row.date_received ?? '-'}
+                        <strong>Date Received:</strong> ${row.date_received ?? '-'}
                     </div>
 
                     <div class="col-md-4 mb-3">
-                        <strong>Status</strong><br>
-                        ${row.status ?? '-'}
+                        <strong>Status:</strong> ${row.status ?? '-'}
                     </div>
 
                     <div class="col-md-6 mb-3">
-                        <strong>Payee</strong><br>
-                        ${row.payee ?? '-'}
+                        <strong>Payee:</strong> ${row.payee ?? '-'}
                     </div>
 
                     <div class="col-md-6 mb-3">
-                        <strong>Issuing Office</strong><br>
-                        ${row.issuing_office ?? '-'}
+                        <strong>Issuing Office:</strong> ${row.issuing_office ?? '-'}
                     </div>
 
                     <div class="col-md-12 mb-3">
-                        <strong>Particulars</strong><br>
-                        ${row.particulars ?? '-'}
+                        <strong>Particulars:</strong> ${row.particulars ?? '-'}
                     </div>
 
                     <div class="col-md-4 mb-3">
-                        <strong>Classification</strong><br>
-                        ${row.classification ?? '-'}
+                        <strong>Classification:</strong> ${row.classification ?? '-'}
                     </div>
 
                     <div class="col-md-4 mb-3">
-                        <strong>UACS Code</strong><br>
-                        ${row.uac_codes ?? '-'}
+                        <strong>UACS Code:</strong> ${row.uac_codes ?? '-'}
                     </div>
 
                     <div class="col-md-4 mb-3">
-                        <strong>Amount</strong><br>
-                        ₱${parseFloat(row.amount ?? 0).toLocaleString('en-PH',{
+                        <strong>Amount:</strong> ₱${parseFloat(row.amount ?? 0).toLocaleString('en-PH',{
                             minimumFractionDigits:2,
                             maximumFractionDigits:2
                         })}
@@ -93,69 +84,57 @@ document.addEventListener('DOMContentLoaded', () => {
                     <hr>
 
                     <div class="col-md-4 mb-3">
-                        <strong>Date Returned</strong><br>
-                        ${row.date_returned_1 ?? '-'}
+                        <strong>Date Returned:</strong> ${row.date_returned_1 ?? '-'}
                     </div>
 
                     <div class="col-md-4 mb-3">
-                        <strong>Returned Remarks</strong><br>
-                        ${row.remarks_1 ?? '-'}
+                        <strong>Returned Remarks:</strong> ${row.remarks_1 ?? '-'}
                     </div>
 
                     <div class="col-md-4 mb-3">
-                        <strong>Date Received Again</strong><br>
-                        ${row.date_received_1 ?? '-'}
+                        <strong>Date Received:</strong> ${row.date_received_1 ?? '-'}
                     </div>
 
                     <hr>
 
                     <div class="col-md-4 mb-3">
-                        <strong>Date Forwarded</strong><br>
-                        ${row.date_forwarded_1 ?? '-'}
+                        <strong>Date Forwarded:</strong> ${row.date_forwarded_1 ?? '-'}
                     </div>
 
                     <div class="col-md-4 mb-3">
-                        <strong>Date ORS Received</strong><br>
-                        ${row.date_ors_received ?? '-'}
+                        <strong>Date ORS Received:</strong> ${row.date_ors_received ?? '-'}
                     </div>
 
                     <div class="col-md-4 mb-3">
-                        <strong>Forwarded Remarks</strong><br>
-                        ${row.remarks_2 ?? '-'}
+                        <strong>Forwarded Remarks:</strong> ${row.remarks_2 ?? '-'}
                     </div>
 
                     <hr>
 
                     <div class="col-md-4 mb-3">
-                        <strong>Returned by Accounting</strong><br>
-                        ${row.date_returned_2 ?? '-'}
+                        <strong>Returned by Accounting:</strong> ${row.date_returned_2 ?? '-'}
                     </div>
 
                     <div class="col-md-4 mb-3">
-                        <strong>Date Received from Accounting</strong><br>
-                        ${row.date_received_2 ?? '-'}
+                        <strong>Date Received from Accounting:</strong> ${row.date_received_2 ?? '-'}
                     </div>
 
                     <div class="col-md-4 mb-3">
-                        <strong>Date Forwarded to Accounting</strong><br>
-                        ${row.date_forwarded_accounting ?? '-'}
+                        <strong>Date Forwarded to Accounting:</strong> ${row.date_forwarded_accounting ?? '-'}
                     </div>
 
                     <hr>
 
                     <div class="col-md-4 mb-3">
-                        <strong>Total Time in Budget</strong><br>
-                        ${row.total_time_budget ?? '-'}
+                        <strong>Total Time in Budget:</strong> ${row.total_time_budget ?? '-'}
                     </div>
 
                     <div class="col-md-4 mb-3">
-                        <strong>Total Time</strong><br>
-                        ${row.total_time ?? '-'}
+                        <strong>Total Time:</strong>${row.total_time ?? '-'}
                     </div>
 
                     <div class="col-md-4 mb-3">
-                        <strong>Final Remarks</strong><br>
-                        ${row.final_remarks ?? '-'}
+                        <strong>Final Remarks:</strong> ${row.final_remarks ?? '-'}
                     </div>
 
                 </div>`;
