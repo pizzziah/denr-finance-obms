@@ -67,24 +67,51 @@ document.addEventListener('DOMContentLoaded', function () {
                 `;
             }
 
-            if(action === 'edit'){
-                title.innerHTML = 'Edit Status';
-                body.innerHTML = `
-                    <form id="editForm" method="POST" action="/accounting/logbook/${dv}/update">
-                        @csrf
-                        @method('PUT')
-                        <label class="form-label">Status</label>
-                        <select name="status" class="form-select">
-                            <option value="Pending">Pending</option>
-                            <option value="Processing">Processing</option>
-                            <option value="Completed">Completed</option>
-                        </select>
-                    </form>
-                `;
+            if (action === 'edit') {
 
-                footer.innerHTML = `
-                    <button form="editForm" class="btn btn-success">Save</button>
-                `;
+                fetch('/accounting/logbook/' + encodeURIComponent(dv) + '/edit')
+                .then(response => response.json())
+                .then(row => {
+
+                    document.getElementById('editForm').action =
+                        '/accounting/logbook/' + encodeURIComponent(dv) + '/update';
+
+                    const fields = [
+                        'ors_no',
+                        'obr_no',
+                        'dv_no',
+                        'payee',
+                        'particulars',
+                        'particulars_remark',
+                        'uac_codes',
+                        'debit',
+                        'credit',
+                        'tax_percent',
+                        'tax_remarks',
+                        'returned_remarks',
+                        'signed_by_accountant',
+                        'status',
+                        'budget_year',
+                        'source_month',
+                        'date_received',
+                        'date_processed',
+                        'obr_date',
+                        'date_signed',
+                        'date_forwarded'
+                    ];
+
+                    fields.forEach(field => {
+                        const input = document.getElementById('edit_' + field);
+
+                        if (input) {
+                            input.value = row[field] ?? '';
+                        }
+                    });
+
+                    bootstrap.Modal.getOrCreateInstance(
+                        document.getElementById('editModal')
+                    ).show();
+                });
             }
 
             if(action === 'delete'){
@@ -144,33 +171,27 @@ function openDetails(dv) {
                     <div class="row">
 
                         <div class="col-md-3">
-                            <strong>Date Received</strong><br>
-                            ${rows[0].date_received ?? '-'}
+                            <strong>Date Received:</strong> ${rows[0].date_received ?? '-'}
                         </div>
 
                         <div class="col-md-3">
-                            <strong>OBR Date</strong><br>
-                            ${rows[0].obr_date ?? '-'}
+                            <strong>OBR Date:</strong> ${rows[0].obr_date ?? '-'}
                         </div>
 
                         <div class="col-md-6">
-                            <strong>Payee</strong><br>
-                            ${summary.payee}
+                            <strong>Payee:</strong> ${summary.payee}
                         </div>
 
                         <div class="col-md-3 mt-3">
-                            <strong>OBR No.</strong><br>
-                            ${rows[0].obr_no}
+                            <strong>OBR No.:</strong> ${rows[0].obr_no}
                         </div>
 
                         <div class="col-md-9 mt-3">
-                            <strong>Particulars</strong><br>
-                            ${rows[0].particulars}
+                            <strong>Particulars:</strong> ${rows[0].particulars}
                         </div>
 
                         <div class="col-md-12 mt-3">
-                            <strong>Particular Remark</strong><br>
-                            ${rows[0].particulars_remark ?? '-'}
+                            <strong>Particular Remark:</strong> ${rows[0].particulars_remark ?? '-'}
                         </div>
 
                     </div>
@@ -195,42 +216,35 @@ function openDetails(dv) {
             <div class="row">
 
             <div class="col-md-3">
-            <strong>Date Processed</strong><br>
-            ${row.date_processed ?? '-'}
+            <strong>Date Processed:</strong> ${row.date_processed ?? '-'}
             </div>
 
             <div class="col-md-2">
-            <strong>DV No.</strong><br>
-            ${row.dv_no}
+            <strong>DV No.:</strong> ${row.dv_no}
             </div>
 
             <div class="col-md-3">
-            <strong>UACS Code</strong><br>
-            ${row.uac_codes ?? '-'}
+            <strong>UACS Code:</strong> ${row.uac_codes ?? '-'}
             </div>
 
             <div class="col-md-4">
-            <strong>Debit</strong><br>
-            ₱${Number(row.debit ?? 0).toLocaleString(undefined,{
+            <strong>Debit:</strong> ₱${Number(row.debit ?? 0).toLocaleString(undefined,{
             minimumFractionDigits:2
             })}
             </div>
 
             <div class="col-md-4 mt-3">
-            <strong>Credit</strong><br>
-            ₱${Number(row.credit ?? 0).toLocaleString(undefined,{
+            <strong>Credit:</strong> ₱${Number(row.credit ?? 0).toLocaleString(undefined,{
             minimumFractionDigits:2
             })}
             </div>
 
             <div class="col-md-4 mt-3">
-            <strong>% Tax</strong><br>
-            ${row.tax_percentage ?? '-'}
+            <strong>% Tax:</strong> ${row.tax_percent ?? '-'}
             </div>
 
             <div class="col-md-4 mt-3">
-            <strong>Tax Remarks</strong><br>
-            ${row.tax_remarks ?? '-'}
+            <strong>Tax Remarks:</strong> ${row.tax_remarks ?? '-'}
             </div>
 
             </div>
@@ -257,13 +271,11 @@ function openDetails(dv) {
                     <div class="row">
 
                         <div class="col-md-4">
-                            <strong>Signed</strong><br>
-                            ${rows[0].signed_by_accountant ?? '-'}
+                            <strong>Signed:</strong> ${rows[0].signed_by_accountant ?? '-'}
                         </div>
 
                         <div class="col-md-4">
-                            <strong>Date Signed</strong><br>
-                            ${rows[0].date_signed ?? '-'}
+                            <strong>Date Signed:</strong> ${rows[0].date_signed ?? '-'}
                         </div>
 
                     </div>
@@ -282,13 +294,11 @@ function openDetails(dv) {
                     <div class="row">
 
                         <div class="col-md-4">
-                            <strong>Status</strong><br>
-                            ${summary.status}
+                            <strong>Status:</strong> ${summary.status}
                         </div>
 
                         <div class="col-md-4">
-                            <strong>Date Forwarded</strong><br>
-                            ${rows[0].date_forwarded ?? '-'}
+                            <strong>Date Forwarded:</strong> ${rows[0].date_forwarded ?? '-'}
                         </div>
 
                     </div>
@@ -308,6 +318,83 @@ function openDetails(dv) {
             `;
 
         });
-
 }
+function printDetails() {
+
+    const content = document.getElementById('detailsBody').innerHTML;
+
+    const printWindow = window.open('', '_blank');
+
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Budget Transaction</title>
+
+            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+            <style>
+
+                body{
+                    padding:30px;
+                    font-family:Arial,sans-serif;
+                    font-size:14px;
+                }
+
+                h4{
+                    text-align:center;
+                    margin-bottom:30px;
+                }
+
+                hr{
+                    margin:20px 0;
+                }
+
+                .row{
+                    margin-bottom:12px;
+                }
+
+                strong{
+                    font-weight:600;
+                }
+
+                @media print{
+
+                    body{
+                        margin:0;
+                        padding:20px;
+                    }
+
+                    .no-print{
+                        display:none;
+                    }
+
+                }
+
+            </style>
+
+        </head>
+
+        <body>
+
+            <h4>Accounting Transaction Details</h4>
+
+            ${content}
+
+        </body>
+
+        </html>
+    `);
+
+    printWindow.document.close();
+
+    printWindow.focus();
+
+    setTimeout(() => {
+
+        printWindow.print();
+
+        printWindow.close();
+
+    },500)}
 </script>

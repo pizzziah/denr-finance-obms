@@ -172,7 +172,7 @@
                               data-dv="{{ $record->dv_no }}"
                               data-status="{{ $record->status }}"
                               data-bs-toggle="modal"
-                              data-bs-target="#actionModal">
+                              data-bs-target="#editModal">
                           <i class="bi bi-pencil"></i>
                       </button>
                       <button type="button"
@@ -209,13 +209,10 @@
   </div>
 </div>
 @include('accounting.partials.filter-modal')
-
 @include('accounting.partials.action-modal')
-
 @include('accounting.partials.details-modal')
-
 @include('accounting.partials.scripts')
-
+@include('accounting.partials.edit-modal')
 @endsection
 
 @php
