@@ -33,16 +33,17 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('accounting')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('accounting.dashboard');
         Route::get('/logbook', [AccountingLogbookController::class, 'logbook'])->name('accounting.logbook');
-        
-        // --- QUARTERLY SUMMARY MODULE ROUTES (Fixed to hit controller methods) ---
-        Route::get('/quarterly-summary', [AccountingQuarterlySummaryController::class, 'index'])->name('accounting.quarterly-summary');
-        Route::post('/quarterly-summary', [AccountingQuarterlySummaryController::class, 'store'])->name('accounting.quarterly-summary.store');
-        
+    
         Route::view('/cashier-status', 'accounting.cashier-status')->name('accounting.cashier-status');
         Route::get('/logbook/{dv_no}/details', [AccountingLogbookController::class, 'show'])->name('accounting.logbook.details');
         Route::get('/logbook/{dv_no}/edit', [AccountingLogbookController::class, 'edit'])->name('accounting.logbook.edit');
         Route::put('/logbook/{dv_no}/update', [AccountingLogbookController::class, 'update'])->name('accounting.logbook.update');
         Route::delete('/logbook/{dv_no}/destroy', [AccountingLogbookController::class, 'destroy'])->name('accounting.logbook.destroy');
+
+        Route::get('/quarterly-summary', [AccountingQuarterlySummaryController::class, 'index'])->name('accounting.quarterly-summary');
+        Route::post('/quarterly-summary', [AccountingQuarterlySummaryController::class, 'store'])->name('accounting.quarterly-summary.store');
+        Route::put('/quarterly-summary/{id}', [AccountingQuarterlySummaryController::class, 'update'])->name('accounting.quarterly-summary.update');
+        Route::delete('/quarterly-summary/{id}', [AccountingQuarterlySummaryController::class, 'destroy'])->name('accounting.quarterly-summary.destroy');
     });
 
     /* -----------
