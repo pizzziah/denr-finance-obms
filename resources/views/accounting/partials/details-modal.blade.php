@@ -1,6 +1,6 @@
 {{-- DETAILS MODAL --}}
 <div class="modal fade" id="detailsModal" tabindex="-1">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal-dialog modal-dialog-scrollable" style="max-width: 95%;">
         <div class="modal-content">
 
             <div class="modal-header">

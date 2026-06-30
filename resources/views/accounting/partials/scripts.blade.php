@@ -154,6 +154,7 @@ function openDetails(dv) {
 
             let summary = data.summary;
             let rows = data.details;
+            
 
             let html = `
 
@@ -209,7 +210,6 @@ function openDetails(dv) {
             `;
 
             rows.forEach(row => {
-
             html += `
 
             <div class="border-bottom pb-3 mb-3">
@@ -219,9 +219,9 @@ function openDetails(dv) {
             <strong>UACS Code:</strong> ${row.uac_codes ?? '-'}
             </div>
 
-            <div class="col-md-3">
-            <strong>Debit:</strong> ₱${Number(row.debit ?? 0).toLocaleString(undefined,{
-            minimumFractionDigits:2
+            <div class="col-md-4">
+                <strong>Debit:</strong> ₱${Number(row.debit ?? 0).toLocaleString(undefined,{
+                minimumFractionDigits:2
             })}
             </div>
 
