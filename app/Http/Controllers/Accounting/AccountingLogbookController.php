@@ -140,13 +140,18 @@ class AccountingLogbookController extends Controller
 
     public function edit($dv_no)
     {
-        $records = DB::table('odms_accounting')
+        $record = DB::table('odms_accounting')
             ->where('dv_no', $dv_no)
-            ->get();
+            ->first();
 
-        return view('accounting.edit', compact('records', 'dv_no'));
+        if (!$record) {
+            return response()->json([
+                'message' => 'Record not found.'
+            ], 404);
+        }
+
+        return response()->json($record);
     }
-
     // ================= UPDATE =================
 
     public function update(Request $request, $dv_no)

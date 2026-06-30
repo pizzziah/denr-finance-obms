@@ -67,24 +67,51 @@ document.addEventListener('DOMContentLoaded', function () {
                 `;
             }
 
-            if(action === 'edit'){
-                title.innerHTML = 'Edit Status';
-                body.innerHTML = `
-                    <form id="editForm" method="POST" action="/accounting/logbook/${dv}/update">
-                        @csrf
-                        @method('PUT')
-                        <label class="form-label">Status</label>
-                        <select name="status" class="form-select">
-                            <option value="Pending">Pending</option>
-                            <option value="Processing">Processing</option>
-                            <option value="Completed">Completed</option>
-                        </select>
-                    </form>
-                `;
+            if (action === 'edit') {
 
-                footer.innerHTML = `
-                    <button form="editForm" class="btn btn-success">Save</button>
-                `;
+                fetch('/accounting/logbook/' + encodeURIComponent(dv) + '/edit')
+                .then(response => response.json())
+                .then(row => {
+
+                    document.getElementById('editForm').action =
+                        '/accounting/logbook/' + encodeURIComponent(dv) + '/update';
+
+                    const fields = [
+                        'ors_no',
+                        'obr_no',
+                        'dv_no',
+                        'payee',
+                        'particulars',
+                        'particulars_remark',
+                        'uac_codes',
+                        'debit',
+                        'credit',
+                        'tax_percent',
+                        'tax_remarks',
+                        'returned_remarks',
+                        'signed_by_accountant',
+                        'status',
+                        'budget_year',
+                        'source_month',
+                        'date_received',
+                        'date_processed',
+                        'obr_date',
+                        'date_signed',
+                        'date_forwarded'
+                    ];
+
+                    fields.forEach(field => {
+                        const input = document.getElementById('edit_' + field);
+
+                        if (input) {
+                            input.value = row[field] ?? '';
+                        }
+                    });
+
+                    bootstrap.Modal.getOrCreateInstance(
+                        document.getElementById('editModal')
+                    ).show();
+                });
             }
 
             if(action === 'delete'){
@@ -225,7 +252,7 @@ function openDetails(dv) {
 
             <div class="col-md-4 mt-3">
             <strong>% Tax</strong><br>
-            ${row.tax_percentage ?? '-'}
+            ${row.tax_percent ?? '-'}
             </div>
 
             <div class="col-md-4 mt-3">
