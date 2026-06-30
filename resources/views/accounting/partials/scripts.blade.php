@@ -69,47 +69,116 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 fetch('/accounting/logbook/' + encodeURIComponent(dv) + '/edit')
                 .then(response => response.json())
-                .then(row => {
+                .then(data => {
 
-                    document.getElementById('editForm').action =
-                        '/accounting/logbook/' + encodeURIComponent(dv) + '/update';
+                document.getElementById('editForm').action =
+                    '/accounting/logbook/' + encodeURIComponent(dv) + '/update';
 
-                    const fields = [
-                        'ors_no',
-                        'obr_no',
-                        'dv_no',
-                        'payee',
-                        'particulars',
-                        'particulars_remark',
-                        'uac_codes',
-                        'debit',
-                        'credit',
-                        'tax_percent',
-                        'tax_remarks',
-                        'returned_remarks',
-                        'signed_by_accountant',
-                        'status',
-                        'budget_year',
-                        'source_month',
-                        'date_received',
-                        'date_processed',
-                        'obr_date',
-                        'date_signed',
-                        'date_forwarded'
-                    ];
+                let summary = data.summary;
+                let rows = data.details;
+                let html = '';
 
-                    fields.forEach(field => {
-                        const input = document.getElementById('edit_' + field);
+                rows.forEach((row, index) => {
 
-                        if (input) {
-                            input.value = row[field] ?? '';
-                        }
-                    });
+                    html += `
+                        <div class="border rounded p-3 mb-3">
 
-                    bootstrap.Modal.getOrCreateInstance(
-                        document.getElementById('editModal')
-                    ).show();
+                            <input
+                                type="hidden"
+                                name="rows[${index}][accounting_id]"
+                                value="${row.accounting_id}">
+
+                            <div class="row">
+
+                                <div class="col-md-3">
+                                    <label>UACS Code</label>
+
+                                    <input
+                                        class="form-control"
+                                        name="rows[${index}][uac_codes]"
+                                        value="${row.uac_codes ?? ''}">
+                                </div>
+
+                                <div class="col-md-2">
+                                    <label>Debit</label>
+
+                                    <input
+                                        class="form-control"
+                                        name="rows[${index}][debit]"
+                                        value="${row.debit ?? ''}">
+                                </div>
+
+                                <div class="col-md-2">
+                                    <label>Credit</label>
+
+                                    <input
+                                        class="form-control"
+                                        name="rows[${index}][credit]"
+                                        value="${row.credit ?? ''}">
+                                </div>
+
+                                <div class="col-md-2">
+                                    <label>Tax %</label>
+
+                                    <input
+                                        class="form-control"
+                                        name="rows[${index}][tax_percent]"
+                                        value="${row.tax_percent ?? ''}">
+                                </div>
+
+                                <div class="col-md-3">
+                                    <label>Tax Remarks</label>
+
+                                    <input
+                                        class="form-control"
+                                        name="rows[${index}][tax_remarks]"
+                                        value="${row.tax_remarks ?? ''}">
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `;
+
                 });
+
+                document.getElementById('accountingRows').innerHTML = html;
+
+                // Fill common fields
+                const fields = [
+                    'ors_no',
+                    'obr_no',
+                    'dv_no',
+                    'payee',
+                    'particulars',
+                    'particulars_remark',
+                    'returned_remarks',
+                    'signed_by_accountant',
+                    'status',
+                    'budget_year',
+                    'source_month',
+                    'date_received',
+                    'date_processed',
+                    'obr_date',
+                    'date_signed',
+                    'date_forwarded'
+                ];
+
+                fields.forEach(field => {
+                    const input = document.getElementById('edit_' + field);
+
+                    if (input) {
+                        input.value = summary[field] ?? '';
+                    }
+                });
+
+                // TODO: Build Accounting Processing rows here
+                console.log(rows);
+
+                bootstrap.Modal.getOrCreateInstance(
+                    document.getElementById('editModal')
+                ).show();
+            });
             }
 
             if(action === 'delete'){

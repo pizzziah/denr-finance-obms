@@ -137,40 +137,70 @@ class AccountingLogbookController extends Controller
         ]);
     }
     // ================= EDIT =================
-
     public function edit($dv_no)
     {
-        $record = DB::table('odms_accounting')
+        $details = DB::table('odms_accounting')
             ->where('dv_no', $dv_no)
-            ->first();
+            ->get();
 
-        if (!$record) {
+        if ($details->isEmpty()) {
             return response()->json([
                 'message' => 'Record not found.'
             ], 404);
         }
 
-        return response()->json($record);
+        $summary = $details->first();
+
+        return response()->json([
+            'summary' => $summary,
+            'details' => $details
+        ]);
     }
     // ================= UPDATE =================
-
     public function update(Request $request, $dv_no)
     {
-        $request->validate([
-            'status' => 'required'
-        ]);
-
+        // Update common fields
         DB::table('odms_accounting')
             ->where('dv_no', $dv_no)
             ->update([
-                'status' => $request->status
+                'ors_no' => $request->ors_no,
+                'obr_no' => $request->obr_no,
+                'payee' => $request->payee,
+                'particulars' => $request->particulars,
+                'particulars_remark' => $request->particulars_remark,
+                'signed_by_accountant' => $request->signed_by_accountant,
+                'status' => $request->status,
+                'budget_year' => $request->budget_year,
+                'source_month' => $request->source_month,
+                'date_received' => $request->date_received,
+                'date_processed' => $request->date_processed,
+                'obr_date' => $request->obr_date,
+                'date_signed' => $request->date_signed,
+                'date_forwarded' => $request->date_forwarded,
+                'returned_remarks' => $request->returned_remarks,
             ]);
+
+        // Update each accounting row
+        if ($request->filled('rows')) {
+
+            foreach ($request->rows as $row) {
+
+                DB::table('odms_accounting')
+                    ->where('accounting_id', $row['accounting_id'])
+                    ->update([
+                        'uac_codes'   => $row['uac_codes'],
+                        'debit'       => $row['debit'],
+                        'credit'      => $row['credit'],
+                        'tax_percent' => $row['tax_percent'],
+                        'tax_remarks' => $row['tax_remarks'],
+                    ]);
+            }
+        }
 
         return redirect()
             ->route('accounting.logbook')
             ->with('success', 'Transaction updated successfully.');
     }
-
     // ================= DELETE =================
 
     public function destroy($dv_no)
