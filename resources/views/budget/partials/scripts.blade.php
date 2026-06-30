@@ -1,32 +1,224 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
-    document.querySelectorAll('.action-btn').forEach(button => {
+    // ==========================
+    // COMMON FUNCTION
+    // ==========================
+    async function getRecord(budget_id) {
+        const response = await fetch(`/budget/logbook/${encodeURIComponent(budget_id)}/details`);
 
-        button.addEventListener('click', function () {
+        if (!response.ok) {
+            throw new Error('Unable to load record.');
+        }
 
-            const action = this.dataset.action;
-            const ors = this.dataset.ors;
-            const payee = this.dataset.payee ?? '';
-            const status = this.dataset.status ?? '';
+        return await response.json();
+    }
 
-            const title = document.getElementById('actionTitle');
-            const body = document.getElementById('actionBody');
-            const footer = document.getElementById('actionFooter');
+    // ==========================
+    // VIEW BUTTON
+    // ==========================
+    document.querySelectorAll('.view-btn').forEach(button => {
 
-            switch(action){
+        button.addEventListener('click', async function () {
 
-                case 'view':
-                    openView(title, body, footer, ors, payee, status);
-                    break;
+            const budget_id = this.dataset.budgetId;
 
-                case 'edit':
-                    openEdit(title, body, footer, payee, status);
-                    break;
+            const modal = bootstrap.Modal.getOrCreateInstance(
+                document.getElementById('detailsModal')
+            );
 
-                case 'delete':
-                    openDelete(title, body, footer, payee);
-                    break;
+            modal.show();
+
+            document.getElementById('detailsBody').innerHTML = `
+                <div class="text-center p-5">
+                    <div class="spinner-border"></div>
+                </div>
+            `;
+
+            try{
+
+                const row = await getRecord(budget_id);
+
+                document.getElementById('detailsBody').innerHTML = `
+                <div class="row">
+
+                    <div class="col-md-4 mb-3">
+                        <strong>ORS No.</strong><br>
+                        ${row.ors_no ?? '-'}
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <strong>Date Received</strong><br>
+                        ${row.date_received ?? '-'}
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <strong>Status</strong><br>
+                        ${row.status ?? '-'}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <strong>Payee</strong><br>
+                        ${row.payee ?? '-'}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <strong>Issuing Office</strong><br>
+                        ${row.issuing_office ?? '-'}
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <strong>Particulars</strong><br>
+                        ${row.particulars ?? '-'}
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <strong>Classification</strong><br>
+                        ${row.classification ?? '-'}
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <strong>UACS Code</strong><br>
+                        ${row.uac_codes ?? '-'}
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <strong>Amount</strong><br>
+                        ₱${parseFloat(row.amount ?? 0).toLocaleString('en-PH',{
+                            minimumFractionDigits:2,
+                            maximumFractionDigits:2
+                        })}
+                    </div>
+
+                    <hr>
+
+                    <div class="col-md-4 mb-3">
+                        <strong>Date Returned</strong><br>
+                        ${row.date_returned_1 ?? '-'}
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <strong>Returned Remarks</strong><br>
+                        ${row.remarks_1 ?? '-'}
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <strong>Date Received Again</strong><br>
+                        ${row.date_received_1 ?? '-'}
+                    </div>
+
+                    <hr>
+
+                    <div class="col-md-4 mb-3">
+                        <strong>Date Forwarded</strong><br>
+                        ${row.date_forwarded_1 ?? '-'}
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <strong>Date ORS Received</strong><br>
+                        ${row.date_ors_received ?? '-'}
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <strong>Forwarded Remarks</strong><br>
+                        ${row.remarks_2 ?? '-'}
+                    </div>
+
+                    <hr>
+
+                    <div class="col-md-4 mb-3">
+                        <strong>Returned by Accounting</strong><br>
+                        ${row.date_returned_2 ?? '-'}
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <strong>Date Received from Accounting</strong><br>
+                        ${row.date_received_2 ?? '-'}
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <strong>Date Forwarded to Accounting</strong><br>
+                        ${row.date_forwarded_accounting ?? '-'}
+                    </div>
+
+                    <hr>
+
+                    <div class="col-md-4 mb-3">
+                        <strong>Total Time in Budget</strong><br>
+                        ${row.total_time_budget ?? '-'}
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <strong>Total Time</strong><br>
+                        ${row.total_time ?? '-'}
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <strong>Final Remarks</strong><br>
+                        ${row.final_remarks ?? '-'}
+                    </div>
+
+                </div>`;
+            }
+            catch(error){
+                document.getElementById('detailsBody').innerHTML =
+                    '<div class="alert alert-danger">Unable to load record.</div>';
+            }
+
+        });
+
+    });
+
+    // ==========================
+    // EDIT BUTTON
+    // ==========================
+    document.querySelectorAll('.edit-btn').forEach(button => {
+
+        button.addEventListener('click', async function () {
+
+            const budget_id = this.dataset.budgetId;
+
+            try{
+
+                const row = await getRecord(budget_id);
+
+                document.getElementById('editForm').action =
+                    `/budget/logbook/${encodeURIComponent(budget_id)}/update`;
+
+                [
+                    'ors_no',
+                    'date_received',
+                    'payee',
+                    'issuing_office',
+                    'classification',
+                    'particulars',
+                    'uac_codes',
+                    'amount',
+                    'date_returned_1',
+                    'date_received_1',
+                    'remarks_1',
+                    'date_forwarded_1',
+                    'date_ors_received',
+                    'remarks_2',
+                    'status',
+                    'final_remarks'
+                ].forEach(field => {
+
+                    const input = document.getElementById('edit_' + field);
+
+                    if(input){
+                        input.value = row[field] ?? '';
+                    }
+
+                });
+
+                bootstrap.Modal.getOrCreateInstance(
+                    document.getElementById('editModal')
+                ).show();
+
+            }catch(error){
+
+                alert('Unable to load record.');
 
             }
 
@@ -34,305 +226,38 @@ document.addEventListener('DOMContentLoaded', () => {
 
     });
 
-});
-
-
-function openView(title, body, footer, ors, payee, status){
-
-    title.innerHTML = 'View Transaction';
-
-    body.innerHTML = `
-        <p><strong>ORS No.</strong> ${ors}</p>
-        <p><strong>Payee</strong> ${payee}</p>
-        <p><strong>Status</strong> ${status}</p>
-    `;
-
-    footer.innerHTML = `
-        <button class="btn btn-secondary"
-                data-bs-dismiss="modal">
-            Close
-        </button>
-    `;
-
-}
-
-
-function openEdit(title, body, footer, payee, status){
-
-    title.innerHTML = 'Edit Status';
-
-    body.innerHTML = `
-        <form
-            id="editForm"
-            method="POST"
-            action="/budget/logbook/${payee}/update">
-
-            @csrf
-            @method('PUT')
-
-            <label class="form-label">
-                Status
-            </label>
-
-            <select
-                name="status"
-                class="form-select">
-
-                <option value="Pending"
-                    ${status==='Pending' ? 'selected':''}>
-                    Pending
-                </option>
-
-                <option value="Processing"
-                    ${status==='Processing' ? 'selected':''}>
-                    Processing
-                </option>
-
-                <option value="For Review"
-                    ${status==='For Review' ? 'selected':''}>
-                    For Review
-                </option>
-
-                <option value="For Obligation"
-                    ${status==='For Obligation' ? 'selected':''}>
-                    For Obligation
-                </option>
-
-                <option value="Forwarded to Accounting"
-                    ${status==='Forwarded to Accounting' ? 'selected':''}>
-                    Forwarded to Accounting
-                </option>
-
-                <option value="Returned"
-                    ${status==='Returned' ? 'selected':''}>
-                    Returned
-                </option>
-
-                <option value="Canceled"
-                    ${status==='Canceled' ? 'selected':''}>
-                    Canceled
-                </option>
-
-            </select>
-
-        </form>
-    `;
-
-    footer.innerHTML = `
-        <button
-            form="editForm"
-            class="btn btn-success">
-            Save Changes
-        </button>
-    `;
-
-}
-
-
-function openDelete(title, body, footer, payee){
-
-    title.innerHTML = 'Delete Record';
-
-    body.innerHTML = `
-        Are you sure you want to delete
-        <strong>${payee}</strong>?
-    `;
-
-    footer.innerHTML = `
-        <form
-            method="POST"
-            action="/budget/logbook/${payee}/destroy">
-
-            @csrf
-            @method('DELETE')
-
-            <button
-                class="btn btn-danger">
-                Delete
-            </button>
-
-        </form>
-
-        <button
-            class="btn btn-secondary"
-            data-bs-dismiss="modal">
-            Cancel
-        </button>
-    `;
-
-}
-function openBudgetDetails(ors){
-
-    const modal = new bootstrap.Modal(
-        document.getElementById('detailsModal')
-    );
-
-    modal.show();
-
-    document.getElementById('detailsBody').innerHTML =
-        '<div class="text-center p-5"><div class="spinner-border"></div></div>';
-
-    fetch('/budget/logbook/' + encodeURIComponent(ors) + '/details')
-        .then(res => res.json())
-        .then(data => {
-
-            let row = data;
-
-            let html = `
-            <div class="row">
-
-                <div class="col-md-4">
-                    <strong>ORS No.</strong><br>
-                    ${row.ors_no}
-                </div>
-
-                <div class="col-md-4">
-                    <strong>Date Received</strong><br>
-                    ${row.date_received ?? '-'}
-                </div>
-
-                <div class="col-md-4">
-                    <strong>Status</strong><br>
-                    ${row.status}
-                </div>
-
-                <div class="col-md-6 mt-3">
-                    <strong>Payee</strong><br>
-                    ${row.payee}
-                </div>
-
-                <div class="col-md-6 mt-3">
-                    <strong>Issuing Office</strong><br>
-                    ${row.issuing_office}
-                </div>
-
-                <div class="col-md-12 mt-3">
-                    <strong>Particulars</strong><br>
-                    ${row.particulars}
-                </div>
-
-                <div class="col-md-4 mt-3">
-                    <strong>Classification</strong><br>
-                    ${row.classification}
-                </div>
-
-                <div class="col-md-4 mt-3">
-                    <strong>UACS Code</strong><br>
-                    ${row.uac_codes}
-                </div>
-
-                <div class="col-md-4 mt-3">
-                    <strong>Amount</strong><br>
-                    ₱${Number(row.amount).toLocaleString()}
-                </div>
-
-               <div class="col-md-4 mt-3">
-                    <strong>Date Returned</strong><br>
-                    ${row.date_returned_1 ?? '-'}
-                </div>
-
-                <div class="col-md-4 mt-3">
-                    <strong>Returned Remarks</strong><br>
-                    ${row.remarks_1 ?? '-'}
-                </div>
-
-                <div class="col-md-4 mt-3">
-                    <strong>Date Received Again</strong><br>
-                    ${row.date_received_1 ?? '-'}
-                </div>
-
-                <hr class="my-4">
-
-                <div class="col-md-4 mt-3">
-                    <strong>Date Forwarded</strong><br>
-                    ${row.date_forwarded_1 ?? '-'}
-                </div>
-
-                <div class="col-md-4 mt-3">
-                    <strong>Date ORS Received</strong><br>
-                    ${row.date_ors_received ?? '-'}
-                </div>
-
-                <div class="col-md-4 mt-3">
-                    <strong>Forwarded Remarks</strong><br>
-                    ${row.remarks_2 ?? '-'}
-                </div>
-
-                <hr class="my-4">
-
-                <div class="col-md-4 mt-3">
-                    <strong>Returned by Accounting</strong><br>
-                    ${row.date_returned_2 ?? '-'}
-                </div>
-
-                <div class="col-md-4 mt-3">
-                    <strong>Date Received from Accounting</strong><br>
-                    ${row.date_received_2 ?? '-'}
-                </div>
-
-                <div class="col-md-4 mt-3">
-                    <strong>Date Forwarded to Accounting</strong><br>
-                    ${row.date_forwarded_accounting ?? '-'}
-                </div>
-
-                <hr class="my-4">
-
-                <div class="col-md-4 mt-3">
-                    <strong>Total Time in Budget</strong><br>
-                    ${row.total_time_budget ?? '-'}
-                </div>
-
-                <div class="col-md-4 mt-3">
-                    <strong>Total Time</strong><br>
-                    ${row.total_time ?? '-'}
-                </div>
-
-                <div class="col-md-4 mt-3">
-                    <strong>Final Remarks</strong><br>
-                    ${row.final_remarks ?? '-'}
-                </div>
-
-            </div>
+    // ==========================
+    // DELETE BUTTON
+    // ==========================
+    document.querySelectorAll('.delete-btn').forEach(button => {
+
+        button.addEventListener('click', function(){
+
+            const budget_id = this.dataset.budgetId;
+            const payee = this.dataset.payee;
+
+            document.getElementById('actionTitle').textContent = 'Delete Record';
+
+            document.getElementById('actionBody').innerHTML =
+                `Are you sure you want to delete <strong>${budget_id}</strong>?`;
+
+            document.getElementById('actionFooter').innerHTML = `
+                <form method="POST" action="/budget/logbook/${encodeURIComponent(budget_id)}/destroy">
+                    @csrf
+                    @method('DELETE')
+                    <button class="btn btn-danger">Delete</button>
+                </form>
+
+                <button class="btn btn-secondary" data-bs-dismiss="modal">
+                    Cancel
+                </button>
             `;
 
-            document.getElementById('detailsBody').innerHTML = html;
+            bootstrap.Modal.getOrCreateInstance(
+                document.getElementById('actionModal')
+            ).show();
+
         });
-}
-document.querySelectorAll('.edit-btn').forEach(button => {
-
-    button.addEventListener('click', function () {
-
-        const ors = this.dataset.ors;
-
-        fetch(`/budget/logbook/${ors}/details`)
-            .then(res => res.json())
-            .then(row => {
-
-                document.getElementById('editForm').action =
-                    `/budget/logbook/${ors}/update`;
-
-                document.getElementById('edit_ors_no').value = row.ors_no ?? '';
-                document.getElementById('edit_date_received').value = row.date_received ?? '';
-                document.getElementById('edit_payee').value = row.payee ?? '';
-                document.getElementById('edit_issuing_office').value = row.issuing_office ?? '';
-                document.getElementById('edit_classification').value = row.classification ?? '';
-                document.getElementById('edit_particulars').value = row.particulars ?? '';
-                document.getElementById('edit_uac_codes').value = row.uac_codes ?? '';
-                document.getElementById('edit_amount').value = row.amount ?? '';
-
-                document.getElementById('edit_date_returned_1').value = row.date_returned_1 ?? '';
-                document.getElementById('edit_date_received_1').value = row.date_received_1 ?? '';
-                document.getElementById('edit_remarks_1').value = row.remarks_1 ?? '';
-
-                document.getElementById('edit_date_forwarded_1').value = row.date_forwarded_1 ?? '';
-                document.getElementById('edit_date_ors_received').value = row.date_ors_received ?? '';
-                document.getElementById('edit_remarks_2').value = row.remarks_2 ?? '';
-
-                document.getElementById('edit_status').value = row.status ?? '';
-                document.getElementById('edit_final_remarks').value = row.final_remarks ?? '';
-
-                new bootstrap.Modal(document.getElementById('editModal')).show();
-            });
 
     });
 

@@ -175,10 +175,30 @@
                   <td>
                       @if(!empty($record->payee))
                       <div class="d-flex gap-1 justify-content-center">
-                          <button class="btn btn-sm btn-outline-info" onclick="openBudgetDetails('{{ $record->ors_no }}')"><i class="bi bi-eye"></i></button>
-                          <button type="button" class="btn btn-sm btn-outline-primary edit-btn" data-ors="{{ $record->ors_no }}"><i class="bi bi-pencil"></i></button>
-                          <button type="button" class="btn btn-sm btn-outline-danger action-btn" data-action="delete" data-ors="{{ $record->ors_no }}" data-bs-toggle="modal" data-bs-target="#actionModal"><i class="bi bi-trash"></i></button>
-                      </div>
+                          <!-- View -->
+                          <button
+                              type="button"
+                              class="btn btn-sm btn-outline-info view-btn"
+                              data-budget-id="{{ $record->budget_id }}">
+                              <i class="bi bi-eye"></i>
+                          </button>
+
+                          <!-- Edit -->
+                          <button
+                              type="button"
+                              class="btn btn-sm btn-outline-primary edit-btn"
+                              data-budget-id="{{ $record->budget_id }}">
+                              <i class="bi bi-pencil"></i>
+                          </button>
+
+                          <!-- Delete -->
+                          <button
+                              type="button"
+                              class="btn btn-sm btn-outline-danger delete-btn"
+                              data-budget-id="{{ $record->budget_id}}"
+                              data-payee="{{ $record->budget_id }}">
+                              <i class="bi bi-trash"></i>
+                          </button>
                       @else
                           <span class="text-muted">No DV No.</span>
                       @endif

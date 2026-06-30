@@ -94,10 +94,10 @@ class BudgetLogbookController extends Controller
         return response()->json($record);
     }
 
-    public function details($ors)
+    public function details($budget_id)
     {
         $record = DB::table('odms_budget')
-            ->where('ors_no', $ors)
+            ->where('budget_id', $budget_id)
             ->first();
 
         if (!$record) {
