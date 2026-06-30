@@ -21,24 +21,22 @@ document.addEventListener('DOMContentLoaded', function () {
                 body.innerHTML = `
                 <div class="row">
                     <div class="col-md-6">
-                        <strong>DV No.</strong><br>${dv}
+                        <strong>DV No:</strong> ${dv}
                     </div>
 
                     <div class="col-md-6">
-                        <strong>Status</strong><br>${status}
+                        <strong>Status:</strong> ${status}
                     </div>
 
                     <div class="col-md-12 mt-3">
-                        <strong>Payee</strong><br>${payee}
+                        <strong>Payee:</strong> ${payee}
                     </div>
 
                     <div class="col-md-12 mt-3">
-                        <strong>Total Accounting Entries</strong><br>
-                        <span class="badge bg-primary">${entries}</span>
+                        <strong>Total Accounting Entries:</strong> <span class="badge bg-primary">${entries}</span>
                     </div>
                     <div class="col-md-6 mt-3">
-                        <strong>Total Amount</strong><br>
-                        ₱${Number(amount).toLocaleString(undefined,{
+                        <strong>Total Amount:</strong> ₱${Number(amount).toLocaleString(undefined,{
                             minimumFractionDigits:2,
                             maximumFractionDigits:2
                         })}
@@ -160,7 +158,6 @@ function openDetails(dv) {
             let html = `
 
             <div class="container-fluid">
-            <hr>
             <div class="row">
 
                 <div class="col-2 fw-bold fs-4">
@@ -169,35 +166,38 @@ function openDetails(dv) {
 
                 <div class="col-10">
                     <div class="row">
-
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <strong>Date Received:</strong> ${rows[0].date_received ?? '-'}
                         </div>
-
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <strong>OBR Date:</strong> ${rows[0].obr_date ?? '-'}
                         </div>
-
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <strong>Payee:</strong> ${summary.payee}
                         </div>
-
-                        <div class="col-md-3 mt-3">
-                            <strong>OBR No.:</strong> ${rows[0].obr_no}
+                        <div class="col-md-4">
+                            <strong>OBR No:</strong> ${rows[0].obr_no}
+                        </div>
+                        <div class="col-md-4 ">
+                            <strong>DV No:</strong> ${rows[0].dv_no ?? '-'}
                         </div>
 
-                        <div class="col-md-9 mt-3">
+                        <div class="col-md-4  ">
+                            <strong>Date Processed:</strong> ${rows[0].date_processed ?? '-'}
+                        </div>
+
+                        <div class="col-md-9  ">
                             <strong>Particulars:</strong> ${rows[0].particulars}
                         </div>
 
-                        <div class="col-md-12 mt-3">
+                        <div class="col-md-12  ">
                             <strong>Particular Remark:</strong> ${rows[0].particulars_remark ?? '-'}
                         </div>
 
                     </div>
                 </div>
             </div>
-            <hr>
+            <hr class="my-1">
 
             <div class="row">
 
@@ -215,35 +215,27 @@ function openDetails(dv) {
             <div class="border-bottom pb-3 mb-3">
             <div class="row">
 
-            <div class="col-md-3">
-            <strong>Date Processed:</strong> ${row.date_processed ?? '-'}
-            </div>
-
-            <div class="col-md-2">
-            <strong>DV No.:</strong> ${row.dv_no}
-            </div>
-
-            <div class="col-md-3">
+            <div class="col-md-4">
             <strong>UACS Code:</strong> ${row.uac_codes ?? '-'}
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-3">
             <strong>Debit:</strong> ₱${Number(row.debit ?? 0).toLocaleString(undefined,{
             minimumFractionDigits:2
             })}
             </div>
 
-            <div class="col-md-4 mt-3">
+            <div class="col-md-3  ">
             <strong>Credit:</strong> ₱${Number(row.credit ?? 0).toLocaleString(undefined,{
             minimumFractionDigits:2
             })}
             </div>
 
-            <div class="col-md-4 mt-3">
+            <div class="col-md-4  ">
             <strong>% Tax:</strong> ${row.tax_percent ?? '-'}
             </div>
 
-            <div class="col-md-4 mt-3">
+            <div class="col-md-4  ">
             <strong>Tax Remarks:</strong> ${row.tax_remarks ?? '-'}
             </div>
 
@@ -258,8 +250,6 @@ function openDetails(dv) {
                 </table>
             `;
             html += `
-
-            <hr>
 
             <div class="row mb-4">
 
@@ -282,7 +272,7 @@ function openDetails(dv) {
                 </div>
             </div>
 
-            <hr>
+            <hr class="my-1">
 
             <div class="row">
 
@@ -331,7 +321,7 @@ function printDetails() {
         <head>
             <title>Budget Transaction</title>
 
-            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+            <link  <hr class="my-1">ef="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
             <style>
 
@@ -346,7 +336,7 @@ function printDetails() {
                     margin-bottom:30px;
                 }
 
-                hr{
+                 <hr class="my-1">{
                     margin:20px 0;
                 }
 
