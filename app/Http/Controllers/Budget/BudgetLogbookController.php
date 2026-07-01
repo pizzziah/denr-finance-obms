@@ -85,6 +85,7 @@ class BudgetLogbookController extends Controller
             )
         );
     }
+    
     public function show($budget_id)
     {
         $record = DB::table('odms_budget')
