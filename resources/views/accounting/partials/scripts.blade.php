@@ -360,6 +360,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 `;
 
                 document.getElementById('detailsBody').innerHTML = html;
+                document.getElementById('transactionTitle').textContent = rows[0].dv_no ?? '-';
+                document.getElementById('transactionSubtitle').textContent = summary.payee ?? '';
             })
             .catch(() => {
 
