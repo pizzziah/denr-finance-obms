@@ -65,8 +65,8 @@
         </div>
         
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" id="cancelAddBtn">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save Entry</button>
+          <x-button type="button" variant="secondary" data-bs-dismiss="modal"  id="cancelAddBtn">Cancel</x-button>
+          <x-button type="submit" variant="primary">Save Entry</x-button>
         </div>
       </form>
     </div>

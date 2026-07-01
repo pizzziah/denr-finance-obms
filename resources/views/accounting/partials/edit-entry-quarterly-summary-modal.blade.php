@@ -81,8 +81,8 @@
         </div>
         
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" id="cancelEditBtn_{{ $rowId }}">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save Changes</button>
+          <x-button type="button" variant="secondary"  id="cancelEditBtn_{{ $rowId }}" data-bs-dismiss="modal">Cancel</x-button>
+          <x-button type="submit" variant="primary">Save</x-button>
         </div>
       </form>
     </div>
