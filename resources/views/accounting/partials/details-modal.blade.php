@@ -4,7 +4,7 @@
         <div class="modal-content">
 
             <div class="modal-header">
-                <h4 class="fw-bold">View Record</h4>
+                <h4 class="fw-bold">Accounting Record Details</h4>
 
                 <button class="btn-close"
                         data-bs-dismiss="modal"></button>
