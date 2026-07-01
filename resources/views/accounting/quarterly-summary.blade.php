@@ -98,9 +98,9 @@
 
         @if(auth()->user()->department === 'Accounting' && auth()->user()->permission_level === 'special')
           @if(!$isLocked)
-            <button type="button" class="btn btn-sm btn-outline-danger fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#lockQuarterModal">
+            <x-button type="button" variant="lock" data-bs-toggle="modal" data-bs-target="#lockQuarterModal">
               <i class="bi bi-lock-fill me-1"></i> Lock Quarter
-            </button>
+            </x-button>
           @else
             <form action="{{ route('accounting.quarterly-summary.request-unlock') }}" method="POST" class="m-0 ms-1">
               @csrf
@@ -213,19 +213,19 @@
                   {{ $cleanDownloaded > 0 ? '₱' . number_format($cleanDownloaded, 2) : '-' }}
                 </td>
 
-                <td class="fw-bold table-success text-success text-end">₱{{ $record->balance ?? '0.00' }}</td>
+                {{-- BALANCE COLUMN CELLS CHANGED TO VAR(--SECONDARY-VARIANT) BACKGROUND --}}
+                <td class="fw-bold text-success text-end" style="background-color: var(--secondary-variant);">₱{{ $record->balance ?? '0.00' }}</td>
                 <td>{{ $record->ada_no ?? '-' }}</td>
                 <td class="text-wrap"><em>{{ $record->remarks ?? '-' }}</em></td>
-                <td class="text-center">
-                  <div class="d-flex justify-content-center gap-1">
-                    <button type="button" class="btn btn-xs btn-outline-primary py-0 px-1" title="Edit row"
-                            data-bs-toggle="modal" data-bs-target="#editSummaryModal{{ $rowId }}" @disabled($isLocked)>
+                <td>
+                  {{-- ACTION BUTTON PATTERNS MAPPED TO PROP VALUES --}}
+                  <div class="d-flex gap-2 justify-content-center align-items-center">
+                    <x-button type="button" variant="edit" data-bs-toggle="modal" data-bs-target="#editSummaryModal{{ $rowId }}" :disabled="$isLocked">
                       <i class="bi bi-pencil-square"></i>
-                    </button>
-                    <button type="button" class="btn btn-xs btn-outline-danger py-0 px-1" title="Delete row" 
-                            data-bs-toggle="modal" data-bs-target="#deleteRowModal{{ $rowId }}" @disabled($isLocked)>
+                    </x-button>
+                    <x-button type="button" variant="alert" data-bs-toggle="modal" data-bs-target="#deleteRowModal{{ $rowId }}" :disabled="$isLocked">
                       <i class="bi bi-trash3"></i>
-                    </button>
+                    </x-button>
                   </div>
                 </td>
               </tr>
@@ -234,7 +234,7 @@
               @if(!$isLocked)
                 @include('accounting.partials.edit-entry-quarterly-summary-modal', ['record' => $record, 'rowId' => $rowId, 'txType' => $txType, 'rawAmount' => $rawAmount, 'targetQuarter' => $selectedQuarter])
                 
-                {{-- REUSABLE DELETE VERIFICATION LAYOUT POP-UP --}}
+                {{-- REUSABLE DELETE VERIFICATION LAYOUT POP-UP USING BLADE COMPONENTS --}}
                 <div class="modal fade" id="deleteRowModal{{ $rowId }}" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
                   <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content border-0 shadow">
@@ -251,16 +251,12 @@
                         <p class="text-danger small mt-2 mb-0 fw-bold"><i class="bi bi-info-circle-fill"></i> Balance transaction histories down the stream will automatically calculate and shift.</p>
                       </div>
                       <div class="modal-footer bg-light py-2 gap-2 d-flex justify-content-end">
-                        <button type="button" class="btn d-inline-flex align-items-center justify-content-center gap-2 px-3 py-2 rounded" style="background-color: var(--secondary-variant); color: var(--primary); border: 1px solid var(--primary);" data-bs-dismiss="modal">
-                          Cancel
-                        </button>
+                        <x-button type="button" variant="secondary" data-bs-dismiss="modal">Cancel</x-button>
                         <form action="{{ route('accounting.quarterly-summary.destroy', $rowId) }}" method="POST" class="m-0">
                           @csrf
                           @method('DELETE')
                           <input type="hidden" name="target_quarter" value="{{ $selectedQuarter }}">
-                          <button type="submit" class="btn d-inline-flex align-items-center justify-content-center gap-2 px-3 py-2 rounded" style="background-color: var(--primary); color: var(--background);">
-                            Save Changes
-                          </button>
+                          <x-button type="submit" variant="primary">Save Changes</x-button>
                         </form>
                       </div>
                     </div>
@@ -279,7 +275,7 @@
   </div>
 </div>
 
-{{-- LOCK QUARTER MODAL POP-UP --}}
+{{-- LOCK QUARTER MODAL POP-UP USING BLADE COMPONENTS --}}
 @if(auth()->user()->department === 'Accounting' && auth()->user()->permission_level === 'special' && !$isLocked)
 <div class="modal fade" id="lockQuarterModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -293,16 +289,12 @@
         <p class="text-muted small mb-0">This layout workflow configuration restricts regular operational staff layers from modifying data vectors or introducing new line items until an authorized administrative unlock approval execution occurs.</p>
       </div>
       <div class="modal-footer bg-light py-2 gap-2 d-flex justify-content-end">
-        <button type="button" class="btn d-inline-flex align-items-center justify-content-center gap-2 px-3 py-2 rounded" style="background-color: var(--secondary-variant); color: var(--primary); border: 1px solid var(--primary);" data-bs-dismiss="modal">
-          Cancel
-        </button>
+        <x-button type="button" variant="secondary" data-bs-dismiss="modal">Cancel</x-button>
         <form action="{{ route('accounting.quarterly-summary.manual-lock') }}" method="POST" class="m-0">
           @csrf
           <input type="hidden" name="quarter" value="{{ $selectedQuarter }}">
           <input type="hidden" name="year" value="{{ $selectedYear ?? date('Y') }}">
-          <button type="submit" class="btn d-inline-flex align-items-center justify-content-center gap-2 px-3 py-2 rounded" style="background-color: var(--primary); color: var(--background);">
-            Save Changes
-          </button>
+          <x-button type="submit" variant="primary">Save Changes</x-button>
         </form>
       </div>
     </div>
