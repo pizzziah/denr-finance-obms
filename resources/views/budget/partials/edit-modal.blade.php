@@ -259,6 +259,7 @@
                     </button>
 
                     <button type="submit"
+                            form="editForm"
                             class="btn btn-success">
                         Save Changes
                     </button>

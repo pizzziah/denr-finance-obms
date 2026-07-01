@@ -31,7 +31,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     document.getElementById('transactionSubtitle').textContent =
                         row.payee ?? '-';
-                        
+                    
+                        document.getElementById('detailsEditBtn').onclick = function () {
+
+                    bootstrap.Modal.getInstance(
+                        document.getElementById('detailsModal')
+                        ).hide();
+
+                        openEditModal(budget_id);
+
+                    };
                     let html = `
 
                     <div class="container-fluid">
@@ -208,11 +217,52 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
         });
     });
+    async function openEditModal(budget_id) {
+        try {
+            const row = await getRecord(budget_id);
+
+            document.getElementById('editForm').action =
+                `/budget/logbook/${encodeURIComponent(budget_id)}/update`;
+
+            [
+                'ors_no',
+                'date_received',
+                'payee',
+                'issuing_office',
+                'classification',
+                'particulars',
+                'uac_codes',
+                'amount',
+                'date_returned_1',
+                'date_received_1',
+                'remarks_1',
+                'date_forwarded_1',
+                'date_ors_received',
+                'remarks_2',
+                'status',
+                'final_remarks'
+            ].forEach(field => {
+                const input = document.getElementById('edit_' + field);
+                if (input) {
+                    input.value = row[field] ?? '';
+                }
+            });
+
+            bootstrap.Modal.getOrCreateInstance(
+                document.getElementById('editModal')
+            ).show();
+
+        } catch (error) {
+            alert('Unable to load record.');
+        }
+
+    }
 
     // EDIT BUTTON
     document.querySelectorAll('.edit-btn').forEach(button => {
         button.addEventListener('click', async function () {
             const budget_id = this.dataset.budgetId;
+            openEditModal(this.dataset.budgetId);
 
             try{
                 const row = await getRecord(budget_id);
