@@ -123,34 +123,37 @@ class AccountingQuarterlySummaryController extends Controller {
     ]);
   }
 
+
   public function manualLock(Request $request) {
-    // Restrict authorization strictly to Accounting personnel
-    if (auth()->user()->department !== 'Accounting') {
-        return redirect()->back()->with('error', 'Privilege Error: Only Accounting personnel can execute ledger closures.');
-    }
-
-    $quarter = (int)$request->input('quarter');
-    $year = (int)$request->input('year');
-
-    DB::table('quarter_locks')->updateOrInsert(
-        ['year' => $year, 'quarter' => $quarter],
-        ['status' => 'locked', 'requires_admin_unlock' => true, 'updated_at' => Carbon::now()]
-    );
-
-    return redirect()->back()->with('success', "Quarter {$quarter} manual lock completed.");
+    // Enforce specialized permission restriction
+    if (auth()->user()->department !== 'Accounting' || auth()->user()->permission_level !== 'special') {
+        return redirect()->back()->with('error', 'Action denied: Your account context lacks ledger locking authorization.');
   }
+
+  $quarter = (int)$request->input('quarter');
+  $year = (int)$request->input('year');
+
+  DB::table('quarter_locks')->updateOrInsert(
+      ['year' => $year, 'quarter' => $quarter],
+      ['status' => 'locked', 'requires_admin_unlock' => true, 'updated_at' => \Carbon\Carbon::now()]
+  );
+
+  return redirect()->back()->with('success', "Quarter {$quarter} manual lock completed.");
+}
 
   public function requestAdminUnlock(Request $request) {
+    if (auth()->user()->department !== 'Accounting' || auth()->user()->permission_level !== 'special') {
+      return redirect()->back()->with('error', 'Action denied: Only authorized personnel can request state modifications.');
+  }
+
     $quarter = (int)$request->input('quarter');
     $year = (int)$request->input('year');
 
-    DB::table('quarter_locks')
-        ->where('year', $year)
-        ->where('quarter', $quarter)
-        ->update(['requires_admin_unlock' => true]);
-
+    DB::table('quarter_locks')->where('year', $year)->where('quarter', $quarter)->update(['requires_admin_unlock' => true]);
     return redirect()->back()->with('success', 'Unlock request sent to System Administration.');
   }
+
+
 
   public function store(Request $request) {
     $quarter = (int) $request->input('target_quarter');
@@ -266,4 +269,5 @@ class AccountingQuarterlySummaryController extends Controller {
       DB::table($modelInstance->getTable())->where($pkName, $rec->getKey())->update(['balance' => $rec->balance]);
     }
   }
+
 }

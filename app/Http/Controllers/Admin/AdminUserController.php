@@ -6,16 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Admin\AdminUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class AdminUserController extends Controller {
-  /**
-  * Display all users with search and department filtering applied.
-  */
+  
   public function index(Request $request) {
-    // Instantiating query scope builder
     $query = AdminUser::query();
 
-    // Target Specific Department Scope via dropdown
     if ($request->filled('department')) {
       $dept = $request->input('department');
       if ($dept === 'System Administration') {
@@ -25,27 +22,23 @@ class AdminUserController extends Controller {
       }
     }
 
-    // Apply Email Search string matching queries
     if ($request->filled('search')) {
-      $search = $request->input('search');
-      $query->where('email', 'LIKE', "%{$search}%");
+      $query->where('email', 'LIKE', "%{$request->input('search')}%");
     }
 
-    // Apply global sorting scope pipeline before rendering pages
     $users = $query->latest()->paginate(10);
+    $pendingUnlocks = DB::table('quarter_locks')->where('requires_admin_unlock', true)->get();
 
-    return view('admin.users', compact('users'));
+    return view('admin.users', compact('users', 'pendingUnlocks'));
   }
 
-  /**
-    * Store a new user.
-  */
   public function store(Request $request) {
     $request->validate([
-      'department' => 'required',
-      'role' => 'required',
+      'department' => 'required|string',
+      'role' => 'required|string',
       'email' => 'required|email|unique:users,email',
-      'password' => 'required|min:8'
+      'password' => 'required|min:8',
+      'permission_level' => 'required_if:department,Accounting|nullable|in:restricted,special'
     ]);
 
     AdminUser::create([
@@ -53,86 +46,56 @@ class AdminUserController extends Controller {
       'role' => $request->role,
       'email' => $request->email,
       'password' => Hash::make($request->password),
+      'permission_level' => $request->department === 'Accounting' ? $request->permission_level : null,
       'is_active' => 'active'
     ]);
 
-    return redirect()
-      ->route('admin.users')
-      ->with('success', 'User added successfully.');
+    return redirect()->route('admin.users')->with('success', 'User added successfully.');
   }
 
-  /**
-  * Show edit form.
-  */
-  public function edit(string $id) {
-    $user = AdminUser::findOrFail($id);
-
-    return view('admin.edit-user', compact('user'));
-  }
-
-  /**
-  * Update user.
-  */
   public function update(Request $request, string $id) {
     $user = AdminUser::findOrFail($id);
 
     $request->validate([
-      'department' => 'required',
-      'role' => 'required',
+      'department' => 'required|string',
+      'role' => 'required|string',
       'email' => 'required|email',
+      'permission_level' => 'required_if:department,Accounting|nullable|in:restricted,special'
     ]);
 
-    $user->update([
+    $data = [
       'email' => $request->email,
       'department' => $request->department,
       'role' => $request->role,
-    ]);
+      'permission_level' => $request->department === 'Accounting' ? $request->permission_level : null,
+    ];
 
-    return redirect()
-      ->route('admin.users')
-      ->with('success', 'User updated successfully.');
+    if ($request->filled('password')) {
+        $data['password'] = Hash::make($request->password);
+    }
+
+    $user->update($data);
+    return redirect()->route('admin.users')->with('success', 'User updated successfully.');
   }
 
-  /**
-  * Deactivate user.
-  */
   public function destroy(string $id) {
     $user = AdminUser::findOrFail($id);
-
-    $newStatus = $user->is_active === 'active'
-      ? 'inactive'
-      : 'active';
-
-    $user->update([
-      'is_active' => $newStatus
-    ]);
-
-    return redirect()
-      ->route('admin.users')
-      ->with(
-        'success',
-        $newStatus === 'active'
-          ? 'User reactivated successfully.'
-          : 'User deactivated successfully.'
-    );
+    $newStatus = $user->is_active === 'active' ? 'inactive' : 'active';
+    $user->update(['is_active' => $newStatus]);
+    return redirect()->route('admin.users')->with('success', $newStatus === 'active' ? 'User reactivated.' : 'User deactivated.');
   }
 
-  /**
-   * Permanently delete a user.
-  */
   public function forceDelete(string $id) {
     $user = AdminUser::findOrFail($id);
+    if (auth()->id() == $user->id || in_array($user->department, ['System Administration', 'Admin'])) {
+       return redirect()->route('admin.users')->with('error', 'Action denied.');
+    }
+    $user->delete();
+    return redirect()->route('admin.users')->with('success', 'Account permanently removed.');
+  }
 
-    if (auth()->id() == $user->id || $user->department === 'System Administration' || $user->department === 'Admin') {
-      return redirect()
-        ->route('admin.users')
-        ->with('error', 'Action denied. This account cannot be permanently deleted.');
-      }
-
-      $user->delete();
-
-      return redirect()
-        ->route('admin.users')
-        ->with('success', 'User has been permanently deleted.');
+  public function administrativeUnlockQuarter(Request $request, $id) {
+    DB::table('quarter_locks')->where('id', $id)->update(['status' => 'open', 'requires_admin_unlock' => false]);
+    return redirect()->back()->with('success', 'Quarter unlocked successfully.');
   }
 }
