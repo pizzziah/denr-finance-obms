@@ -60,101 +60,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             if (action === 'edit') {
-                fetch('/accounting/logbook/' + encodeURIComponent(dv) + '/edit')
-                .then(response => response.json())
-                .then(data => {
-
-                document.getElementById('editForm').action =
-                    '/accounting/logbook/' + encodeURIComponent(dv) + '/update';
-
-                let summary = data.summary;
-                let rows = data.details;
-                let html = '';
-
-                rows.forEach((row, index) => {
-                    html += `
-                        <div class="border rounded p-3 mb-3">
-                            <input
-                                type="hidden"
-                                name="rows[${index}][accounting_id]"
-                                value="${row.accounting_id}">
-                            <div class="row">
-                                <div class="col-md-3">
-                                    <label>UACS Code</label>
-                                    <input
-                                        class="form-control"
-                                        name="rows[${index}][uac_codes]"
-                                        value="${row.uac_codes ?? ''}">
-                                </div>
-                                <div class="col-md-2">
-                                    <label>Debit</label>
-                                    <input
-                                        class="form-control"
-                                        name="rows[${index}][debit]"
-                                        value="${row.debit ?? ''}">
-                                </div>
-                                <div class="col-md-2">
-                                    <label>Credit</label>
-                                    <input
-                                        class="form-control"
-                                        name="rows[${index}][credit]"
-                                        value="${row.credit ?? ''}">
-                                </div>
-
-                                <div class="col-md-2">
-                                    <label>Tax %</label>
-                                    <input
-                                        class="form-control"
-                                        name="rows[${index}][tax_percent]"
-                                        value="${row.tax_percent ?? ''}">
-                                </div>
-
-                                <div class="col-md-3">
-                                    <label>Tax Remarks</label>
-                                    <input
-                                        class="form-control"
-                                        name="rows[${index}][tax_remarks]"
-                                        value="${row.tax_remarks ?? ''}">
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                document.getElementById('accountingRows').innerHTML = html;
-                // Fill common fields
-                const fields = [
-                    'ors_no',
-                    'obr_no',
-                    'dv_no',
-                    'payee',
-                    'particulars',
-                    'particulars_remark',
-                    'returned_remarks',
-                    'signed_by_accountant',
-                    'status',
-                    'budget_year',
-                    'source_month',
-                    'date_received',
-                    'date_processed',
-                    'obr_date',
-                    'date_signed',
-                    'date_forwarded'
-                ];
-
-                fields.forEach(field => {
-                    const input = document.getElementById('edit_' + field);
-                    if (input) {
-                        input.value = summary[field] ?? '';
-                    }
-                });
-
-                console.log(rows);
-
-                bootstrap.Modal.getOrCreateInstance(
-                    document.getElementById('editModal')
-                ).show();
-            });
+                openAccountingEditModal(dv);
             }
 
             if(action === 'delete'){
@@ -360,8 +266,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 `;
 
                 document.getElementById('detailsBody').innerHTML = html;
+                document.getElementById('detailsEditBtn').onclick = function () {openAccountingEditModal(dv);};
                 document.getElementById('transactionTitle').textContent = rows[0].dv_no ?? '-';
                 document.getElementById('transactionSubtitle').textContent = summary.payee ?? '';
+
+                const editBtn = document.getElementById('detailsEditBtn');
+                if (editBtn) {
+                    editBtn.onclick = () => openAccountingEditModal(dv);
+                }
+
+                const deleteBtn = document.getElementById('detailsDeleteBtn');
+                if (deleteBtn) {
+                    deleteBtn.onclick = () => deleteAccountingRecord(dv); 
+                }
             })
             .catch(() => {
 
@@ -371,6 +288,100 @@ document.addEventListener('DOMContentLoaded', function () {
                     </div>
                 `;
             });
+    }
+
+    async function openAccountingEditModal(dv) {
+        try {
+
+            const response = await fetch(
+                '/accounting/logbook/' + encodeURIComponent(dv) + '/edit'
+            );
+            if (!response.ok) {
+                throw new Error();
+            }
+            const data = await response.json();
+            const summary = data.summary;
+            const rows = data.details;
+
+            document.getElementById('editForm').action =
+                '/accounting/logbook/' + encodeURIComponent(dv) + '/update';
+            [
+                'ors_no',
+                'obr_no',
+                'dv_no',
+                'payee',
+                'particulars',
+                'particulars_remark',
+                'signed_by_accountant',
+                'status',
+                'budget_year',
+                'date_received',
+                'date_processed',
+                'obr_date',
+                'date_signed',
+                'date_forwarded'
+            ].forEach(field => {
+                const input = document.getElementById('edit_' + field);
+                if (input) {
+                    input.value = summary[field] ?? '';
+                }
+            });
+
+            let html = '';
+            rows.forEach((row, index) => {
+                html += `
+                    <div class="border rounded p-3 mb-3">
+                        <input type="hidden"
+                            name="rows[${index}][accounting_id]"
+                            value="${row.accounting_id}">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <label>UACS Code</label>
+                                <input class="form-control"
+                                    name="rows[${index}][uac_codes]"
+                                    value="${row.uac_codes ?? ''}">
+                            </div>
+                            <div class="col-md-2">
+                                <label>Debit</label>
+                                <input class="form-control"
+                                    name="rows[${index}][debit]"
+                                    value="${row.debit ?? ''}">
+                            </div>
+                            <div class="col-md-2">
+                                <label>Credit</label>
+                                <input class="form-control"
+                                    name="rows[${index}][credit]"
+                                    value="${row.credit ?? ''}">
+                            </div>
+                            <div class="col-md-2">
+                                <label>Tax %</label>
+                                <input class="form-control"
+                                    name="rows[${index}][tax_percent]"
+                                    value="${row.tax_percent ?? ''}">
+                            </div>
+                            <div class="col-md-3">
+                                <label>Tax Remarks</label>
+                                <input class="form-control"
+                                    name="rows[${index}][tax_remarks]"
+                                    value="${row.tax_remarks ?? ''}">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('accountingRows').innerHTML = html;
+            bootstrap.Modal.getInstance(
+                document.getElementById('detailsModal')
+            ).hide();
+
+            bootstrap.Modal.getOrCreateInstance(
+                document.getElementById('editModal')
+            ).show();
+
+        } catch (e) {
+            
+        }
     }
 
     // PRINT DETAILS
