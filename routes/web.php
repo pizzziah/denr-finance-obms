@@ -24,6 +24,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/logbook/{budget_id}/show',[BudgetLogbookController::class, 'show'])->name('budget.logbook.show');
         Route::put('/logbook/{budget_id}/update',[BudgetLogbookController::class, 'update'])->name('budget.logbook.update');
         Route::get('/logbook/{budget_id}/details',[BudgetLogbookController::class, 'details'])->name('budget.logbook.details');
+        Route::post('/logbook/store', [BudgetLogbookController::class, 'store'])->name('budget.logbook.store');
         Route::delete('/logbook/{budget_id}/destroy',[BudgetLogbookController::class, 'destroy'])->name('budget.logbook.destroy');
     });
 

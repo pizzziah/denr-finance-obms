@@ -231,6 +231,7 @@
 @include('budget.partials.details-modal')
 @include('budget.partials.scripts')
 @include('budget.partials.edit-modal')
+@include('budget.partials.add-record-modal')
 @endsection
 
 @php

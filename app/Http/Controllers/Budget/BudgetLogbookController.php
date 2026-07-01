@@ -112,20 +112,91 @@ class BudgetLogbookController extends Controller
 
     public function update(Request $request, $budget_id)
     {
-        $request->validate([
-            'status' => 'required'
-        ]);
-
         DB::table('odms_budget')
             ->where('budget_id', $budget_id)
             ->update([
-                'status' => $request->status
+                'ors_no'                    => $request->ors_no,
+                'date_received'             => $request->date_received,
+                'payee'                     => $request->payee,
+                'issuing_office'            => $request->issuing_office,
+                'classification'            => $request->classification,
+                'particulars'               => $request->particulars,
+                'uac_codes'                 => $request->uac_codes,
+                'amount'                    => $request->amount,
+                'date_returned_1'           => $request->date_returned_1,
+                'date_received_1'           => $request->date_received_1,
+                'remarks_1'                 => $request->remarks_1,
+                'date_forwarded_1'          => $request->date_forwarded_1,
+                'date_ors_received'         => $request->date_ors_received,
+                'remarks_2'                 => $request->remarks_2,
+                'date_returned_2'           => $request->date_returned_2,
+                'date_received_2'           => $request->date_received_2,
+                'date_forwarded_accounting' => $request->date_forwarded_accounting,
+                'status'                    => $request->status,
+                'total_time_budget'         => $request->total_time_budget,
+                'total_time'                => $request->total_time,
+                'final_remarks'             => $request->final_remarks,
             ]);
 
         return redirect()
             ->route('budget.logbook')
             ->with('success', 'Record updated successfully.');
     }
+    public function store(Request $request)
+    {
+        $request->validate([
+            'ors_no' => 'nullable|string|max:255',
+            'date_received' => 'nullable|date',
+            'payee' => 'nullable|string|max:255',
+            'issuing_office' => 'nullable|string|max:255',
+            'classification' => 'nullable|string|max:255',
+            'particulars' => 'nullable|string',
+            'uac_codes' => 'nullable|string|max:255',
+            'amount' => 'nullable|numeric',
+            'date_returned_1' => 'nullable|date',
+            'date_received_1' => 'nullable|date',
+            'remarks_1' => 'nullable|string',
+            'date_forwarded_1' => 'nullable|date',
+            'date_ors_received' => 'nullable|date',
+            'remarks_2' => 'nullable|string',
+            'date_returned_2' => 'nullable|date',
+            'date_received_2' => 'nullable|date',
+            'date_forwarded_accounting' => 'nullable|date',
+            'status' => 'required|string|max:255',
+            'total_time_budget' => 'nullable|string|max:255',
+            'total_time' => 'nullable|string|max:255',
+            'final_remarks' => 'nullable|string',
+        ]);
+
+        DB::table('odms_budget')->insert([
+            'ors_no'                    => $request->ors_no,
+            'date_received'             => $request->date_received,
+            'payee'                     => $request->payee,
+            'issuing_office'            => $request->issuing_office,
+            'classification'            => $request->classification,
+            'particulars'               => $request->particulars,
+            'uac_codes'                 => $request->uac_codes,
+            'amount'                    => $request->amount,
+            'date_returned_1'           => $request->date_returned_1,
+            'date_received_1'           => $request->date_received_1,
+            'remarks_1'                 => $request->remarks_1,
+            'date_forwarded_1'          => $request->date_forwarded_1,
+            'date_ors_received'         => $request->date_ors_received,
+            'remarks_2'                 => $request->remarks_2,
+            'date_returned_2'           => $request->date_returned_2,
+            'date_received_2'           => $request->date_received_2,
+            'date_forwarded_accounting' => $request->date_forwarded_accounting,
+            'status'                    => $request->status,
+            'total_time_budget'         => $request->total_time_budget,
+            'total_time'                => $request->total_time,
+            'final_remarks'             => $request->final_remarks,
+        ]);
+
+        return redirect()
+            ->route('budget.logbook')
+            ->with('success', 'Budget record added successfully.');
+    }
+    
     public function destroy($budget_id)
     {
         DB::table('odms_budget')
