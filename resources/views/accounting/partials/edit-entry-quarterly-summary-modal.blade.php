@@ -131,7 +131,9 @@ document.addEventListener('DOMContentLoaded', function () {
         if (isFormDirty) {
             bsCancelModal.show();
         } else {
-            bsEditModal.hide();
+          bootstrap.Modal.getInstance(
+              document.getElementById('editSummaryModal{{ $rowId }}')
+          ).hide();
         }
     });
 
@@ -139,7 +141,9 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('discardEditChangesBtn_{{ $rowId }}').addEventListener('click', function() {
         isFormDirty = false;
         bsCancelModal.hide();
-        bsEditModal.hide();
+        bootstrap.Modal.getInstance(
+            document.getElementById('editSummaryModal{{ $rowId }}')
+        ).hide();
     });
 });
 </script>

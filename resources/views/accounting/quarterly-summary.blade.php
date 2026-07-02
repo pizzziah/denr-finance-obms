@@ -210,7 +210,14 @@
                 $cleanReceived = \App\Models\Accounting\AccountingQuarterlySummary::parseMoney($record->nca_nta_received);
                 $cleanDownloaded = \App\Models\Accounting\AccountingQuarterlySummary::parseMoney($record->nca_nta_downloaded);
                 $txType = $cleanReceived > 0 ? 'received' : 'downloaded';
-                $rawAmount = (float)str_replace(',', '', $record->amount ?? 0);
+                
+if ($cleanReceived > 0) {
+    $rawAmount = $cleanReceived;
+} elseif ($cleanDownloaded > 0) {
+    $rawAmount = $cleanDownloaded;
+} else {
+    $rawAmount = \App\Models\Accounting\AccountingQuarterlySummary::parseMoney($record->amount);
+}
               @endphp
 
               <tr>
