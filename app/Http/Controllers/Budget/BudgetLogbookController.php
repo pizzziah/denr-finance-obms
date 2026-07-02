@@ -73,15 +73,34 @@ class BudgetLogbookController extends Controller
 
         $records = $query->get();
 
-        return view(
-            'budget.logbook',
-            compact(
+        $issuingOffices = DB::table('odms_dropdowns')
+            ->select('issuing_office')
+            ->distinct()
+            ->orderBy('issuing_office')
+            ->get();
+
+        $classifications = DB::table('odms_dropdowns')
+            ->select('classifications')
+            ->distinct()
+            ->orderBy('classifications')
+            ->get();
+
+        $uacs = DB::table('odms_budget_uac_codes')
+            ->select('old_uac', 'new_uac', 'uac_title')
+            ->orderBy('old_uac')
+            ->orderBy('new_uac')
+            ->get();
+
+        return view('budget.logbook',compact(
                 'records',
                 'year',
                 'month',
                 'status',
                 'search',
-                'sort'
+                'sort',
+                'issuingOffices',
+                'classifications',
+                'uacs'
             )
         );
     }
@@ -149,7 +168,7 @@ class BudgetLogbookController extends Controller
             'date_received' => 'nullable|date',
             'payee' => 'nullable|string|max:255',
             'issuing_office' => 'nullable|string|max:255',
-            'classification' => 'nullable|string|max:255',
+            'classifications' => 'nullable|string|max:255',
             'particulars' => 'nullable|string',
             'uac_codes' => 'nullable|string|max:255',
             'amount' => 'nullable|numeric',
@@ -173,7 +192,7 @@ class BudgetLogbookController extends Controller
             'date_received'             => $request->date_received,
             'payee'                     => $request->payee,
             'issuing_office'            => $request->issuing_office,
-            'classification'            => $request->classification,
+            'classifications'            => $request->classification,
             'particulars'               => $request->particulars,
             'uac_codes'                 => $request->uac_codes,
             'amount'                    => $request->amount,
