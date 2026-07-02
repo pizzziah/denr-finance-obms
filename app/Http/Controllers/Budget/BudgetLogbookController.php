@@ -131,6 +131,29 @@ class BudgetLogbookController extends Controller
 
     public function update(Request $request, $budget_id)
     {
+        $request->validate([
+            'ors_no' => 'nullable|regex:/^[0-9]+$/',
+            'date_received' => 'nullable|date',
+            'payee' => 'nullable|string|max:255',
+            'issuing_office' => 'nullable|string|max:255',
+            'classification' => 'nullable|string|max:255',
+            'particulars' => 'nullable|string',
+            'uac_codes' => 'nullable|string|max:255',
+            'amount' => 'nullable|numeric',
+            'date_returned_1' => 'nullable|date',
+            'date_received_1' => 'nullable|date',
+            'remarks_1' => 'nullable|string',
+            'date_forwarded_1' => 'nullable|date',
+            'date_ors_received' => 'nullable|date',
+            'remarks_2' => 'nullable|string',
+            'date_returned_2' => 'nullable|date',
+            'date_received_2' => 'nullable|date',
+            'date_forwarded_accounting' => 'nullable|date',
+            'status' => 'required|string|max:255',
+            'total_time_budget' => 'nullable|string|max:255',
+            'total_time' => 'nullable|string|max:255',
+            'final_remarks' => 'nullable|string',
+        ]);
         DB::table('odms_budget')
             ->where('budget_id', $budget_id)
             ->update([
@@ -164,7 +187,7 @@ class BudgetLogbookController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'ors_no' => 'nullable|string|max:255',
+            'ors_no' => 'nullable|numeric|digits_between:1,10',
             'date_received' => 'nullable|date',
             'payee' => 'nullable|string|max:255',
             'issuing_office' => 'nullable|string|max:255',

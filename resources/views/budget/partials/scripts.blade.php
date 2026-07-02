@@ -217,102 +217,186 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
         });
     });
- // ===================== OPEN EDIT MODAL =====================
-async function openEditModal(budget_id) {
-    try {
-        const row = await getRecord(budget_id);
+    function prettyDate(dateString) {
+            if (!dateString) return '';
 
-        document.getElementById('editForm').action =
-            `/budget/logbook/${encodeURIComponent(budget_id)}/update`;
+            return new Date(dateString).toLocaleString('en-PH', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+        }
+        // Convert MySQL DATETIME -> datetime-local format
+    function formatDateTime(value) {
+        if (!value) return '';
 
-        [
-            'ors_no',
-            'date_received',
-            'payee',
-            'issuing_office',
-            'classification',
-            'particulars',
-            'uac_codes',
-            'amount',
-            'date_returned_1',
-            'date_received_1',
-            'remarks_1',
-            'date_forwarded_1',
-            'date_ors_received',
-            'remarks_2',
-            'date_returned_2',
-            'date_received_2',
-            'date_forwarded_accounting',
-            'status',
-            'total_time_budget',
-            'total_time',
-            'final_remarks'
-        ].forEach(field => {
-            const input = document.getElementById('edit_' + field);
-            if (input) input.value = row[field] ?? '';
+        // 2026-06-08 17:05:00 -> 2026-06-08T17:05
+        return value.replace(' ', 'T').substring(0, 16);
+    }
+
+    // ===================== OPEN EDIT MODAL =====================
+    async function openEditModal(budget_id) {
+
+        try {
+
+            const row = await getRecord(budget_id);
+
+            document.getElementById('editForm').action =
+                `/budget/logbook/${encodeURIComponent(budget_id)}/update`;
+
+            const fields = [
+                'ors_no',
+                'date_received',
+                'payee',
+                'particulars',
+                'amount',
+
+                'date_returned_1',
+                'date_received_1',
+                'remarks_1',
+
+                'date_forwarded_1',
+                'date_ors_received',
+                'remarks_2',
+
+                'date_returned_2',
+                'date_received_2',
+
+                'date_forwarded_accounting',
+
+                'status',
+                'total_time_budget',
+                'total_time',
+                'final_remarks'
+            ];
+
+            fields.forEach(field => {
+
+                const input = document.getElementById('edit_' + field);
+
+                if (!input) return;
+
+                if (input.type === 'datetime-local') {
+
+                    input.value = formatDateTime(row[field]);
+
+                } else if (input.type === 'date') {
+
+                    input.value = row[field]
+                        ? row[field].substring(0,10)
+                        : '';
+
+                } else {
+
+                    input.value = row[field] ?? '';
+
+                }
+
+            });
+
+            // ===================== ISSUING OFFICE =====================
+
+            if (!document.getElementById('edit_issuing_office').tomselect) {
+
+                new TomSelect('#edit_issuing_office',{
+                    create:false,
+                    searchField:['text'],
+                    placeholder:'Search Issuing Office...'
+                });
+
+            }
+
+            document
+                .getElementById('edit_issuing_office')
+                .tomselect
+                .setValue(row.issuing_office ?? '', true);
+
+            // ===================== CLASSIFICATION =====================
+
+            if (!document.getElementById('edit_classifications').tomselect) {
+
+                new TomSelect('#edit_classifications',{
+                    create:false,
+                    searchField:['text'],
+                    placeholder:'Search Classification...'
+                });
+
+            }
+
+            document
+                .getElementById('edit_classifications')
+                .tomselect
+                .setValue(row.classification ?? '', true);
+
+            // ===================== UACS =====================
+
+            if (!document.getElementById('edit_uac_codes').tomselect) {
+
+                new TomSelect('#edit_uac_codes',{
+                    create:false,
+                    searchField:['text','value'],
+                    placeholder:'Search UACS Code...'
+                });
+
+            }
+
+            document
+                .getElementById('edit_uac_codes')
+                .tomselect
+                .setValue(row.uac_codes ?? '', true);
+
+            bootstrap.Modal.getOrCreateInstance(
+                document.getElementById('editModal')
+            ).show();
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(error.message);
+
+        }
+
+    }
+
+    // ===================== EDIT BUTTON =====================
+
+    document.querySelectorAll('.edit-btn').forEach(button => {
+
+        button.addEventListener('click', function () {
+
+            openEditModal(this.dataset.budgetId);
+
         });
 
-        // ===================== TomSelect =====================
-
-        // Issuing Office
-        if (!document.getElementById('edit_issuing_office').tomselect) {
-            new TomSelect('#edit_issuing_office', {
-                create: false,
-                searchField: ['text'],
-                placeholder: 'Search Issuing Office...'
-            });
-        }
-
-        // Classification
-        if (!document.getElementById('edit_classifications').tomselect) {
-            new TomSelect('#edit_classifications', {
-                create: false,
-                searchField: ['text'],
-                placeholder: 'Search Classification...'
-            });
-        }
-
-        // UACS
-        if (!document.getElementById('edit_uac_codes').tomselect) {
-            new TomSelect('#edit_uac_codes', {
-                create: false,
-                searchField: ['text', 'value'],
-                placeholder: 'Search UACS Code...'
-            });
-        }
-
-        // Set selected values
-        document.getElementById('edit_issuing_office').tomselect.setValue(
-            row.issuing_office ?? '',
-            true
-        );
-
-        document.getElementById('edit_classifications').tomselect.setValue(
-            row.classification ?? '',
-            true
-        );
-
-        document.getElementById('edit_uac_codes').tomselect.setValue(
-            row.uac_codes ?? '',
-            true
-        );
-
-        bootstrap.Modal.getOrCreateInstance(
-            document.getElementById('editModal')
-        ).show();
-
-    } catch (error) {
-        console.error(error);
-        alert('Unable to load record.');
-    }
-}
-
-// ===================== EDIT BUTTON =====================
-document.querySelectorAll('.edit-btn').forEach(button => {
-    button.addEventListener('click', function () {
-        openEditModal(this.dataset.budgetId);
     });
-});
+    
+    document.getElementById('editForm').addEventListener('submit', function (e) {
+
+        const orsInput = document.getElementById('edit_ors_no');
+        const errorBox = document.getElementById('editError');
+
+        errorBox.classList.add('d-none');
+        errorBox.innerHTML = '';
+
+        const ors = orsInput.value.trim();
+
+        if (ors !== '' && !/^\d+$/.test(ors)) {
+
+            e.preventDefault();
+
+            errorBox.innerHTML = 'ORS No. must contain numbers only.';
+            errorBox.classList.remove('d-none');
+
+            orsInput.focus();
+
+            return;
+        }
+
+    }); 
 
     // DELETE BUTTON
     document.querySelectorAll('.delete-btn').forEach(button => {

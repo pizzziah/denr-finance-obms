@@ -6,7 +6,10 @@
                 <h4 class="fw-bold">Edit Budget Record</h4>
                 <button class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-
+            
+            <div id="editError"
+                class="alert alert-danger d-none">
+            </div>
             <div class="modal-body">
 
                 <form id="editForm" method="POST">
@@ -25,16 +28,16 @@
                             <input type="text"
                                    id="edit_ors_no"
                                    name="ors_no"
-                                   class="form-control"
-                                   readonly>
+                                   class="form-control">
                         </div>
 
                         <div class="col-md-3">
                             <label class="form-label">Date Received</label>
-                            <input type="date"
+                            <input type="datetime-local"
                                    id="edit_date_received"
                                    name="date_received"
-                                   class="form-control">
+                                   class="form-control"
+                                   readonly>
                         </div>
 
                         <div class="col-md-6">
@@ -113,7 +116,7 @@
 
                         <div class="col-md-4">
                             <label class="form-label">Date Returned</label>
-                            <input type="date"
+                            <input type="datetime-local"
                                    id="edit_date_returned_1"
                                    name="date_returned_1"
                                    class="form-control">
@@ -121,7 +124,7 @@
 
                         <div class="col-md-4">
                             <label class="form-label">Date Received</label>
-                            <input type="date"
+                            <input type="datetime-local"
                                    id="edit_date_received_1"
                                    name="date_received_1"
                                    class="form-control">
@@ -146,7 +149,7 @@
 
                         <div class="col-md-4">
                             <label class="form-label">Date Forwarded</label>
-                            <input type="date"
+                            <input type="datetime-local"
                                    id="edit_date_forwarded_1"
                                    name="date_forwarded_1"
                                    class="form-control">
@@ -154,7 +157,7 @@
 
                         <div class="col-md-4">
                             <label class="form-label">Date ORS Received</label>
-                            <input type="date"
+                            <input type="datetime-local"
                                    id="edit_date_ors_received"
                                    name="date_ors_received"
                                    class="form-control">
@@ -179,7 +182,7 @@
 
                         <div class="col-md-6">
                             <label class="form-label">Date Returned</label>
-                            <input type="date"
+                            <input type="datetime-local"
                                    id="edit_date_returned_2"
                                    name="date_returned_2"
                                    class="form-control">
@@ -187,7 +190,7 @@
 
                         <div class="col-md-6">
                             <label class="form-label">Date Received</label>
-                            <input type="date"
+                            <input type="datetime-local"
                                    id="edit_date_received_2"
                                    name="date_received_2"
                                    class="form-control">
@@ -204,7 +207,7 @@
 
                         <div class="col-md-6">
                             <label class="form-label">Date Forwarded to Accounting</label>
-                            <input type="date"
+                            <input type="datetime-local"
                                    id="edit_date_forwarded_accounting"
                                    name="date_forwarded_accounting"
                                    class="form-control">
