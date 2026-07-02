@@ -47,18 +47,31 @@
 
                         <div class="col-md-6">
                             <label class="form-label">Issuing Office</label>
-                            <input type="text"
-                                   id="edit_issuing_office"
-                                   name="issuing_office"
-                                   class="form-control">
+                           <select id="edit_issuing_office"
+                                    name="issuing_office"
+                                    class="form-select">
+                                <option value="">Select Office</option>
+                                @foreach($issuingOffices as $office)
+                                    <option value="{{ $office->issuing_office }}">
+                                        {{ $office->issuing_office }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
 
                         <div class="col-md-6">
                             <label class="form-label">Classification</label>
-                            <input type="text"
-                                   id="edit_classification"
-                                   name="classification"
-                                   class="form-control">
+                            <select
+                                id="edit_classifications"
+                                name="classification"
+                                class="form-select">
+                                <option value="">Select Classification</option>
+                                @foreach($classifications as $classification)
+                                    <option value="{{ $classification->classifications }}">
+                                        {{ $classification->classifications }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
 
                         <div class="col-md-12">
@@ -71,10 +84,13 @@
 
                         <div class="col-md-6">
                             <label class="form-label">UACS Code</label>
-                            <input type="text"
-                                   id="edit_uac_codes"
-                                   name="uac_codes"
-                                   class="form-control">
+                            <select id="edit_uac_codes" name="uac_codes" class="form-select">
+                                @foreach($uacs as $uac)
+                                    <option value="{{ $uac->new_uac }}">
+                                        {{ $uac->old_uac }} → {{ $uac->new_uac }} | {{ $uac->uac_title }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
 
                         <div class="col-md-6">

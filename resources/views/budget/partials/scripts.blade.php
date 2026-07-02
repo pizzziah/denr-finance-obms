@@ -217,90 +217,102 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
         });
     });
-    async function openEditModal(budget_id) {
-        try {
-            const row = await getRecord(budget_id);
+ // ===================== OPEN EDIT MODAL =====================
+async function openEditModal(budget_id) {
+    try {
+        const row = await getRecord(budget_id);
 
-            document.getElementById('editForm').action =
-                `/budget/logbook/${encodeURIComponent(budget_id)}/update`;
+        document.getElementById('editForm').action =
+            `/budget/logbook/${encodeURIComponent(budget_id)}/update`;
 
-            [
-                'ors_no',
-                'date_received',
-                'payee',
-                'issuing_office',
-                'classification',
-                'particulars',
-                'uac_codes',
-                'amount',
-                'date_returned_1',
-                'date_received_1',
-                'remarks_1',
-                'date_forwarded_1',
-                'date_ors_received',
-                'remarks_2',
-                'status',
-                'final_remarks'
-            ].forEach(field => {
-                const input = document.getElementById('edit_' + field);
-                if (input) {
-                    input.value = row[field] ?? '';
-                }
+        [
+            'ors_no',
+            'date_received',
+            'payee',
+            'issuing_office',
+            'classification',
+            'particulars',
+            'uac_codes',
+            'amount',
+            'date_returned_1',
+            'date_received_1',
+            'remarks_1',
+            'date_forwarded_1',
+            'date_ors_received',
+            'remarks_2',
+            'date_returned_2',
+            'date_received_2',
+            'date_forwarded_accounting',
+            'status',
+            'total_time_budget',
+            'total_time',
+            'final_remarks'
+        ].forEach(field => {
+            const input = document.getElementById('edit_' + field);
+            if (input) input.value = row[field] ?? '';
+        });
+
+        // ===================== TomSelect =====================
+
+        // Issuing Office
+        if (!document.getElementById('edit_issuing_office').tomselect) {
+            new TomSelect('#edit_issuing_office', {
+                create: false,
+                searchField: ['text'],
+                placeholder: 'Search Issuing Office...'
             });
-
-            bootstrap.Modal.getOrCreateInstance(
-                document.getElementById('editModal')
-            ).show();
-
-        } catch (error) {
-            alert('Unable to load record.');
         }
 
+        // Classification
+        if (!document.getElementById('edit_classifications').tomselect) {
+            new TomSelect('#edit_classifications', {
+                create: false,
+                searchField: ['text'],
+                placeholder: 'Search Classification...'
+            });
+        }
+
+        // UACS
+        if (!document.getElementById('edit_uac_codes').tomselect) {
+            new TomSelect('#edit_uac_codes', {
+                create: false,
+                searchField: ['text', 'value'],
+                placeholder: 'Search UACS Code...'
+            });
+        }
+
+        // Set selected values
+        document.getElementById('edit_issuing_office').tomselect.setValue(
+            row.issuing_office ?? '',
+            true
+        );
+
+        document.getElementById('edit_classifications').tomselect.setValue(
+            row.classification ?? '',
+            true
+        );
+
+        document.getElementById('edit_uac_codes').tomselect.setValue(
+            row.uac_codes ?? '',
+            true
+        );
+
+        bootstrap.Modal.getOrCreateInstance(
+            document.getElementById('editModal')
+        ).show();
+
+    } catch (error) {
+        console.error(error);
+        alert('Unable to load record.');
     }
+}
 
-    // EDIT BUTTON
-    document.querySelectorAll('.edit-btn').forEach(button => {
-        button.addEventListener('click', async function () {
-            const budget_id = this.dataset.budgetId;
-            openEditModal(this.dataset.budgetId);
-
-            try{
-                const row = await getRecord(budget_id);
-                document.getElementById('editForm').action =
-                    `/budget/logbook/${encodeURIComponent(budget_id)}/update`;
-                [
-                    'ors_no',
-                    'date_received',
-                    'payee',
-                    'issuing_office',
-                    'classification',
-                    'particulars',
-                    'uac_codes',
-                    'amount',
-                    'date_returned_1',
-                    'date_received_1',
-                    'remarks_1',
-                    'date_forwarded_1',
-                    'date_ors_received',
-                    'remarks_2',
-                    'status',
-                    'final_remarks'
-                ].forEach(field => {
-                    const input = document.getElementById('edit_' + field);
-                    if(input){
-                        input.value = row[field] ?? '';
-                    }
-                });
-
-                bootstrap.Modal.getOrCreateInstance(
-                    document.getElementById('editModal')
-                ).show();
-
-            }catch(error){
-                alert('Unable to load record.');
-            }
-        });
+// ===================== EDIT BUTTON =====================
+document.querySelectorAll('.edit-btn').forEach(button => {
+    button.addEventListener('click', function () {
+        openEditModal(this.dataset.budgetId);
     });
+});
 
     // DELETE BUTTON
     document.querySelectorAll('.delete-btn').forEach(button => {
