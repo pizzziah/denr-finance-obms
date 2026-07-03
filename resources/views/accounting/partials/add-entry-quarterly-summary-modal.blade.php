@@ -57,12 +57,12 @@
 
           <div class="mb-3">
             <label class="fw-bold">ADA Check No.</label>
-            <input type="text" name="ada_no" class="form-control" placeholder="Enter ADA Check Number...">
+            <input type="text" name="ada_no" class="form-control" placeholder="Enter ADA Check Number">
           </div>
 
           <div class="mb-3">
             <label class="fw-bold">Remarks</label>
-            <textarea name="remarks" class="form-control" rows="2" placeholder="Enter remarks (if any)..."></textarea>
+            <textarea name="remarks" class="form-control" rows="2" placeholder="Enter Remarks (if any)"></textarea>
           </div>
         </div>
         
