@@ -67,8 +67,8 @@
         </div>
         
         <div class="modal-footer">
-          <x-button type="button" variant="secondary" data-bs-dismiss="modal"  id="cancelAddBtn">Cancel</x-button>
-          <x-button type="submit" variant="primary">Save Entry</x-button>
+          <button type="button" class="btn btn-secondary" id="cancelAddBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Entry</button>
         </div>
       </form>
     </div>
@@ -93,16 +93,26 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const amountInput = document.getElementById('amount_input');
-    const amountPreview = document.getElementById('amount_preview');
+    const mainAddModalEl = document.getElementById('addSummaryModal');
+    const cancelAddModalEl = document.getElementById('addCancelConfirmModal');
     const form = document.getElementById('addSummaryForm');
     
-    let isFormDirty = false;
-    form.querySelectorAll('input, textarea, select').forEach(input => {
-        input.addEventListener('change', () => isFormDirty = true);
-        input.addEventListener('input', () => isFormDirty = true);
+    const amountInput = document.getElementById('amount_input');
+    const amountPreview = document.getElementById('amount_preview');
+    
+    let originalFormSnapshot = "";
+
+    // Helper to snap current values
+    function getFormSnapshot() {
+        return new URLSearchParams(new FormData(form)).toString();
+    }
+
+    // Capture initial values right as the user views the newly opened form
+    mainAddModalEl.addEventListener('shown.bs.modal', function () {
+        originalFormSnapshot = getFormSnapshot();
     });
 
+    // Live Amount Preview formatting
     if (amountInput && amountPreview) {
       amountInput.addEventListener('input', function() {
         const val = parseFloat(this.value);
@@ -110,23 +120,40 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     }
 
-    const bsAddModal = new bootstrap.Modal(document.getElementById('addSummaryModal'));
-    const bsCancelModal = new bootstrap.Modal(document.getElementById('addCancelConfirmModal'));
+    // Intercept standard cancel clicks
+    const cancelBtn = document.getElementById('cancelAddBtn');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
 
-    document.getElementById('cancelAddBtn').addEventListener('click', function() {
-        if (isFormDirty) {
-            bsCancelModal.show();
-        } else {
-            bsAddModal.hide();
-        }
+            const currentFormSnapshot = getFormSnapshot();
+            const isFormDirty = (originalFormSnapshot !== currentFormSnapshot);
+
+            const bsCancelModal = bootstrap.Modal.getOrCreateInstance(cancelAddModalEl);
+            const bsAddModal = bootstrap.Modal.getOrCreateInstance(mainAddModalEl);
+
+            if (isFormDirty) {
+                bsCancelModal.show();
+            } else {
+                bsAddModal.hide();
+            }
+        });
+    }
+
+    // "Keep Editing" button behavior
+    document.getElementById('keepEditingAddBtn').addEventListener('click', () => {
+        bootstrap.Modal.getOrCreateInstance(cancelAddModalEl).hide();
     });
-
-    document.getElementById('keepEditingAddBtn').addEventListener('click', () => bsCancelModal.hide());
+    
+    // "Discard Changes" button behavior
     document.getElementById('discardAddChangesBtn').addEventListener('click', function() {
-        isFormDirty = false;
-        form.reset();
-        bsCancelModal.hide();
-        bsAddModal.hide();
+        bootstrap.Modal.getOrCreateInstance(cancelAddModalEl).hide();
+        bootstrap.Modal.getOrCreateInstance(mainAddModalEl).hide();
+        
+        form.reset(); 
+        // Force text element update back to empty baseline visual manually
+        if (amountPreview) amountPreview.textContent = '₱0.00';
     });
 });
 </script>
