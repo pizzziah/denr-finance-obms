@@ -92,8 +92,7 @@
 
       </div>
     </div>
-
-    <!-- RIGHT SIDE -->
+      
     <div class="col-12 col-lg-3">
       <div class="card shadow glass-card p-2 m-0 rounded">
 
