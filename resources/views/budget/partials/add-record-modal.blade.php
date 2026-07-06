@@ -1,4 +1,4 @@
-<!-- ADD RECORD MODAL -->
+{{-- ADD MODAL --}}
 <div class="modal fade" id="addRecordModal" tabindex="-1">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content">
@@ -23,56 +23,56 @@
                     <div class="row g-3">
 
                         <div class="col-md-3">
-                            <label class="form-label">ORS No.</label>
+                            <label class="form-label"><strong>ORS No.</strong></label>
                             <input type="text"
                                    name="ors_no"
                                    class="form-control">
                         </div>
 
                         <div class="col-md-3">
-                            <label class="form-label">Date Received</label>
+                            <label class="form-label"><strong>Date Received</strong></label>
                             <input type="date"
                                    name="date_received"
                                    class="form-control">
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Payee</label>
+                            <label class="form-label"><strong>Payee</strong></label>
                             <input type="text"
                                    name="payee"
                                    class="form-control">
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Issuing Office</label>
+                            <label class="form-label"><strong>Issuing Office</strong></label>
                             <input type="text"
                                    name="issuing_office"
                                    class="form-control">
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Classification</label>
+                            <label class="form-label"><strong>Classification</strong></label>
                             <input type="text"
                                    name="classification"
                                    class="form-control">
                         </div>
 
                         <div class="col-md-12">
-                            <label class="form-label">Particulars</label>
+                            <label class="form-label"><strong>Particulars</strong></label>
                             <textarea name="particulars"
                                       rows="3"
                                       class="form-control"></textarea>
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">UACS Code</label>
+                            <label class="form-label"><strong>UACS Code</strong></label>
                             <input type="text"
                                    name="uac_codes"
                                    class="form-control">
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Amount</label>
+                            <label class="form-label"><strong>Amount</strong></label>
                             <input type="number"
                                    step="0.01"
                                    name="amount"
@@ -89,21 +89,21 @@
                     <div class="row g-3">
 
                         <div class="col-md-4">
-                            <label class="form-label">Date Returned</label>
+                            <label class="form-label"><strong>Date Returned</strong></label>
                             <input type="date"
                                    name="date_returned_1"
                                    class="form-control">
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label">Date Received</label>
+                            <label class="form-label"><strong>Date Received</strong></label>
                             <input type="date"
                                    name="date_received_1"
                                    class="form-control">
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label">Remarks</label>
+                            <label class="form-label"><strong>Remarks</strong></label>
                             <input type="text"
                                    name="remarks_1"
                                    class="form-control">
@@ -119,21 +119,21 @@
                     <div class="row g-3">
 
                         <div class="col-md-4">
-                            <label class="form-label">Date Forwarded</label>
+                            <label class="form-label"><strong>Date Forwarded</strong></label>
                             <input type="date"
                                    name="date_forwarded_1"
                                    class="form-control">
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label">Date ORS Received</label>
+                            <label class="form-label"><strong>Date ORS Received</strong></label>
                             <input type="date"
                                    name="date_ors_received"
                                    class="form-control">
                         </div>
 
                         <div class="col-md-4">
-                            <label class="form-label">Remarks</label>
+                            <label class="form-label"><strong>Remarks</strong></label>
                             <input type="text"
                                    name="remarks_2"
                                    class="form-control">
@@ -149,14 +149,14 @@
                     <div class="row g-3">
 
                         <div class="col-md-6">
-                            <label class="form-label">Date Returned</label>
+                            <label class="form-label"><strong>Date Returned</strong></label>
                             <input type="date"
                                    name="date_returned_2"
                                    class="form-control">
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Date Received</label>
+                            <label class="form-label"><strong>Date Received</strong></label>
                             <input type="date"
                                    name="date_received_2"
                                    class="form-control">
@@ -172,14 +172,14 @@
                     <div class="row g-3">
 
                         <div class="col-md-6">
-                            <label class="form-label">Date Forwarded to Accounting</label>
+                            <label class="form-label"><strong>Date Forwarded to Accounting</strong></label>
                             <input type="date"
                                    name="date_forwarded_accounting"
                                    class="form-control">
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Total Time in Budget</label>
+                            <label class="form-label"><strong>Total Time in Budget</strong></label>
                             <input type="text"
                                    name="total_time_budget"
                                    class="form-control">
@@ -195,7 +195,7 @@
                     <div class="row g-3">
 
                         <div class="col-md-6">
-                            <label class="form-label">Status</label>
+                            <label class="form-label"><strong>Status</strong></label>
 
                             <select name="status" class="form-select">
                                 <option value="Pending" selected>Pending</option>
@@ -209,14 +209,14 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label class="form-label">Total Time</label>
+                            <label class="form-label"><strong>Total Time</strong></label>
                             <input type="text"
                                    name="total_time"
                                    class="form-control">
                         </div>
 
                         <div class="col-12">
-                            <label class="form-label">Final Remarks</label>
+                            <label class="form-label"><strong>Final Remarks</strong></label>
                             <textarea name="final_remarks"
                                       rows="3"
                                       class="form-control"></textarea>
