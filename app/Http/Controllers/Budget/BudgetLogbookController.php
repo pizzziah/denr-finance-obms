@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Budget;
 
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -10,11 +12,14 @@ class BudgetLogbookController extends Controller
 {
     public function logbook(Request $request)
     {
+            $this->checkDueDateNotifications();
+        
         $year   = $request->year ?? 'all';
         $month  = $request->month;
         $status = $request->status ?? 'all';
         $search = $request->search;
         $sort   = $request->sort ?? 'latest';
+        
 
         $statusText = match ($status) {
             'for_obligation' => 'For Obligation',
@@ -226,7 +231,7 @@ class BudgetLogbookController extends Controller
             'date_received'             => $request->date_received,
             'payee'                     => $request->payee,
             'issuing_office'            => $request->issuing_office,
-            'classifications'            => $request->classification,
+            'classification'            => $request->classification,
             'particulars'               => $request->particulars,
             'uac_codes'                 => $request->uac_codes,
             'amount'                    => $request->amount,
@@ -260,5 +265,35 @@ class BudgetLogbookController extends Controller
         return redirect()
             ->route('budget.logbook')
             ->with('success', 'Record deleted successfully.');
+    }
+    
+    private function checkDueDateNotifications()
+    {
+        $targetDate = Carbon::today()->addDays(3);
+
+        $records = DB::table('odms_budget')
+            ->whereDate('due_date', $targetDate)
+            ->get();
+
+        foreach ($records as $record) {
+
+            $exists = Notification::where('type', 'due_date')
+                ->where('related_id', $record->budget_id)
+                ->exists();
+
+            if (!$exists) {
+
+                Notification::create([
+                    'title'      => 'Due Date Reminder',
+                    'message'    => "ORS No. {$record->ors_no} ({$record->payee}) is due in 3 days.",
+                    'type'       => 'due_date',
+                    'related_id' => $record->budget_id,
+                    'user_id'    => auth()->id(),
+                    'due_date'   => $record->due_date,
+                    'priority'   => 'High',
+                    'is_read'    => 0,
+                ]);
+            }
+        }
     }
 }

@@ -81,6 +81,10 @@ document.addEventListener('DOMContentLoaded', () => {
                                     <div class="col-7">${row.particulars_remark ?? '-'}</div>
                                 </div>
                                 <div class="row  ">
+                                    <div class="col-5 fw-bold">Due Date:</div>
+                                    <div class="col-7">${row.due_date ?? '-'}</div>
+                                </div>
+                                <div class="row  ">
                                     <div class="col-5 fw-bold">Amount:</div>
                                         <div class="col-7">
                                             ₱${Number(row.amount ?? 0).toLocaleString(undefined,{
@@ -482,4 +486,120 @@ function printDetails() {
         printWindow.close();
     },500);
 }
+
+
+function loadNotifications() {
+
+    fetch('/notifications')
+        .then(response => response.json())
+        .then(data => {
+
+            const badge = document.getElementById('notificationBadge');
+            const list = document.getElementById('notificationList');
+
+            if (!badge || !list) return;
+
+            if (data.unreadCount > 0) {
+                badge.innerHTML = data.unreadCount;
+                badge.classList.remove('d-none');
+            } else {
+                badge.classList.add('d-none');
+            }
+
+            list.innerHTML = '';
+
+            if (data.notifications.length === 0) {
+
+                list.innerHTML = `
+                    <div class="text-center p-4 text-muted">
+                        No notifications
+                    </div>
+                `;
+
+                return;
+            }
+
+            data.notifications.forEach(notification => {
+
+                list.innerHTML += `
+                    <a href="#"
+                    class="dropdown-item notification-item p-3 ${notification.is_read ? '' : 'bg-light'}"
+                    data-id="${notification.id}">
+
+                        <div class="fw-bold">
+                            ${notification.title}
+                        </div>
+
+                        <div class="small text-muted">
+                            ${notification.message}
+                        </div>
+
+                        <div class="mt-2">
+                            <span class="badge ${
+                                notification.priority === 'High'
+                                    ? 'bg-danger'
+                                    : notification.priority === 'Medium'
+                                    ? 'bg-warning text-dark'
+                                    : 'bg-secondary'
+                            }">
+                                ${notification.priority}
+                            </span>
+                        </div>
+
+                        <small class="text-secondary d-block mt-2">
+                            Due: ${notification.due_date ?? '-'}
+                        </small>
+
+                        <small class="text-muted d-block">
+                            ${new Date(notification.created_at).toLocaleString()}
+                        </small>
+
+                    </a>
+                `;
+
+            });
+
+        });
+
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    loadNotifications();
+
+    setInterval(loadNotifications, 30000);
+
+    document.addEventListener('click', function (e) {
+
+        const item = e.target.closest('.notification-item');
+
+        if (!item) return;
+
+        e.preventDefault();
+
+        fetch('/notifications/' + item.dataset.id + '/read', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        }).then(() => {
+            loadNotifications();
+        });
+
+    });
+
+    document.getElementById('readAllBtn')?.addEventListener('click', function () {
+
+        fetch('/notifications/read-all', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            }
+        }).then(() => {
+            loadNotifications();
+        });
+
+    });
+
+});
 </script>
