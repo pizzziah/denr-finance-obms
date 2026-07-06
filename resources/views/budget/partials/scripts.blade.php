@@ -1,604 +1,290 @@
-{{-- ACTION SCRIPT --}}
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // COMMON FUNCTION
-    async function getRecord(budget_id) {
-        const response = await fetch(`/budget/logbook/${encodeURIComponent(budget_id)}/details`);
-        if (!response.ok) {throw new Error('Unable to load record.'); }
-        return await response.json();
-    }
-    // VIEW BUTTON
-    document.querySelectorAll('.view-btn').forEach(button => {
-        button.addEventListener('click', function () {
-            const budget_id = this.dataset.budgetId;
-            const modal = bootstrap.Modal.getOrCreateInstance(
-                document.getElementById('detailsModal')
-            );
 
-            modal.show();
-            
-            document.getElementById('detailsBody').innerHTML = `
-                <div class="text-center py-5">
-                    <div class="spinner-border text-success"></div>
-                </div>
-            `;
+    const $ = (id) => document.getElementById(id);
 
-            fetch('/budget/logbook/' + budget_id + '/details')
-                .then(response => response.json())
-                .then(row => {
-                    document.getElementById('transactionTitle').textContent =
-                        row.ors_no ?? '-';
-
-                    document.getElementById('transactionSubtitle').textContent =
-                        row.payee ?? '-';
-                    
-                        document.getElementById('detailsEditBtn').onclick = function () {
-
-                    bootstrap.Modal.getInstance(
-                        document.getElementById('detailsModal')
-                        ).hide();
-
-                        openEditModal(budget_id);
-
-                    };
-                    let html = `
-
-                    <div class="container-fluid">
-                        <div class="row">
-                            <!-- Section Title -->
-                            <div class="col-2 fw-bold fs-4 lh-1">
-                                Request<br>Information
-                            </div>
-
-                            <!-- Left Column -->
-                            <div class="col-5">
-                                <div class="row">
-                                    <div class="col-5 fw-bold">Date Received:</div>
-                                    <div class="col-7">${row.date_received ?? '-'}</div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-5 fw-bold">Issuing Office:</div>
-                                    <div class="col-7">${row.issuing_office ?? '-'}</div>
-                                </div>
-                            </div>
-
-                            <!-- Right Column -->
-                            <div class="col-5">
-                                <div class="row">
-                                    <div class="col-5 fw-bold">Payee:</div>
-                                    <div class="col-7">${row.payee ?? '-'}</div>
-                                </div>
-                                <div class="row  ">
-                                    <div class="col-5 fw-bold">Classification:</div>
-                                    <div class="col-7">${row.classification ?? '-'}</div>
-                                </div>
-                                <div class="row  ">
-                                    <div class="col-5 fw-bold">Particulars:</div>
-                                    <div class="col-7">${row.particulars ?? '-'}</div>
-                                </div>
-                                <div class="row  ">
-                                    <div class="col-5 fw-bold">Particulars Remark:</div>
-                                    <div class="col-7">${row.particulars_remark ?? '-'}</div>
-                                </div>
-                                <div class="row  ">
-                                    <div class="col-5 fw-bold">Due Date:</div>
-                                    <div class="col-7">${row.due_date ?? '-'}</div>
-                                </div>
-                                <div class="row  ">
-                                    <div class="col-5 fw-bold">Amount:</div>
-                                        <div class="col-7">
-                                            ₱${Number(row.amount ?? 0).toLocaleString(undefined,{
-                                                minimumFractionDigits:2,
-                                                maximumFractionDigits:2
-                                                })}
-                                        </div>
-                                </div>
-                            </div>   
-                        </div>
-
-                        <hr>
-
-                        <div class="row">
-                            <div class="col-2 fw-bold fs-4 lh-1">
-                                Review<br>Processing
-                            </div>
-                            
-                            <!-- LEFT COLUMN -->
-                            <div class="col-5">
-                                <div class="row mb">
-                                    <div class="col-5 fw-bold">Status:</div>
-                                    <div class="col-7">${row.status ?? '-'}</div>
-                                </div>
-                            </div>
-
-                            <!-- RIGHT COLUMN -->
-                            <div class="col-5">
-                                <div class="row mb-2">
-                                    <div class="col-5 fw-bold">Date Returned:</div>
-                                    <div class="col-7">${row.date_returned_1 ?? '-'}</div>
-                                </div>
-                                <div class="row mb-2">
-                                    <div class="col-5 fw-bold">Remarks:</div>
-                                    <div class="col-7">${row.remarks_1?? '-'}</div>
-                                </div>
-                                <div class="row mb-2">
-                                    <div class="col-5 fw-bold">Date Received:</div>
-                                    <div class="col-7">${row.date_received_1 ?? '-'}</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <hr> 
-
-                        <div class="row">
-                            <div class="col-2 fw-bold fs-4 lh-1">
-                                Obligation<br>Processing
-                            </div>
-                            
-                            <!-- LEFT COLUMN -->
-                            <div class="col-5">
-                                <div class="row">
-                                    <div class="col-5 fw-bold">ORS No:</div>
-                                    <div class="col-7">${row.ors_no ?? '-'}</div>
-                                </div>
-                            </div>
-
-                            <!-- RIGHT COLUMN -->
-                            <div class="col-5">
-                                <div class="row">
-                                    <div class="col-5 fw-bold">Date Forwarded:</div>
-                                    <div class="col-7">${row.date_forwarded_1 ?? '-'}</div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-5 fw-bold">Date ORS received:</div>
-                                    <div class="col-7">${row.date_ors_received ?? '-'}</div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-5 fw-bold">Date Returned:</div>
-                                    <div class="col-7">${row.date_returned_2 ?? '-'}</div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-5 fw-bold">Remarks:</div>
-                                    <div class="col-7">${row.remarks_2 ?? '-'}</div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-5 fw-bold">Date Received:</div>
-                                    <div class="col-7">${row.date_received_2 ?? '-'}</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <hr> 
-
-                        <div class="row">
-                            <div class="col-2 fw-bold fs-4 lh-1">
-                                Forwarded<br>to Accounting
-                            </div>
-                            
-                            <!-- LEFT COLUMN -->
-                            <div class="col-5">
-                                <div class="row mb-2">
-                                    <div class="col-5 fw-bold">Date Forwarded to Acccounting:</div>
-                                    <div class="col-7">${row.date_forwarded_accounting ?? '-'}</div>
-                                </div>
-                                <div class="row mb-2">
-                                    <div class="col-5 fw-bold">Remarks:</div>
-                                    <div class="col-7">${row.final_remarks ?? '-'}</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <hr> 
-
-                        <div class="row">
-                            <div class="col-2 fw-bold fs-4 lh-1">
-                                Processing<br>Metrics
-                            </div>
-                            
-                            <!-- LEFT COLUMN -->
-                            <div class="col-5">
-                                <div class="row mb-2">
-                                    <div class="col-5 fw-bold">Total Time in Budget:</div>
-                                    <div class="col-7">${row.total_time_budget ?? '-'}</div>
-                                </div>
-                                <div class="row mb-2">
-                                    <div class="col-5 fw-bold">Total Time:</div>
-                                    <div class="col-7">${row.total_time ?? '-'}</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    `;
-
-                    document.getElementById('detailsBody').innerHTML = html;
-                })
-                .catch(() => {
-                    document.getElementById('detailsBody').innerHTML = `
-                        <div class="alert alert-danger">
-                            Unable to load record.
-                        </div>
-                    `;
-                });
-        });
-    });
-    function prettyDate(dateString) {
-            if (!dateString) return '';
-
-            return new Date(dateString).toLocaleString('en-PH', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true
-            });
-        }
-        // Convert MySQL DATETIME -> datetime-local format
+    // ===================== FORMAT DATETIME =====================
     function formatDateTime(value) {
         if (!value) return '';
-
-        // 2026-06-08 17:05:00 -> 2026-06-08T17:05
         return value.replace(' ', 'T').substring(0, 16);
     }
 
-    // ===================== OPEN EDIT MODAL =====================
-    async function openEditModal(budget_id) {
+    // ===================== TOMSELECT INIT =====================
+    function initTomSelect(context = document) {
 
-        try {
+        const config = {
+            create: false,
+            allowEmptyOption: true,
+            placeholder: "Search..."
+        };
 
-            const row = await getRecord(budget_id);
+        const selectors = [
+            '#edit_issuing_office',
+            '#edit_classifications',
+            '#edit_uac_codes',
 
-            document.getElementById('editForm').action =
-                `/budget/logbook/${encodeURIComponent(budget_id)}/update`;
+            'select[name="issuing_office"]',
+            'select[name="classification"]',
+            'select[name="uac_codes"]'
+        ];
 
-            const fields = [
-                'ors_no',
-                'date_received',
-                'payee',
-                'particulars',
-                'amount',
+        selectors.forEach(sel => {
+            const el = context.querySelector(sel);
+            if (!el) return;
 
-                'date_returned_1',
-                'date_received_1',
-                'remarks_1',
-
-                'date_forwarded_1',
-                'date_ors_received',
-                'remarks_2',
-
-                'date_returned_2',
-                'date_received_2',
-
-                'date_forwarded_accounting',
-
-                'status',
-                'total_time_budget',
-                'total_time',
-                'final_remarks'
-            ];
-
-            fields.forEach(field => {
-
-                const input = document.getElementById('edit_' + field);
-
-                if (!input) return;
-
-                if (input.type === 'datetime-local') {
-
-                    input.value = formatDateTime(row[field]);
-
-                } else if (input.type === 'date') {
-
-                    input.value = row[field]
-                        ? row[field].substring(0,10)
-                        : '';
-
-                } else {
-
-                    input.value = row[field] ?? '';
-
-                }
-
-            });
-
-            // ===================== ISSUING OFFICE =====================
-
-            if (!document.getElementById('edit_issuing_office').tomselect) {
-
-                new TomSelect('#edit_issuing_office',{
-                    create:false,
-                    searchField:['text'],
-                    placeholder:'Search Issuing Office...'
-                });
-
+            // destroy old instance if exists
+            if (el.tomselect) {
+                el.tomselect.destroy();
             }
 
-            document
-                .getElementById('edit_issuing_office')
-                .tomselect
-                .setValue(row.issuing_office ?? '', true);
-
-            // ===================== CLASSIFICATION =====================
-
-            if (!document.getElementById('edit_classifications').tomselect) {
-
-                new TomSelect('#edit_classifications',{
-                    create:false,
-                    searchField:['text'],
-                    placeholder:'Search Classification...'
-                });
-
-            }
-
-            document
-                .getElementById('edit_classifications')
-                .tomselect
-                .setValue(row.classification ?? '', true);
-
-            // ===================== UACS =====================
-
-            if (!document.getElementById('edit_uac_codes').tomselect) {
-
-                new TomSelect('#edit_uac_codes',{
-                    create:false,
-                    searchField:['text','value'],
-                    placeholder:'Search UACS Code...'
-                });
-
-            }
-
-            document
-                .getElementById('edit_uac_codes')
-                .tomselect
-                .setValue(row.uac_codes ?? '', true);
-
-            bootstrap.Modal.getOrCreateInstance(
-                document.getElementById('editModal')
-            ).show();
-
-        } catch (error) {
-
-            console.error(error);
-
-            alert(error.message);
-
-        }
-
+            new TomSelect(el, config);
+        });
     }
 
-    // ===================== EDIT BUTTON =====================
+    // ===================== GET RECORD =====================
+    async function getRecord(id) {
+        const res = await fetch(`/budget/logbook/${encodeURIComponent(id)}/details`);
+        if (!res.ok) throw new Error('Unable to load record.');
+        return await res.json();
+    }
 
-    document.querySelectorAll('.edit-btn').forEach(button => {
+    // ===================== VIEW =====================
+    document.addEventListener('click', async (e) => {
+        const btn = e.target.closest('.view-btn');
+        if (!btn) return;
 
-        button.addEventListener('click', function () {
+        const id = btn.dataset.budgetId;
+        const modal = bootstrap.Modal.getOrCreateInstance($('detailsModal'));
 
-            openEditModal(this.dataset.budgetId);
+        modal.show();
 
-        });
+        $('detailsBody').innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border text-success"></div>
+            </div>
+        `;
 
-    });
-    
-    document.getElementById('editForm').addEventListener('submit', function (e) {
+        try {
+            const row = await getRecord(id);
 
-        const orsInput = document.getElementById('edit_ors_no');
-        const errorBox = document.getElementById('editError');
+            $('transactionTitle').textContent = row.ors_no ?? '-';
+            $('transactionSubtitle').textContent = row.payee ?? '-';
 
-        errorBox.classList.add('d-none');
-        errorBox.innerHTML = '';
+            $('detailsEditBtn').onclick = () => {
+                modal.hide();
+                openEditModal(id);
+            };
 
-        const ors = orsInput.value.trim();
+            $('detailsBody').innerHTML = `
+            <div class="container-fluid">
 
-        if (ors !== '' && !/^\d+$/.test(ors)) {
+                <div class="row">
+                    <div class="col-2 fw-bold fs-4">Request<br>Information</div>
 
-            e.preventDefault();
-
-            errorBox.innerHTML = 'ORS No. must contain numbers only.';
-            errorBox.classList.remove('d-none');
-
-            orsInput.focus();
-
-            return;
-        }
-
-    }); 
-
-    // DELETE BUTTON
-    document.querySelectorAll('.delete-btn').forEach(button => {
-        button.addEventListener('click', function(){
-            const budget_id = this.dataset.budgetId;
-            const payee = this.dataset.payee;
-
-            document.getElementById('actionTitle').textContent = 'Delete Record';
-            document.getElementById('actionBody').innerHTML =
-                `Are you sure you want to delete <strong>${budget_id}</strong>?`;
-            document.getElementById('actionFooter').innerHTML = `
-                <form method="POST" action="/budget/logbook/${encodeURIComponent(budget_id)}/destroy">
-                    @csrf
-                    @method('DELETE')
-                    <button class="btn btn-danger">Delete</button>
-                </form>
-                <button class="btn btn-secondary" data-bs-dismiss="modal">
-                    Cancel
-                </button>
-            `;
-            bootstrap.Modal.getOrCreateInstance(
-                document.getElementById('actionModal')
-            ).show();
-        });
-    });
-});
-
-// PRINT DETAILS
-function printDetails() {
-    const content = document.getElementById('detailsBody').innerHTML;
-    const printWindow = window.open('', '_blank');
-
-    printWindow.document.write(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Budget Transaction</title>
-
-            <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-            <style>
-
-                body{
-                    padding:30px;
-                    font-family:Arial,sans-serif;
-                    font-size:14px;
-                }
-                h4{
-                    text-align:center;
-                    margin-bottom:30px;
-                }
-                hr{
-                    margin:20px 0;
-                }
-                .row{
-                    margin-bottom:12px;
-                }
-                strong{
-                    font-weight:600;
-                }
-                @media print{
-                    body{
-                        margin:0;
-                        padding:20px;
-                    }
-                    .no-print{
-                        display:none;
-                    }
-                }
-            </style>
-        </head>
-        <body>
-            <h4>Accounting Transaction Details</h4>
-            ${content}
-        </body>
-        </html>
-    `);
-
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => {
-        printWindow.print();
-        printWindow.close();
-    },500);
-}
-
-
-function loadNotifications() {
-
-    fetch('/notifications')
-        .then(response => response.json())
-        .then(data => {
-
-            const badge = document.getElementById('notificationBadge');
-            const list = document.getElementById('notificationList');
-
-            if (!badge || !list) return;
-
-            if (data.unreadCount > 0) {
-                badge.innerHTML = data.unreadCount;
-                badge.classList.remove('d-none');
-            } else {
-                badge.classList.add('d-none');
-            }
-
-            list.innerHTML = '';
-
-            if (data.notifications.length === 0) {
-
-                list.innerHTML = `
-                    <div class="text-center p-4 text-muted">
-                        No notifications
+                    <div class="col-5">
+                        <div>Date Received: ${row.date_received ?? '-'}</div>
+                        <div>Issuing Office: ${row.issuing_office ?? '-'}</div>
                     </div>
-                `;
 
-                return;
-            }
-
-            data.notifications.forEach(notification => {
-
-                list.innerHTML += `
-                    <a href="#"
-                    class="dropdown-item notification-item p-3 ${notification.is_read ? '' : 'bg-light'}"
-                    data-id="${notification.id}">
-
-                        <div class="fw-bold">
-                            ${notification.title}
+                    <div class="col-5">
+                        <div>Payee: ${row.payee ?? '-'}</div>
+                        <div>Classification: ${row.classification ?? '-'}</div>
+                        <div>Particulars: ${row.particulars ?? '-'}</div>
+                        <div>Remark: ${row.particulars_remark ?? '-'}</div>
+                        <div>Due Date: ${row.due_date ?? '-'}</div>
+                        <div>
+                            Amount: ₱${Number(row.amount ?? 0).toLocaleString(undefined,{
+                                minimumFractionDigits:2,
+                                maximumFractionDigits:2
+                            })}
                         </div>
+                    </div>
+                </div>
 
-                        <div class="small text-muted">
-                            ${notification.message}
-                        </div>
+                <hr>
 
-                        <div class="mt-2">
-                            <span class="badge ${
-                                notification.priority === 'High'
-                                    ? 'bg-danger'
-                                    : notification.priority === 'Medium'
-                                    ? 'bg-warning text-dark'
-                                    : 'bg-secondary'
-                            }">
-                                ${notification.priority}
-                            </span>
-                        </div>
+                <div class="row">
+                    <div class="col-2 fw-bold fs-4">Review<br>Processing</div>
 
-                        <small class="text-secondary d-block mt-2">
-                            Due: ${notification.due_date ?? '-'}
-                        </small>
+                    <div class="col-5">
+                        <div>Status: ${row.status ?? '-'}</div>
+                    </div>
 
-                        <small class="text-muted d-block">
-                            ${new Date(notification.created_at).toLocaleString()}
-                        </small>
+                    <div class="col-5">
+                        <div>Date Returned: ${row.date_returned_1 ?? '-'}</div>
+                        <div>Remarks: ${row.remarks_1 ?? '-'}</div>
+                        <div>Date Received: ${row.date_received_1 ?? '-'}</div>
+                    </div>
+                </div>
 
-                    </a>
-                `;
+                <hr>
 
+                <div class="row">
+                    <div class="col-2 fw-bold fs-4">Obligation<br>Processing</div>
+
+                    <div class="col-5">
+                        <div>ORS No: ${row.ors_no ?? '-'}</div>
+                    </div>
+
+                    <div class="col-5">
+                        <div>Date Forwarded: ${row.date_forwarded_1 ?? '-'}</div>
+                        <div>Date ORS Received: ${row.date_ors_received ?? '-'}</div>
+                        <div>Date Returned: ${row.date_returned_2 ?? '-'}</div>
+                        <div>Remarks: ${row.remarks_2 ?? '-'}</div>
+                        <div>Date Received: ${row.date_received_2 ?? '-'}</div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="row">
+                    <div class="col-2 fw-bold fs-4">Forwarded<br>to Accounting</div>
+
+                    <div class="col-5">
+                        <div>Date Forwarded: ${row.date_forwarded_accounting ?? '-'}</div>
+                    </div>
+
+                    <div class="col-5">
+                        <div>Remarks: ${row.final_remarks ?? '-'}</div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="row">
+                    <div class="col-2 fw-bold fs-4">Processing<br>Metrics</div>
+
+                    <div class="col-5">
+                        <div>Total Time in Budget: ${row.total_time_budget ?? '-'}</div>
+                    </div>
+
+                    <div class="col-5">
+                        <div>Total Time: ${row.total_time ?? '-'}</div>
+                    </div>
+                </div>
+
+            </div>
+            `;
+        } catch (err) {
+            $('detailsBody').innerHTML = `
+                <div class="alert alert-danger">
+                    Unable to load record.
+                </div>
+            `;
+        }
+    });
+
+    // ===================== OPEN EDIT MODAL =====================
+    window.openEditModal = async (id) => {
+        try {
+            const row = await getRecord(id);
+
+            $('editForm').action = `/budget/logbook/${encodeURIComponent(id)}/update`;
+
+            const fields = [
+                'ors_no','date_received','payee','particulars','amount',
+                'date_returned_1','date_received_1','remarks_1',
+                'date_forwarded_1','date_ors_received','remarks_2',
+                'date_returned_2','date_received_2',
+                'date_forwarded_accounting','status',
+                'total_time_budget','total_time','final_remarks'
+            ];
+
+            fields.forEach(f => {
+                const el = $('edit_' + f);
+                if (!el) return;
+
+                if (el.type === 'datetime-local') {
+                    el.value = formatDateTime(row[f]);
+                } else if (el.type === 'date') {
+                    el.value = row[f]?.substring(0, 10) ?? '';
+                } else {
+                    el.value = row[f] ?? '';
+                }
             });
 
-        });
+            // FIX: re-init dropdowns AFTER values are loaded
+            setTimeout(() => {
+                initTomSelect(document);
+            }, 50);
 
-}
+            bootstrap.Modal.getOrCreateInstance($('editModal')).show();
+
+        } catch (e) {
+            alert(e.message);
+        }
+    };
+
+    // ===================== EDIT BUTTON =====================
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.edit-btn');
+        if (btn) openEditModal(btn.dataset.budgetId);
+    });
+
+    // ===================== ORS VALIDATION =====================
+    $('editForm')?.addEventListener('submit', (e) => {
+        const ors = $('edit_ors_no');
+        const err = $('editError');
+
+        err?.classList.add('d-none');
+
+        if (ors.value.trim() && !/^\d+$/.test(ors.value.trim())) {
+            e.preventDefault();
+            err.innerHTML = 'ORS No. must be numeric.';
+            err.classList.remove('d-none');
+            ors.focus();
+        }
+    });
+
+    // ===================== DELETE =====================
+    document.addEventListener('click', (e) => {
+        const btn = e.target.closest('.delete-btn');
+        if (!btn) return;
+
+        const id = btn.dataset.budgetId;
+
+        $('actionTitle').textContent = 'Delete Record';
+        $('actionBody').innerHTML = `Delete <strong>${id}</strong>?`;
+
+        $('actionFooter').innerHTML = `
+            <form method="POST" action="/budget/logbook/${encodeURIComponent(id)}/destroy">
+                @csrf @method('DELETE')
+                <button class="btn btn-danger">Delete</button>
+            </form>
+            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        `;
+
+        bootstrap.Modal.getOrCreateInstance($('actionModal')).show();
+    });
+
+    // ===================== ADD MODAL INIT =====================
+    document.getElementById('addRecordModal')
+    ?.addEventListener('shown.bs.modal', function () {
+        initTomSelect(this);
+    });
+
+    // ===================== INITIAL LOAD =====================
+    initTomSelect(document);
+
+});
 
 document.addEventListener('DOMContentLoaded', function () {
 
-    loadNotifications();
+    const container = document.getElementById('reviewRowsContainer');
+    const template = document.getElementById('reviewRowTemplate');
+    const addBtn = document.getElementById('btnAddReviewRow');
 
-    setInterval(loadNotifications, 30000);
-
-    document.addEventListener('click', function (e) {
-
-        const item = e.target.closest('.notification-item');
-
-        if (!item) return;
-
-        e.preventDefault();
-
-        fetch('/notifications/' + item.dataset.id + '/read', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            }
-        }).then(() => {
-            loadNotifications();
-        });
-
+    // ADD ROW
+    addBtn.addEventListener('click', function () {
+        const clone = template.content.cloneNode(true);
+        container.appendChild(clone);
     });
 
-    document.getElementById('readAllBtn')?.addEventListener('click', function () {
-
-        fetch('/notifications/read-all', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            }
-        }).then(() => {
-            loadNotifications();
-        });
-
+    // REMOVE ROW (event delegation)
+    container.addEventListener('click', function (e) {
+        if (e.target.classList.contains('btnRemoveReview')) {
+            e.target.closest('.review-row').remove();
+        }
     });
 
 });
