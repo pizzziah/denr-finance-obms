@@ -13,7 +13,7 @@
                 <div class="modal-body">
 
                     <div class="mb-3">
-                        <label>Year</label>
+                        <label><strong>Year</strong></label>
                         <select name="year" class="form-select">
                             <option value="all">All</option>
                             <option value="2025" @selected(request('year')=='2025')>2025</option>
@@ -22,7 +22,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label>Month</label>
+                        <label><strong>Month</strong></label>
                         <select name="month" class="form-select">
                             <option value="">All</option>
                             @for($m=1;$m<=12;$m++)
@@ -34,7 +34,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label>Status</label>
+                        <label><strong>Status</strong></label>
                         <select name="status" class="form-select">
                             <option value="all">All</option>
                             <option value="pending">Pending</option>
@@ -49,7 +49,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label>Sort</label>
+                        <label><strong>Sort</strong></label>
                         <select name="sort" class="form-select">
                             <option value="latest">Latest Date</option>
                             <option value="ors_asc">ORS Ascending</option>
