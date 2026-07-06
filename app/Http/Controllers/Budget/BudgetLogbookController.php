@@ -161,6 +161,7 @@ class BudgetLogbookController extends Controller
             'total_time_budget' => 'nullable|string|max:255',
             'total_time' => 'nullable|string|max:255',
             'final_remarks' => 'nullable|string',
+            'due_date' => 'nullable|date',
         ]);
         DB::table('odms_budget')
             ->where('budget_id', $budget_id)
@@ -186,6 +187,7 @@ class BudgetLogbookController extends Controller
                 'total_time_budget'         => $request->total_time_budget,
                 'total_time'                => $request->total_time,
                 'final_remarks'             => $request->final_remarks,
+                'due_date'                  => $request->due_date,
             ]);
 
         return redirect()
@@ -216,6 +218,7 @@ class BudgetLogbookController extends Controller
             'total_time_budget' => 'nullable|string|max:255',
             'total_time' => 'nullable|string|max:255',
             'final_remarks' => 'nullable|string',
+            'due_date' => 'nullable|date',
         ]);
 
         DB::table('odms_budget')->insert([
@@ -240,6 +243,7 @@ class BudgetLogbookController extends Controller
             'total_time_budget'         => $request->total_time_budget,
             'total_time'                => $request->total_time,
             'final_remarks'             => $request->final_remarks,
+            'due_date'                  => $request->due_date,
         ]);
 
         return redirect()
