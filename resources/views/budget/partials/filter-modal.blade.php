@@ -6,8 +6,10 @@
             <div class="modal-content">
 
                 <div class="modal-header">
-                    <h5 class="modal-title">Filters</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title d-flex align-items-center gap-2"><i class="bi bi-sort-down"></i>
+                        <span>Sort Records</span>
+                    </h5>
+                    <button type="button"class="btn-close"data-bs-dismiss="modal"></button>
                 </div>
 
                 <div class="modal-body">
@@ -47,16 +49,6 @@
                             <option value="returned">Returned</option>
                         </select>
                     </div>
-
-                    <div class="mb-3">
-                        <label><strong>Sort</strong></label>
-                        <select name="sort" class="form-select">
-                            <option value="latest">Latest Date</option>
-                            <option value="ors_asc">ORS Ascending</option>
-                            <option value="ors_desc">ORS Descending</option>
-                        </select>
-                    </div>
-
                     <input type="hidden" name="search" value="{{ request('search') }}">
 
                 </div>
