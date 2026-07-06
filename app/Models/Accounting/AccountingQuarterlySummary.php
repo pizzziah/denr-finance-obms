@@ -8,8 +8,10 @@ use Illuminate\Support\Facades\Schema;
 
 class AccountingQuarterlySummary extends Model
 {
-    protected $table = 'odms_accounting_2026_q1'; 
+    protected $table = 'odms_accounting_2026_q1';
+
     protected $primaryKey = 'q1_id';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -21,7 +23,7 @@ class AccountingQuarterlySummary extends Model
         'nca_nta_downloaded',
         'balance',
         'ada_no',
-        'remarks'
+        'remarks',
     ];
 
     /**
@@ -35,13 +37,13 @@ class AccountingQuarterlySummary extends Model
         // Dynamically compute names based on the selected year and quarter context
         $tableName = "odms_accounting_{$year}_q{$quarter}";
         $pkName = "q{$quarter}_id";
-        
+
         // Ensure table exists dynamically in the database
         $this->ensureTableExists($tableName, $pkName);
 
         $this->setTable($tableName);
         $this->primaryKey = $pkName;
-        
+
         return $this;
     }
 
@@ -50,7 +52,7 @@ class AccountingQuarterlySummary extends Model
      */
     protected function ensureTableExists($tableName, $primaryKeyName)
     {
-        if (!Schema::hasTable($tableName)) {
+        if (! Schema::hasTable($tableName)) {
             Schema::create($tableName, function (Blueprint $table) use ($primaryKeyName) {
                 $table->bigIncrements($primaryKeyName);
                 $table->string('emds_date', 100)->nullable();
@@ -71,9 +73,12 @@ class AccountingQuarterlySummary extends Model
      */
     public static function parseMoney($value)
     {
-        if (empty($value)) return 0.00;
+        if (empty($value)) {
+            return 0.00;
+        }
         $cleaned = str_replace(['₱', ',', ' ', '(', ')'], '', $value);
         $floatVal = is_numeric($cleaned) ? (float) $cleaned : 0.00;
+
         return str_contains($value, '(') ? -$floatVal : $floatVal;
     }
 }

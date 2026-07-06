@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Notification;
 
 class NotificationController extends Controller
@@ -10,11 +9,11 @@ class NotificationController extends Controller
     public function index()
     {
         return response()->json([
-            'unreadCount' => Notification::where('is_read',0)->count(),
+            'unreadCount' => Notification::where('is_read', 0)->count(),
 
             'notifications' => Notification::latest()
                 ->take(10)
-                ->get()
+                ->get(),
         ]);
     }
 
@@ -23,23 +22,23 @@ class NotificationController extends Controller
         $notification = Notification::findOrFail($id);
 
         $notification->update([
-            'is_read'=>1
+            'is_read' => 1,
         ]);
 
         return response()->json([
-            'success'=>true
+            'success' => true,
         ]);
     }
 
     public function readAll()
     {
-        Notification::where('is_read',0)
+        Notification::where('is_read', 0)
             ->update([
-                'is_read'=>1
+                'is_read' => 1,
             ]);
 
         return response()->json([
-            'success'=>true
+            'success' => true,
         ]);
     }
 }

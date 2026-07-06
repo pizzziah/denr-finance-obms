@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Budget;
 
 use App\Http\Controllers\Controller;
-use Carbon\Carbon;
 use App\Models\Notification;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -12,14 +12,13 @@ class BudgetLogbookController extends Controller
 {
     public function logbook(Request $request)
     {
-            $this->checkDueDateNotifications();
-        
-        $year   = $request->year ?? 'all';
-        $month  = $request->month;
+        $this->checkDueDateNotifications();
+
+        $year = $request->year ?? 'all';
+        $month = $request->month;
         $status = $request->status ?? 'all';
         $search = $request->search;
-        $sort   = $request->sort ?? 'latest';
-        
+        $sort = $request->sort ?? 'latest';
 
         $statusText = match ($status) {
             'for_obligation' => 'For Obligation',
@@ -50,13 +49,13 @@ class BudgetLogbookController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('ors_no', 'like', "%{$search}%")
-                ->orWhere('payee', 'like', "%{$search}%")
-                ->orWhere('issuing_office', 'like', "%{$search}%")
-                ->orWhere('classification', 'like', "%{$search}%")
-                ->orWhere('uac_codes', 'like', "%{$search}%")
-                ->orWhere('particulars', 'like', "%{$search}%")
-                ->orWhere('status', 'like', "%{$search}%")
-                ->orWhere('final_remarks', 'like', "%{$search}%");
+                    ->orWhere('payee', 'like', "%{$search}%")
+                    ->orWhere('issuing_office', 'like', "%{$search}%")
+                    ->orWhere('classification', 'like', "%{$search}%")
+                    ->orWhere('uac_codes', 'like', "%{$search}%")
+                    ->orWhere('particulars', 'like', "%{$search}%")
+                    ->orWhere('status', 'like', "%{$search}%")
+                    ->orWhere('final_remarks', 'like', "%{$search}%");
             });
         }
 
@@ -104,20 +103,20 @@ class BudgetLogbookController extends Controller
             ->orderBy('new_uac')
             ->get();
 
-        return view('budget.logbook',compact(
-                'records',
-                'year',
-                'month',
-                'status',
-                'search',
-                'sort',
-                'issuingOffices',
-                'classifications',
-                'uacs'
-            )
+        return view('budget.logbook', compact(
+            'records',
+            'year',
+            'month',
+            'status',
+            'search',
+            'sort',
+            'issuingOffices',
+            'classifications',
+            'uacs'
+        )
         );
     }
-    
+
     public function show($budget_id)
     {
         $record = DB::table('odms_budget')
@@ -133,9 +132,9 @@ class BudgetLogbookController extends Controller
             ->where('budget_id', $budget_id)
             ->first();
 
-        if (!$record) {
+        if (! $record) {
             return response()->json([
-                'message' => 'Record not found'
+                'message' => 'Record not found',
             ], 404);
         }
 
@@ -171,34 +170,35 @@ class BudgetLogbookController extends Controller
         DB::table('odms_budget')
             ->where('budget_id', $budget_id)
             ->update([
-                'ors_no'                    => $request->ors_no,
-                'date_received'             => $request->date_received,
-                'payee'                     => $request->payee,
-                'issuing_office'            => $request->issuing_office,
-                'classification'            => $request->classification,
-                'particulars'               => $request->particulars,
-                'uac_codes'                 => $request->uac_codes,
-                'amount'                    => $request->amount,
-                'date_returned_1'           => $request->date_returned_1,
-                'date_received_1'           => $request->date_received_1,
-                'remarks_1'                 => $request->remarks_1,
-                'date_forwarded_1'          => $request->date_forwarded_1,
-                'date_ors_received'         => $request->date_ors_received,
-                'remarks_2'                 => $request->remarks_2,
-                'date_returned_2'           => $request->date_returned_2,
-                'date_received_2'           => $request->date_received_2,
+                'ors_no' => $request->ors_no,
+                'date_received' => $request->date_received,
+                'payee' => $request->payee,
+                'issuing_office' => $request->issuing_office,
+                'classification' => $request->classification,
+                'particulars' => $request->particulars,
+                'uac_codes' => $request->uac_codes,
+                'amount' => $request->amount,
+                'date_returned_1' => $request->date_returned_1,
+                'date_received_1' => $request->date_received_1,
+                'remarks_1' => $request->remarks_1,
+                'date_forwarded_1' => $request->date_forwarded_1,
+                'date_ors_received' => $request->date_ors_received,
+                'remarks_2' => $request->remarks_2,
+                'date_returned_2' => $request->date_returned_2,
+                'date_received_2' => $request->date_received_2,
                 'date_forwarded_accounting' => $request->date_forwarded_accounting,
-                'status'                    => $request->status,
-                'total_time_budget'         => $request->total_time_budget,
-                'total_time'                => $request->total_time,
-                'final_remarks'             => $request->final_remarks,
-                'due_date'                  => $request->due_date,
+                'status' => $request->status,
+                'total_time_budget' => $request->total_time_budget,
+                'total_time' => $request->total_time,
+                'final_remarks' => $request->final_remarks,
+                'due_date' => $request->due_date,
             ]);
 
         return redirect()
             ->route('budget.logbook')
             ->with('success', 'Record updated successfully.');
     }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -227,35 +227,35 @@ class BudgetLogbookController extends Controller
         ]);
 
         DB::table('odms_budget')->insert([
-            'ors_no'                    => $request->ors_no,
-            'date_received'             => $request->date_received,
-            'payee'                     => $request->payee,
-            'issuing_office'            => $request->issuing_office,
-            'classification'            => $request->classification,
-            'particulars'               => $request->particulars,
-            'uac_codes'                 => $request->uac_codes,
-            'amount'                    => $request->amount,
-            'date_returned_1'           => $request->date_returned_1,
-            'date_received_1'           => $request->date_received_1,
-            'remarks_1'                 => $request->remarks_1,
-            'date_forwarded_1'          => $request->date_forwarded_1,
-            'date_ors_received'         => $request->date_ors_received,
-            'remarks_2'                 => $request->remarks_2,
-            'date_returned_2'           => $request->date_returned_2,
-            'date_received_2'           => $request->date_received_2,
+            'ors_no' => $request->ors_no,
+            'date_received' => $request->date_received,
+            'payee' => $request->payee,
+            'issuing_office' => $request->issuing_office,
+            'classification' => $request->classification,
+            'particulars' => $request->particulars,
+            'uac_codes' => $request->uac_codes,
+            'amount' => $request->amount,
+            'date_returned_1' => $request->date_returned_1,
+            'date_received_1' => $request->date_received_1,
+            'remarks_1' => $request->remarks_1,
+            'date_forwarded_1' => $request->date_forwarded_1,
+            'date_ors_received' => $request->date_ors_received,
+            'remarks_2' => $request->remarks_2,
+            'date_returned_2' => $request->date_returned_2,
+            'date_received_2' => $request->date_received_2,
             'date_forwarded_accounting' => $request->date_forwarded_accounting,
-            'status'                    => $request->status,
-            'total_time_budget'         => $request->total_time_budget,
-            'total_time'                => $request->total_time,
-            'final_remarks'             => $request->final_remarks,
-            'due_date'                  => $request->due_date,
+            'status' => $request->status,
+            'total_time_budget' => $request->total_time_budget,
+            'total_time' => $request->total_time,
+            'final_remarks' => $request->final_remarks,
+            'due_date' => $request->due_date,
         ]);
 
         return redirect()
             ->route('budget.logbook')
             ->with('success', 'Budget record added successfully.');
     }
-    
+
     public function destroy($budget_id)
     {
         DB::table('odms_budget')
@@ -266,7 +266,7 @@ class BudgetLogbookController extends Controller
             ->route('budget.logbook')
             ->with('success', 'Record deleted successfully.');
     }
-    
+
     private function checkDueDateNotifications()
     {
         $targetDate = Carbon::today()->addDays(3);
@@ -281,17 +281,17 @@ class BudgetLogbookController extends Controller
                 ->where('related_id', $record->budget_id)
                 ->exists();
 
-            if (!$exists) {
+            if (! $exists) {
 
                 Notification::create([
-                    'title'      => 'Due Date Reminder',
-                    'message'    => "ORS No. {$record->ors_no} ({$record->payee}) is due in 3 days.",
-                    'type'       => 'due_date',
+                    'title' => 'Due Date Reminder',
+                    'message' => "ORS No. {$record->ors_no} ({$record->payee}) is due in 3 days.",
+                    'type' => 'due_date',
                     'related_id' => $record->budget_id,
-                    'user_id'    => auth()->id(),
-                    'due_date'   => $record->due_date,
-                    'priority'   => 'High',
-                    'is_read'    => 0,
+                    'user_id' => auth()->id(),
+                    'due_date' => $record->due_date,
+                    'priority' => 'High',
+                    'is_read' => 0,
                 ]);
             }
         }

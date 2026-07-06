@@ -1,7 +1,5 @@
 <?php
 
-use App\Models\Admin\AdminUser;
-
 return [
 
     /*
