@@ -213,4 +213,71 @@ class AccountingLogbookController extends Controller
             ->route('accounting.logbook')
             ->with('success', 'Transaction deleted successfully.');
     }
+
+    // ================= CASHIER STATUS TAB =================
+    public function cashierStatus(Request $request)
+    {
+        $search = trim($request->search ?? '');
+        $sort   = $request->sort ?? 'latest';
+
+        // Base query hardcoded to "Forwarded to Cashier"
+        $query = DB::table('odms_accounting')->where('status', 'Forwarded to Cashier');
+
+        // Search
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('dv_no', 'like', "%{$search}%")
+                  ->orWhere('obr_no', 'like', "%{$search}%")
+                  ->orWhere('payee', 'like', "%{$search}%")
+                  ->orWhere('particulars', 'like', "%{$search}%");
+            });
+        }
+
+        // Sorting
+        switch ($sort) {
+            case 'obr_asc':
+                $query->orderByRaw("CAST(REGEXP_REPLACE(dv_no,'[^0-9]','') AS UNSIGNED) ASC");
+                break;
+            case 'obr_desc':
+                $query->orderByRaw("CAST(REGEXP_REPLACE(dv_no,'[^0-9]','') AS UNSIGNED) DESC");
+                break;
+            default:
+                $query->orderByDesc(DB::raw('MAX(date_processed)'));
+                break;
+        }
+
+        $records = $query->select(
+            'dv_no',
+            DB::raw('MAX(accounting_id) accounting_id'),
+            DB::raw('MAX(obr_no) obr_no'),
+            DB::raw('MAX(payee) payee'),
+            DB::raw('MAX(particulars) particulars'),
+            DB::raw('MAX(particulars_remark) particulars_remark'),
+            DB::raw('MAX(status) status'),
+            DB::raw('MAX(date_received) date_received'),
+            DB::raw('MAX(date_processed) date_processed'),
+            DB::raw('COUNT(*) total_entries'),
+            DB::raw("SUM(CAST(REPLACE(COALESCE(debit,0), ',', '') AS DECIMAL(15,2))) as total_debit")
+        )
+        ->groupBy('dv_no')
+        ->get();
+
+        return view('accounting.cashier-status', compact('records', 'search', 'sort'));
+    }
+
+    // ================= MARK AS PAID ACTION =================
+    public function markAsPaid(Request $request, $dv_no)
+    {
+        DB::table('odms_accounting')
+            ->where('dv_no', $dv_no)
+            ->update([
+                'status' => 'Paid',
+                'date_processed' => now()->toDateString() // Sets transition timestamp
+            ]);
+
+        return redirect()
+            ->route('accounting.cashier-status')
+            ->with('success', "Transaction {$dv_no} moved to Archives.");
+    }
+
 }
