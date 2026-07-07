@@ -240,43 +240,32 @@ document.addEventListener("DOMContentLoaded", function () {
         },
         
         options: {
-            indexAxis: 'y',
-            responsive: true,
-            maintainAspectRatio: false,
-
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return '₱' + Number(context.raw).toLocaleString('en-PH', {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                            });
-                        }
-                    }
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return '₱' + Number(context.raw).toLocaleString('en-PH', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  });
                 }
-            },
-
-            scales: {
-                x: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return '₱' + Number(value).toLocaleString();
-                        }
-                    }
-                },
-                y: {
-                    ticks: {
-                        autoSkip: false
-                    }
-                }
+              }
             }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return '₱' + Number(value).toLocaleString();
+                }
+              }
+            }
+          }
         }
-
       });
     }
   }
