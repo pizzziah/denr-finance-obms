@@ -77,31 +77,18 @@ class AccountingLogbookController extends Controller
             'transaction_id',
 
             DB::raw('MAX(accounting_id) accounting_id'),
-
             DB::raw('MAX(dv_no) dv_no'),
-
             DB::raw('MAX(obr_no) obr_no'),
-
             DB::raw('MAX(payee) payee'),
-
             DB::raw('MAX(particulars) particulars'),
-
             DB::raw('MAX(particulars_remark) particulars_remark'),
-
             DB::raw('MAX(status) status'),
-
             DB::raw('MAX(date_received) date_received'),
-
             DB::raw('MAX(date_processed) date_processed'),
-
             DB::raw('MAX(obr_date) obr_date'),
-
             DB::raw('MAX(date_signed) date_signed'),
-
             DB::raw('MAX(date_forwarded) date_forwarded'),
-
             DB::raw('MAX(signed_by_accountant) signed_by_accountant'),
-
             DB::raw('COUNT(*) total_entries'),
 
             DB::raw("
@@ -162,49 +149,27 @@ class AccountingLogbookController extends Controller
                 DB::table('odms_accounting')->insert([
 
                     'transaction_id' => $transaction_id,
-
                     'dv_no' => $request->dv_no,
-
                     'ors_no' => $request->ors_no,
-
                     'obr_no' => $request->obr_no,
-
                     'payee' => $request->payee,
-
                     'particulars' => $request->particulars,
-
                     'particulars_remark' => $request->particulars_remark,
-
                     'signed_by_accountant' => $request->signed_by_accountant,
-
                     'status' => $request->status ?? 'Pending',
-
                     'budget_year' => $request->budget_year,
-
                     'source_month' => $request->source_month,
-
                     'date_received' => $request->date_received,
-
                     'date_processed' => $request->date_processed,
-
                     'obr_date' => $request->obr_date,
-
                     'date_signed' => $request->date_signed,
-
                     'date_forwarded' => $request->date_forwarded,
-
                     'returned_remarks' => $request->returned_remarks,
-
                     'uac_codes' => $row['uac_codes'] ?? null,
-
                     'debit' => $row['debit'] ?? 0,
-
                     'credit' => $row['credit'] ?? 0,
-
                     'tax_percent' => $row['tax_percent'] ?? null,
-
                     'tax_remarks' => $row['tax_remarks'] ?? null,
-
                 ]);
 
             }
@@ -214,45 +179,25 @@ class AccountingLogbookController extends Controller
             DB::table('odms_accounting')->insert([
 
                 'transaction_id' => $transaction_id,
-
                 'dv_no' => $request->dv_no,
-
                 'ors_no' => $request->ors_no,
-
                 'obr_no' => $request->obr_no,
-
                 'payee' => $request->payee,
-
                 'particulars' => $request->particulars,
-
                 'particulars_remark' => $request->particulars_remark,
-
                 'signed_by_accountant' => $request->signed_by_accountant,
-
                 'status' => $request->status ?? 'Pending',
-
                 'budget_year' => $request->budget_year,
-
                 'source_month' => $request->source_month,
-
                 'date_received' => $request->date_received,
-
                 'date_processed' => $request->date_processed,
-
                 'obr_date' => $request->obr_date,
-
                 'date_signed' => $request->date_signed,
-
                 'date_forwarded' => $request->date_forwarded,
-
                 'returned_remarks' => $request->returned_remarks,
-
                 'uac_codes' => $request->uac_codes,
-
                 'debit' => $request->debit ?? 0,
-
                 'credit' => $request->credit ?? 0,
-
             ]);
 
         }
@@ -284,31 +229,18 @@ class AccountingLogbookController extends Controller
             'summary' => [
 
                 'transaction_id' => $transaction_id,
-
                 'dv_no' => optional($records->first())->dv_no,
-
                 'date_received' => optional($records->first())->date_received,
-
                 'date_processed' => optional($records->first())->date_processed,
-
                 'obr_date' => optional($records->first())->obr_date,
-
                 'obr_no' => optional($records->first())->obr_no,
-
                 'payee' => optional($records->first())->payee,
-
                 'particulars' => optional($records->first())->particulars,
-
                 'remarks' => optional($records->first())->particulars_remark,
-
                 'status' => optional($records->first())->status,
-
                 'signed' => optional($records->first())->signed_by_accountant,
-
                 'date_signed' => optional($records->first())->date_signed,
-
                 'date_forwarded' => optional($records->first())->date_forwarded,
-
             ],
 
             'details' => $records,
@@ -398,35 +330,20 @@ class AccountingLogbookController extends Controller
             ->update([
 
                 'ors_no' => $request->ors_no,
-
                 'obr_no' => $request->obr_no,
-
                 'payee' => $request->payee,
-
                 'particulars' => $request->particulars,
-
                 'particulars_remark' => $request->particulars_remark,
-
                 'signed_by_accountant' => $request->signed_by_accountant,
-
                 'status' => $request->status,
-
                 'budget_year' => $request->budget_year,
-
                 'source_month' => $request->source_month,
-
                 'date_received' => $request->date_received,
-
                 'date_processed' => $request->date_processed,
-
                 'obr_date' => $request->obr_date,
-
                 'date_signed' => $request->date_signed,
-
                 'date_forwarded' => $request->date_forwarded,
-
                 'returned_remarks' => $request->returned_remarks,
-
             ]);
 
         // Update accounting rows
@@ -444,13 +361,9 @@ class AccountingLogbookController extends Controller
                     ->update([
 
                         'uac_codes' => $row['uac_codes'],
-
                         'debit' => $row['debit'],
-
                         'credit' => $row['credit'],
-
                         'tax_percent' => $row['tax_percent'],
-
                         'tax_remarks' => $row['tax_remarks'],
 
                     ]);
@@ -522,13 +435,9 @@ class AccountingLogbookController extends Controller
             $query->where(function ($q) use ($search) {
 
                 $q->where('transaction_id', 'like', "%{$search}%")
-
                     ->orWhere('dv_no', 'like', "%{$search}%")
-
                     ->orWhere('obr_no', 'like', "%{$search}%")
-
                     ->orWhere('payee', 'like', "%{$search}%")
-
                     ->orWhere('particulars', 'like', "%{$search}%");
 
             });
@@ -569,27 +478,16 @@ class AccountingLogbookController extends Controller
             'transaction_id',
 
             DB::raw('MAX(dv_no) dv_no'),
-
             DB::raw('MAX(accounting_id) accounting_id'),
-
             DB::raw('MAX(obr_no) obr_no'),
-
             DB::raw('MAX(payee) payee'),
-
             DB::raw('MAX(particulars) particulars'),
-
             DB::raw('MAX(particulars_remark) particulars_remark'),
-
             DB::raw('MAX(status) status'),
-
             DB::raw('MAX(signed_by_accountant) signed_by_accountant'),
-
             DB::raw('MAX(date_signed) date_signed'),
-
             DB::raw('MAX(date_received) date_received'),
-
             DB::raw('MAX(date_processed) date_processed'),
-
             DB::raw('COUNT(*) total_entries'),
 
             DB::raw("
@@ -798,23 +696,14 @@ class AccountingLogbookController extends Controller
         $records = $query->select(
 
             'transaction_id',
-
             DB::raw('MAX(dv_no) dv_no'),
-
             DB::raw('MAX(accounting_id) accounting_id'),
-
             DB::raw('MAX(obr_no) obr_no'),
-
             DB::raw('MAX(payee) payee'),
-
             DB::raw('MAX(particulars) particulars'),
-
             DB::raw('MAX(status) status'),
-
             DB::raw('MAX(date_received) date_received'),
-
             DB::raw('MAX(date_processed) date_processed'),
-
             DB::raw('COUNT(*) total_entries'),
 
             DB::raw("
