@@ -34,8 +34,8 @@
     @if(in_array(Auth::user()->role, ['accountant', 'bookkeeper']))
       <x-sidebar-link route="accounting.dashboard" icon="bi bi-columns-gap" label="Dashboard" />
       <x-sidebar-link route="accounting.logbook" icon="bi bi-file-earmark-spreadsheet" label="Log Book" />
-      <x-sidebar-link route="accounting.quarterly-summary" icon="bi bi-pie-chart" label="Quarterly Summary" />
       <x-sidebar-link route="accounting.cashier-status" icon="bi bi-wallet-fill" label="Cashier Status" />
+      <x-sidebar-link route="accounting.quarterly-summary" icon="bi bi-pie-chart" label="Quarterly Summary" />
       <x-sidebar-link route="accounting.archives" icon="bi bi-archive" label="Archives" />
     @endif
 
