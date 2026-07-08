@@ -97,6 +97,64 @@ class BudgetLogbookController extends Controller
             ->orderBy('new_uac')
             ->get();
 
+        $baseColumns = [
+            'date_received',
+            'issuing_office',
+            'payee',
+            'classification',
+            'particulars',
+            'amount',
+        ];
+
+        $visibleColumns = match ($status) {
+            'pending' => array_merge($baseColumns, [
+                'action',
+            ]),
+
+            'processing' => array_merge($baseColumns, [
+                'date_returned_1',
+                'returned_to_end_user',
+                'remarks_1',
+                'date_received_1',
+                'ors_no',
+                'forwarded',
+                'date_forwarded_1',
+                'date_ors_received',
+                'remarks_2',
+                'action',
+            ]),
+
+            'for_obligation' => array_merge($baseColumns, [
+                'date_returned_1',
+                'returned_to_end_user',
+                'remarks_1',
+                'date_received_1',
+                'ors_no',
+                'forwarded',
+                'date_forwarded_1',
+                'date_ors_received',
+                'remarks_2',
+                'action',
+            ]),
+
+            'returned' => array_merge($baseColumns, [
+                'date_returned_1',
+                'returned_to_end_user',
+                'remarks_1',
+                'date_received_1',
+                'ors_no',
+                'forwarded',
+                'date_forwarded_1',
+                'date_ors_received',
+                'remarks_2',
+                'action',
+            ]),
+
+            'forwarded_to_accounting' => ['all'],
+            'paid' => ['all'],
+            default => ['all'],
+        };
+
         return view('budget.logbook', compact(
             'records',
             'year',
@@ -106,7 +164,8 @@ class BudgetLogbookController extends Controller
             'sort',
             'issuingOffices',
             'classifications',
-            'uacs'
+            'uacs',
+            'visibleColumns'
         ));
     }
 

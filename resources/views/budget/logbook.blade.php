@@ -8,6 +8,9 @@
     $showStatusColumn = request('status', 'all') === 'all';
 @endphp
 
+@php
+$show = fn($col) => in_array('all', $visibleColumns) || in_array($col, $visibleColumns);
+@endphp
 <div class="container-fluid mt-3 px-0" style="min-width: 0; overflow-x: hidden;" >
   <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
     @include('layouts.subtab')
@@ -74,56 +77,56 @@
           <thead class="sticky-top bg-white" style="z-index: 5;">
             {{-- FIRST HEADER ROW --}}
             <tr class="header-main">
-              <th rowspan="2" style="min-width:80px;">ORS No.</th>
-              <th rowspan="2">Date Received</th>
-              <th rowspan="2" style="min-width:100px;">Issuing Office</th>
-              <th rowspan="2" style="min-width:160px;">Payee</th>
-              <th rowspan="2" style="min-width:230px;">Particulars</th>
-              <th rowspan="2">Classification</th>
-              <th rowspan="2">UAC Codes</th>
-              <th rowspan="2">Particulars Remark</th>
-              <th rowspan="2">Amount</th>
-              @if($showStatusColumn)<th rowspan="2" style="min-width:150px;">Status</th>@endif
+             @if($show('ors_no')) <th rowspan="2" style="min-width:80px;">ORS No.</th> @endif
+             @if($show('date_received')) <th rowspan="2">Date Received</th> @endif
+             @if($show('issuing_office')) <th rowspan="2" style="min-width:100px;">Issuing Office</th> @endif
+             @if($show('payee'))<th rowspan="2" style="min-width:160px;">Payee</th> @endif
+             @if($show('particulars'))<th rowspan="2" style="min-width:230px;">Particulars</th> @endif
+             @if($show('classification'))<th rowspan="2">Classification</th> @endif
+             @if($show('uac_codes'))<th rowspan="2">UAC Codes</th> @endif
+             @if($show('particulars_remark'))<th rowspan="2">Particulars Remark</th> @endif
+             @if($show('amount'))<th rowspan="2">Amount</th> @endif
+             @if($showStatusColumn)<th rowspan="2" style="min-width:150px;">Status</th>@endif
 
               {{-- GROUP 1 --}}
-              <th colspan="3" style="background-color: #EFDFFF; color: #7909FF">Returned to End User</th>
+             @if($show('returned_to_end_user'))<th colspan="3" style="background-color: #EFDFFF; color: #7909FF">Returned to End User</th>@endif
               {{-- GROUP 2 --}}
-              <th colspan="3" style="background-color: #FFEECC; color: #9D6B0B">Forwarded</th>
+             @if($show('forwarded'))<th colspan="3" style="background-color: #FFEECC; color: #9D6B0B">Forwarded</th>@endif
               {{-- GROUP 3 --}}
-              <th colspan="2" style="background-color: #EBFEFF; color: #0B879D">Returned by Accounting</th>
+             @if($show('returned_by_accounting'))<th colspan="2" style="background-color: #EBFEFF; color: #0B879D">Returned by Accounting</th>@endif
 
-              <th rowspan="2" style="min-width:120px;">Date Forwarded to Accounting</th>
-              <th rowspan="2" style="min-width:100px;">Total Time in Budget</th>
-              <th rowspan="2" style="min-width:100px;">Total Time</th>
-              <th rowspan="2">Final Remark</th>
-              <th rowspan="2" style="min-width: 150px;">Action</th>
+             @if($show('date_forwarded_accounting'))<th rowspan="2" style="min-width:120px;">Date Forwarded to Accounting</th>@endif
+             @if($show('total_time_budget'))<th rowspan="2" style="min-width:100px;">Total Time in Budget</th>@endif
+             @if($show('total_time'))<th rowspan="2" style="min-width:100px;">Total Time</th>@endif
+             @if($show('final_remarks'))<th rowspan="2">Final Remark</th>@endif
+             @if($show('action'))<th rowspan="2" style="min-width: 150px;">Action</th>@endif
             </tr>
 
             {{-- SECOND HEADER ROW --}}
             <tr class="header-sub">
               {{-- Returned to End User --}}
-              <th style="background-color: #EFDFFF; color: #7909FF">Date Returned</th>
-              <th style="background-color: #EFDFFF; color: #7909FF">Remarks</th>
-              <th style="background-color: #EFDFFF; color: #7909FF">Date Received</th>
+              @if($show('date_returned_1'))<th style="background-color: #EFDFFF; color: #7909FF">Date Returned</th>@endif
+              @if($show('remarks_1'))<th style="background-color: #EFDFFF; color: #7909FF">Remarks</th>@endif
+              @if($show('date_received_1'))<th style="background-color: #EFDFFF; color: #7909FF">Date Received</th>@endif
 
               {{-- Forwarded --}}
-              <th style="background-color: #FFEECC; color: #9D6B0B">Date Forwarded</th>
-              <th style="background-color: #FFEECC; color: #9D6B0B">Date ORS Received</th>
-              <th style="background-color: #FFEECC; color: #9D6B0B">Remarks</th>
+              @if($show('date_forwarded_1'))<th style="background-color: #FFEECC; color: #9D6B0B">Date Forwarded</th>@endif
+              @if($show('date_ors_received'))<th style="background-color: #FFEECC; color: #9D6B0B">Date ORS Received</th>@endif
+              @if($show('remarks_2'))<th style="background-color: #FFEECC; color: #9D6B0B">Remarks</th>@endif
 
               {{-- Returned by Accounting --}}
-              <th style="background-color: #EBFEFF; color: #0B879D">Date Returned</th>
-              <th style="background-color: #EBFEFF; color: #0B879D">Date Received</th>
+              @if($show('date_returned_2'))<th style="background-color: #EBFEFF; color: #0B879D">Date Returned</th>@endif
+              @if($show('date_received_2'))<th style="background-color: #EBFEFF; color: #0B879D">Date Received</th>@endif
             </tr>
           </thead>
             <tbody>
               @forelse($records as $record)
                 <tr>
-                  <td style="color: var(--primary); background-color:var(--secondary-variant)"><strong>{{ $record->ors_no ?? '-' }}</strong></td>
-                  <td>{{ $record->date_received ?? '-' }}</td>
+                  @if($show('ors_no'))<td style="color: var(--primary); background-color:var(--secondary-variant)"><strong>{{ $record->ors_no ?? '-' }}</strong></td>@endif
+                  @if($show('date_received'))<td>{{ $record->date_received ?? '-' }}</td>@endif
                   
                   {{-- ISSUING OFFICE COLUMN WITH COLOR-CODING BADGES --}}
-                  <td>
+                  @if($show('issuing_office'))<td>
                     @if(!empty($record->issuing_office))
                       @php
                         $office = strtoupper(trim($record->issuing_office));
@@ -150,14 +153,14 @@
                     @else
                       <span class="text-muted">-</span>
                     @endif
-                  </td>
+                  </td>@endif
 
-                  <td><strong>{{ $record->payee ?? '-' }}</strong></td>
-                  <td><strong>{{ $record->particulars ?? '-' }}</strong></td>
-                  <td>{{ $record->classification ?? '-' }}</td>
-                  <td>{{ $record->uac_codes ?? '-' }}</td>
-                  <td>{{ $record->particulars_remark ?? '-' }}</td>
-                  <td><strong>₱{{ number_format((float) str_replace(',', '', $record->amount ?? 0), 2) }}</strong></td>
+                  @if($show('payee'))<td><strong>{{ $record->payee ?? '-' }}</strong></td>@endif
+                  @if($show('particulars'))<td><strong>{{ $record->particulars ?? '-' }}</strong></td>@endif
+                  @if($show('classification'))<td>{{ $record->classification ?? '-' }}</td>@endif
+                  @if($show('uac_codes'))<td>{{ $record->uac_codes ?? '-' }}</td>@endif
+                  @if($show('particulars_remark'))<td>{{ $record->particulars_remark ?? '-' }}</td>@endif
+                  @if($show('amount'))<td><strong>₱{{ number_format((float) str_replace(',', '', $record->amount ?? 0), 2) }}</strong></td>@endif
                   
                   @if($showStatusColumn)
                       {{-- STATUS COLUMN WITH SPECIFIED VALUE COLOR-CODING --}}
@@ -186,19 +189,19 @@
                           @endif
                       </td>
                   @endif
-                  <td>{{ $record->date_returned_1 ?? '-' }}</td>
-                  <td>{{ $record->remarks_1 ?? '-' }}</td>
-                  <td>{{ $record->date_received_1 ?? '-' }}</td>
-                  <td>{{ $record->date_forwarded_1 ?? '-' }}</td>
-                  <td>{{ $record->date_ors_received ?? '-' }}</td>
-                  <td>{{ $record->date_returned_2 ?? '-' }}</td>
-                  <td>{{ $record->remarks_2 ?? '-' }}</td>
-                  <td>{{ $record->date_received_2 ?? '-' }}</td>
-                  <td>{{ $record->date_forwarded_accounting ?? '-' }}</td>
-                  <td>{{ $record->total_time_budget ?? '-' }}</td>
-                  <td>{{ $record->total_time ?? '-' }}</td>
-                  <td style="min-width: 300px; white-space: normal;">{{ $record->final_remarks }}</td>
-                  <td>
+                  @if($show('date_returned_1'))<td>{{ $record->date_returned_1 ?? '-' }}</td>@endif
+                  @if($show('remarks_1'))<td>{{ $record->remarks_1 ?? '-' }}</td>@endif
+                  @if($show('date_received_1'))<td>{{ $record->date_received_1 ?? '-' }}</td>@endif
+                  @if($show('date_forwarded_1'))<td>{{ $record->date_forwarded_1 ?? '-' }}</td>@endif
+                  @if($show('date_ors_received'))<td>{{ $record->date_ors_received ?? '-' }}</td>@endif
+                  @if($show('date_returned_2'))<td>{{ $record->date_returned_2 ?? '-' }}</td>@endif
+                  @if($show('remarks_2'))<td>{{ $record->remarks_2 ?? '-' }}</td>@endif
+                  @if($show('date_received_2'))<td>{{ $record->date_received_2 ?? '-' }}</td>@endif
+                  @if($show('date_forwarded_accounting'))<td>{{ $record->date_forwarded_accounting ?? '-' }}</td>@endif
+                  @if($show('total_time_budget'))<td>{{ $record->total_time_budget ?? '-' }}</td>@endif
+                  @if($show('total_time'))<td>{{ $record->total_time ?? '-' }}</td>@endif
+                  @if($show('final_remarks'))<td style="min-width: 300px; white-space: normal;">{{ $record->final_remarks }}</td>@endif
+                  @if($show('action'))<td>
                       @if(!empty($record->payee))
                       <div class="d-flex gap-1 justify-content-center">
                           <!-- View -->
@@ -228,7 +231,7 @@
                       @else
                           <span class="text-muted">No DV No.</span>
                       @endif
-                  </td>
+                  </td>@endif
                 </tr>
               @empty
                 <tr>
