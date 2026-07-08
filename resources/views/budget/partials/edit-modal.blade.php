@@ -80,6 +80,12 @@
                   </div>
 
                   <div class="col-md-3">
+                    <label class="form-label small fw-semibold">Due Date</label>
+                    <input type="date" id="edit_due_date" name="due_date"
+                           class="form-control form-control-sm">
+                  </div>
+
+                  <div class="col-md-3">
                     <label class="form-label small fw-semibold">UACS Code</label>
                     <select id="edit_uac_codes" name="uac_codes"
                             class="form-select form-select-sm">
@@ -97,6 +103,10 @@
                            name="amount" class="form-control form-control-sm">
                   </div>
 
+                  <div class="col-md-3">
+                    <label class="form-label small fw-semibold">Date Received</label>
+                    <input type="date" name="review_date_received[]" class="form-control form-control-sm">
+                  </div>                  
                 </div>
               </div>
             </div>
@@ -272,7 +282,7 @@
                       <option value="For Obligation">For Obligation</option>
                       <option value="Forwarded to Accounting">Forwarded to Accounting</option>
                       <option value="Returned">Returned</option>
-                      <option value="Canceled">Canceled</option>
+                      <option value="Cancelled">Cancelled</option>
                     </select>
                   </div>
 
