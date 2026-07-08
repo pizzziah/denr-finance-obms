@@ -197,7 +197,7 @@
                   <td>{{ $record->date_forwarded_accounting ?? '-' }}</td>
                   <td>{{ $record->total_time_budget ?? '-' }}</td>
                   <td>{{ $record->total_time ?? '-' }}</td>
-                  <td>{{ $record->final_remarks ?? '-' }}</td>
+                  <td style="min-width: 300px; white-space: normal;">{{ $record->final_remarks }}</td>
                   <td>
                       @if(!empty($record->payee))
                       <div class="d-flex gap-1 justify-content-center">
