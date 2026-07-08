@@ -21,7 +21,7 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('budget')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('budget.dashboard');
 
-        Route::view('/archived', 'budget.archives')->name('budget.archives');
+        Route::get('/archived', [BudgetLogbookController::class, 'archives'])->name('budget.archives');
 
         Route::get('/logbook', [BudgetLogbookController::class, 'logbook'])->name('budget.logbook');
         Route::get('/logbook/{budget_id}/show', [BudgetLogbookController::class, 'show'])->name('budget.logbook.show');
