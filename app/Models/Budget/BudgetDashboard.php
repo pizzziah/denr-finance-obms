@@ -3,19 +3,29 @@
 namespace App\Models\Budget;
 
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class BudgetDashboard
 {
     public static function getMetrics()
     {
-        $currentYear = intval(request('year', now()->year));
+        // Capture both year and month filters from the request
+        $selectedYear = request('year');
+        $selectedMonth = request('month');
+        
+        $currentYear = intval($selectedYear ?: Carbon::now()->year);
 
-        // BASE QUERY (NEW DESIGN)=
+        // BASE QUERY
         $query = DB::table('odms_budget');
 
-        // YEAR FILTER (IMPORTANT CHANGE)
-        if (request('year') && request('year') !== 'all') {
+        // YEAR FILTER (Applied unless explicitly set to 'all')
+        if ($selectedYear && $selectedYear !== 'all') {
             $query->whereYear('date_received', $currentYear);
+        }
+
+        // MONTH FILTER
+        if ($selectedMonth && $selectedMonth !== 'all') {
+            $query->whereMonth('date_received', $selectedMonth);
         }
 
         // INIT METRICS
@@ -25,19 +35,19 @@ class BudgetDashboard
         $amountInProcess = 0;
         $amountForwarded = 0;
         $totalAmountPaid = 0;
+        $totalAmountCancelled = 0; // New tracking metric for subtle card indicators
 
         $statusCounts = [
-            'for_review' => 0,
-            'pending' => 0,
-            'processing' => 0,
-            'for_obligation' => 0,
-            'returned' => 0,
-            'cancelled' => 0,
-            'forwarded' => 0,
-            'paid' => 0,
+            'pending'          => 0,
+            'processing'       => 0,
+            'for_obligation'   => 0,
+            'returned'         => 0,
+            'cancelled'        => 0,
+            'forwarded'        => 0,
+            'paid'             => 0,
         ];
 
-        // STREAM DATA (NO TABLE LOOP)
+        // STREAM DATA USING CHUNKS FOR PERFORMANCE
         $query->orderBy('budget_id')
             ->chunk(500, function ($rows) use (
                 &$officeAmounts,
@@ -46,86 +56,113 @@ class BudgetDashboard
                 &$amountInProcess,
                 &$amountForwarded,
                 &$totalAmountPaid,
+                &$totalAmountCancelled,
                 &$statusCounts
             ) {
-
                 foreach ($rows as $row) {
-
                     $totalTransactions++;
-                    // CLEAN AMOUNT
+
+                    // CLEAN AND CAST AMOUNT TO FLOAT
                     $amount = (float) str_replace(
                         [',', '₱', ' '],
                         '',
                         $row->amount ?? 0
                     );
 
-                    $status = strtolower(trim($row->status ?? ''));
+                    $status = trim($row->status ?? '');
                     $office = strtoupper(trim($row->issuing_office ?? ''));
 
                     $totalRequestedAmount += $amount;
 
-                    // STATUS FLAGS
-                    $isForwarded = str_contains($status, 'forwarded');
-                    $isReturned = str_contains($status, 'returned');
-                    $isForObligation = str_contains($status, 'obligation');
-                    $isPaid = str_contains($status, 'paid');
+                    // EXACT MAPPER AND ACCOUNTING POOL DISTRIBUTION
+                    switch ($status) {
+                        case 'Pending':
+                        case 'Emailed':
+                            $statusCounts['pending']++;
+                            $amountInProcess += $amount;
+                            break;
 
-                    // OFFICE TOTALS
-                    if ($isForwarded && $office) {
-                        $officeAmounts[$office] =
-                            ($officeAmounts[$office] ?? 0) + $amount;
-                    }
-                    // IN PROCESS
-                    if (
-                        str_contains($status, 'pending') ||
-                        str_contains($status, 'processing') ||
-                        $isForObligation ||
-                        $isReturned ||
-                        str_contains($status, 'review')
-                    ) {
-                        $amountInProcess += $amount;
-                    }
+                        case 'Processing':
+                        case 'Filed':
+                            $statusCounts['processing']++;
+                            $amountInProcess += $amount;
+                            break;
 
-                    // FORWARDED
-                    if ($isForwarded) {
-                        $amountForwarded += $amount;
-                        $statusCounts['forwarded']++;
-                    }
+                        case 'For Obligation':
+                            $statusCounts['for_obligation']++;
+                            $amountInProcess += $amount;
+                            break;
 
-                    // PAID
-                    if ($isPaid) {
-                        $totalAmountPaid += $amount;
-                        $statusCounts['paid']++;
-                    }
+                        case 'Returned to End User':
+                        case 'For completion of Attachment':
+                            $statusCounts['returned']++;
+                            $amountInProcess += $amount;
+                            break;
 
-                    // STATUS COUNTS
-                    if (str_contains($status, 'review')) {
-                        $statusCounts['for_review']++;
-                    } elseif (str_contains($status, 'pending')) {
-                        $statusCounts['pending']++;
-                    } elseif (str_contains($status, 'processing')) {
-                        $statusCounts['processing']++;
-                    } elseif ($isForObligation) {
-                        $statusCounts['for_obligation']++;
-                    } elseif ($isReturned) {
-                        $statusCounts['returned']++;
-                    } elseif (str_contains($status, 'cancel')) {
-                        $statusCounts['cancelled']++;
+                        case 'Forwarded to Accounting':
+                            $statusCounts['forwarded']++;
+                            $amountForwarded += $amount;
+                            
+                            if ($office) {
+                                $officeAmounts[$office] = ($officeAmounts[$office] ?? 0) + $amount;
+                            }
+                            break;
+
+                        case 'Paid':
+                            $statusCounts['paid']++;
+                            $totalAmountPaid += $amount;
+                            break;
+
+                        case 'Cancelled':
+                            $statusCounts['cancelled']++;
+                            $totalAmountCancelled += $amount; // Kept independent of major metric pools
+                            break;
+
+                        default:
+                            // Case-insensitive fallbacks to prevent pipeline gaps from database data drift
+                            $lowerStatus = strtolower($status);
+                            if ($lowerStatus === 'pending' || $lowerStatus === 'emailed') {
+                                $statusCounts['pending']++;
+                                $amountInProcess += $amount;
+                            } elseif ($lowerStatus === 'processing' || $lowerStatus === 'filed') {
+                                $statusCounts['processing']++;
+                                $amountInProcess += $amount;
+                            } elseif ($lowerStatus === 'for obligation') {
+                                $statusCounts['for_obligation']++;
+                                $amountInProcess += $amount;
+                            } elseif ($lowerStatus === 'returned to end user' || $lowerStatus === 'for completion of attachment') {
+                                $statusCounts['returned']++;
+                                $amountInProcess += $amount;
+                            } elseif ($lowerStatus === 'forwarded to accounting') {
+                                $statusCounts['forwarded']++;
+                                $amountForwarded += $amount;
+                                if ($office) {
+                                    $officeAmounts[$office] = ($officeAmounts[$office] ?? 0) + $amount;
+                                }
+                            } elseif ($lowerStatus === 'paid') {
+                                $statusCounts['paid']++;
+                                $totalAmountPaid += $amount;
+                            } elseif ($lowerStatus === 'cancelled') {
+                                $statusCounts['cancelled']++;
+                                $totalAmountCancelled += $amount;
+                            }
+                            break;
                     }
                 }
             });
 
-        // SORT OFFICES
+        // SORT HIGHEST EXPENSE OFFICES TO THE TOP
         arsort($officeAmounts);
 
         return [
-            'totalTransactions' => $totalTransactions,
+            'totalTransactions'    => $totalTransactions,
             'totalRequestedAmount' => $totalRequestedAmount,
-            'amountInProcess' => $amountInProcess,
-            'amountForwarded' => $amountForwarded,
-            'totalAmountPaid' => $totalAmountPaid,
-            'statusCounts' => $statusCounts,
-            'officeAmounts' => $officeAmounts,
+            'amountInProcess'      => $amountInProcess,
+            'amountForwarded'      => $amountForwarded,
+            'totalAmountPaid'      => $totalAmountPaid,
+            'totalAmountCancelled' => $totalAmountCancelled, // Accessible in view template via $metrics['totalAmountCancelled']
+            'statusCounts'         => $statusCounts,
+            'officeAmounts'        => $officeAmounts,
         ];
     }
 }
