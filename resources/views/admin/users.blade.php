@@ -33,14 +33,15 @@
       </form>
     </div>
 
-    <div class="card-body bg-transparent table-responsive" style="max-height: 550px; overflow-y: auto;">
+    <div class="card-body bg-transparent table-responsive" style="max-height: 650px; overflow-y: auto;">
       <table class="table table-bordered table-hover align-middle">
         <thead>
           <tr>
             <th>Email</th>
             <th>Section</th>
             <th>Role</th>
-            <th style="width: 180px;">Accounting Access Scope</th> <th>Status</th>
+            <th style="width: 180px;">Accounting Access Scope</th> 
+            <th>Status</th>
             <th width="220">Actions</th>
           </tr>
         </thead>
@@ -48,22 +49,21 @@
 
         @forelse($users as $user)
           @php
-            $roleClean = strtolower(str_replace(' ', '', $user->role));
-            // Table: [Role] Add colors for the different users
-            $roleColorClass = match($roleClean) {
-              'admin' => 'text-danger fw-bold',
-              'accountant' => 'text-primary fw-bold',
-              'bookkeeper' => 'text-info fw-bold',
-              'budget' => 'text-success fw-bold',
-              default => 'text-dark'
+            $deptClean = strtolower(str_replace(' ', '', $user->department));
+            
+            $roleColorStyle = match($deptClean) {
+              'systemadministration', 'admin' => 'color: #0B879D; font-weight: bold;',
+              'accounting'                    => 'color: var(--primary); font-weight: bold;',
+              'budget'                        => 'color: var(--secondary); font-weight: bold;',
+              default                         => 'color: text-dark;'
             };
           @endphp
           <tr>
             <td>{{ $user->email }}</td>
             <td>{{ $user->department === 'Admin' ? 'System Administration' : $user->department }}</td>
             <td>
-              <span class="{{ $roleColorClass }}">
-                {{ match($roleClean) {
+              <span style="{{ $roleColorStyle }} font-size: 0.85rem;">
+                {{ match(strtolower(str_replace(' ', '', $user->role))) {
                   'admin' => 'Admin',
                   'accountant' => 'Accountant',
                   'bookkeeper' => 'Book Keeper',
@@ -72,17 +72,17 @@
                 } }}
               </span>
             </td>
-            <td>
+            <td class="text-center" style="{{ $user->department !== 'Accounting' ? 'background-color: #e7e7e7;' : '' }}">
               @if($user->department === 'Accounting')
-                <span class="badge {{ $user->permission_level === 'special' ? 'bg-purple style-override text-dark border border-dark' : 'bg-light text-muted border' }} px-2 py-1">
-                  {{ $user->permission_level === 'special' ? '⚡ Special' : '🔒 Restricted' }}
+                <span style="font-size: 0.85rem;">
+                  {{ $user->permission_level === 'special' ? 'Special' : 'Restricted' }}
                 </span>
               @else
-                <span style="color: var(--light-gray);">-</span>
+                <span style="color: #6c757d; font-weight: bold;">—</span>
               @endif
             </td>
             <td>
-              <span class="small fw-bold" style="{{ $user->is_active === 'active' ? 'color: var(--primary);' : 'color: var(--error);' }}">
+              <span class="fw-bold" style="{{ $user->is_active === 'active' ? 'color: var(--primary);' : 'color: var(--error);' }}">
                 {{ ucwords($user->is_active) }}
               </span>
             </td>
@@ -112,7 +112,6 @@
         @endforelse
         </tbody>
       </table>
-      <div class="mt-3">{{ $users->withQueryString()->links() }}</div>
     </div>
   </div>
 </div>
@@ -128,11 +127,11 @@ document.addEventListener('DOMContentLoaded', function () {
         const cancelButtons = addModalEl.querySelectorAll('[data-bs-dismiss="modal"], .btn-close');
         const inputs = addModalEl.querySelectorAll('input, select');
         
-        // Add Modal Error validation structural element creation
         let errorMsg = document.createElement('small');
         errorMsg.className = 'text-danger d-block mt-1 password-error-msg';
         errorMsg.style.display = 'none';
         errorMsg.innerText = 'Password must be at least 8 characters long.';
+        
         if (passwordInput) {
             passwordInput.parentNode.appendChild(errorMsg);
             
@@ -147,7 +146,6 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
 
-        // Add Modal Cancel confirmation popup intercept
         cancelButtons.forEach(btn => {
             btn.addEventListener('click', function(e) {
                 let hasValues = false;
@@ -176,3 +174,7 @@ document.addEventListener('hidden.bs.modal', function () {
 });
 </script>
 @endsection
+
+@php
+  $pageTitle = 'Users';
+@endphp

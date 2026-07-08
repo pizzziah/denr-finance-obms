@@ -116,3 +116,7 @@ document.addEventListener('hidden.bs.modal', function () {
 });
 </script>
 @endsection
+
+@php
+  $pageTitle = 'Unlock Requests';
+@endphp

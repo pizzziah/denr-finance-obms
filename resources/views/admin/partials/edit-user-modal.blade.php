@@ -47,7 +47,7 @@
         
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary btn-sm">Save Structural Updates</button>
+          <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
         </div>
       </form>
     </div>
