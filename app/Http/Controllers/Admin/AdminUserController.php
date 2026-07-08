@@ -8,9 +8,22 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule; // Added to prevent hidden crashes on update validation
 
 class AdminUserController extends Controller
 {
+    /**
+     * Display the independent Pending Unlock Requests tab.
+     */
+    public function unlockRequests()
+    {
+        $pendingUnlocks = DB::table('odms_admin_quarter_locks')
+            ->where('requires_admin_unlock', true)
+            ->get();
+
+        return view('admin.unlock-requests', compact('pendingUnlocks'));
+    }
+
     public function index(Request $request)
     {
         $query = AdminUser::query();
@@ -109,7 +122,6 @@ class AdminUserController extends Controller
 
     public function administrativeUnlockQuarter(Request $request, $id)
     {
-        // FIXED: Corrected table name typo to 'odms_admin_quarter_locks'
         DB::table('odms_admin_quarter_locks')
             ->where('id', $id)
             ->update([
@@ -126,7 +138,6 @@ class AdminUserController extends Controller
      */
     public function denyUnlockQuarter($id)
     {
-        // FIXED: Removed missing model reference, using clean direct table updates instead
         DB::table('odms_admin_quarter_locks')
             ->where('id', $id)
             ->update([

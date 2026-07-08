@@ -6,99 +6,14 @@
     <div class="alert alert-success">{{ session('success') }}</div>
   @endif
 
-  @if(isset($pendingUnlocks) && $pendingUnlocks->count() > 0)
-     <div class="card border-0 shadow-sm border-start border-warning border-3 mb-4 p-3 bg-white">
-        <h6 class="fw-bold text-warning mb-2"><i class="bi bi-shield-lock-fill"></i> Pending Quarter Unlock Requests</h6>
-        <div class="d-flex flex-wrap gap-2">
-           @foreach($pendingUnlocks as $lock)
-              <div class="p-2 border rounded d-flex align-items-center gap-3 bg-light">
-                 <span class="small font-monospace text-dark"><strong>Year {{ $lock->year }} - Q{{ $lock->quarter }}</strong></span>
-                 <div class="d-flex align-items-center gap-2">
-
-    <form action="{{ route('admin.unlock-quarter', $lock->id) }}"
-          method="POST"
-          class="m-0">
-        @csrf
-        <button type="submit"
-                class="btn btn-xs btn-warning py-0 fw-bold px-2">
-            Grant Unlock
-        </button>
-    </form>
-
-    <button
-        type="button"
-        class="btn btn-xs btn-outline-danger py-0 px-2"
-        data-bs-toggle="modal"
-        data-bs-target="#denyUnlockModal{{ $lock->id }}">
-        <i class="bi bi-x-lg"></i>
-    </button>
-
-</div>
-              </div>
-           @endforeach
-
-           <div class="modal fade"
-     id="denyUnlockModal{{ $lock->id }}"
-     tabindex="-1">
-
-    <div class="modal-dialog modal-dialog-centered">
-
-        <div class="modal-content">
-
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title">
-                    Deny Unlock Request
-                </h5>
-
-                <button class="btn-close btn-close-white"
-                        data-bs-dismiss="modal">
-                </button>
-            </div>
-
-            <div class="modal-body">
-
-                Are you sure you want to deny the unlock request for
-
-                <strong>
-                    Year {{ $lock->year }},
-                    Quarter {{ $lock->quarter }}
-                </strong>?
-
-            </div>
-
-            <div class="modal-footer">
-
-                <button class="btn btn-secondary"
-                        data-bs-dismiss="modal">
-                    Cancel
-                </button>
-
-                <form action="{{ route('admin.unlock-quarter.deny', $lock->id) }}"
-                      method="POST">
-
-                    @csrf
-                    @method('DELETE')
-
-                    <button class="btn btn-danger">
-                        Deny Request
-                    </button>
-
-                </form>
-
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-        </div>
-     </div>
-  @endif
-
   <div class="card glass-card p-3">
     <div class="px-3 pt-3 pb-2 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-      <h5 class="fw-bold m-0">Manage Users</h5>
+      
+      <div>
+        <x-button variant="header" data-bs-toggle="modal" data-bs-target="#addUserModal">
+          <i class="bi bi-person-fill-add"></i> Add User
+        </x-button>
+      </div>
       
       <form action="{{ route('admin.users') }}" method="GET" class="d-flex align-items-center gap-2 m-0 flex-wrap flex-md-nowrap">
         <select name="department" class="form-select form-select-sm" style="min-width: 160px;" onchange="this.form.submit()">
@@ -118,181 +33,146 @@
       </form>
     </div>
 
-    <div class="ms-3">
-      <x-button variant="header" data-bs-toggle="modal" data-bs-target="#addUserModal"><i class="bi bi-person-fill-add"></i> Add User</x-button>
-    </div>
-
-    <div class="card-body bg-transparent">
+    <div class="card-body bg-transparent table-responsive" style="max-height: 550px; overflow-y: auto;">
       <table class="table table-bordered table-hover align-middle">
         <thead>
           <tr>
             <th>Email</th>
             <th>Section</th>
             <th>Role</th>
-            <th>Accounting Access Scope</th> <th>Status</th>
+            <th style="width: 180px;">Accounting Access Scope</th> <th>Status</th>
             <th width="220">Actions</th>
           </tr>
         </thead>
         <tbody>
 
-
-@forelse($users as $user)
-<tr>
-  <td>{{ $user->email }}</td>
-  <td>{{ $user->department === 'Admin' ? 'System Administration' : $user->department }}</td>
-  <td>
-    {{ match(strtolower(str_replace(' ', '', $user->role))) {
-      'admin' => 'Admin',
-      'accountant' => 'Accountant',
-      'bookkeeper' => 'Book Keeper',
-      'budget' => 'Budget',
-      default => ucwords($user->role),
-    } }}
-  </td>
-  <td>
-    @if($user->department === 'Accounting')
-      <span class="badge {{ $user->permission_level === 'special' ? 'bg-purple style-override text-dark border border-dark' : 'bg-light text-muted border' }} px-2 py-1">
-        {{ $user->permission_level === 'special' ? '⚡ Special' : '🔒 Restricted' }}
-      </span>
-    @else
-      <span class="text-muted font-monospace small">-</span>
-    @endif
-  </td>
-          <td>
-            <span class="p-2 rounded small" style="{{ $user->is_active === 'active' ? 'background-color: var(--secondary-variant); border: 1px solid var(--primary); color: var(--primary);' : 'background-color: #ffe3e3; border: 1px solid var(--error); color: var(--error);' }}">
-              {{ ucwords($user->is_active) }}
-            </span>
-          </td>
-          <td>
-            <div class="d-flex gap-2 justify-content-center align-items-center">
-              <button type="button" class="btn btn-xs btn-outline-primary px-2" data-bs-toggle="modal" data-bs-target="#editUserModal{{ $user->id }}"><i class="bi bi-pencil-square"></i></button>
-
-              @if(auth()->id() != $user->id && !in_array($user->department, ['System Administration', 'Admin']))
-                <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="m-0">
-                  @csrf @method('DELETE')
-                  <button type="submit" class="btn btn-xs {{ $user->is_active === 'active' ? 'btn-outline-warning' : 'btn-outline-success' }} px-2">
-                     <i class="bi {{ $user->is_active === 'active' ? 'bi-person-fill-lock' : 'bi-person-fill-check' }}"></i>
-                  </button>
-                </form>
-                <button type="button" class="btn btn-xs btn-outline-danger px-2" data-bs-toggle="modal" data-bs-target="#deleteUserModal{{ $user->id }}"><i class="bi bi-trash3"></i></button>
+        @forelse($users as $user)
+          @php
+            $roleClean = strtolower(str_replace(' ', '', $user->role));
+            // Table: [Role] Add colors for the different users
+            $roleColorClass = match($roleClean) {
+              'admin' => 'text-danger fw-bold',
+              'accountant' => 'text-primary fw-bold',
+              'bookkeeper' => 'text-info fw-bold',
+              'budget' => 'text-success fw-bold',
+              default => 'text-dark'
+            };
+          @endphp
+          <tr>
+            <td>{{ $user->email }}</td>
+            <td>{{ $user->department === 'Admin' ? 'System Administration' : $user->department }}</td>
+            <td>
+              <span class="{{ $roleColorClass }}">
+                {{ match($roleClean) {
+                  'admin' => 'Admin',
+                  'accountant' => 'Accountant',
+                  'bookkeeper' => 'Book Keeper',
+                  'budget' => 'Budget',
+                  default => ucwords($user->role),
+                } }}
+              </span>
+            </td>
+            <td>
+              @if($user->department === 'Accounting')
+                <span class="badge {{ $user->permission_level === 'special' ? 'bg-purple style-override text-dark border border-dark' : 'bg-light text-muted border' }} px-2 py-1">
+                  {{ $user->permission_level === 'special' ? '⚡ Special' : '🔒 Restricted' }}
+                </span>
+              @else
+                <span style="color: var(--light-gray);">-</span>
               @endif
-            </div>
-          </td>
-        </tr>
-        @include('admin.partials.edit-user-modal', ['user' => $user])
+            </td>
+            <td>
+              <span class="small fw-bold" style="{{ $user->is_active === 'active' ? 'color: var(--primary);' : 'color: var(--error);' }}">
+                {{ ucwords($user->is_active) }}
+              </span>
+            </td>
+            <td>
+              <div class="d-flex gap-2 justify-content-center align-items-center">
+                <button type="button" class="btn btn-xs btn-outline-primary px-2" data-bs-toggle="modal" data-bs-backdrop="false" data-bs-target="#editUserModal{{ $user->id }}">
+                  <i class="bi bi-pencil-square"></i>
+                </button>
+
+                @if(auth()->id() != $user->id && !in_array($user->department, ['System Administration', 'Admin']))
+                  <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="m-0">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="btn btn-xs {{ $user->is_active === 'active' ? 'btn-outline-warning' : 'btn-outline-success' }} px-2">
+                       <i class="bi {{ $user->is_active === 'active' ? 'bi-person-fill-lock' : 'bi-person-fill-check' }}"></i>
+                    </button>
+                  </form>
+                  <button type="button" class="btn btn-xs btn-outline-danger px-2" data-bs-toggle="modal" data-bs-backdrop="false" data-bs-target="#deleteUserModal{{ $user->id }}">
+                    <i class="bi bi-trash3"></i>
+                  </button>
+                @endif
+              </div>
+            </td>
+          </tr>
+          @include('admin.partials.edit-user-modal', ['user' => $user])
         @empty
-        <tr><td colspan="5" class="text-center text-muted py-3">No user records matched query parameters.</td></tr>
+          <tr><td colspan="6" class="text-center text-muted py-3">No user records matched query parameters.</td></tr>
         @endforelse
-      </tbody>
+        </tbody>
       </table>
       <div class="mt-3">{{ $users->withQueryString()->links() }}</div>
     </div>
   </div>
 </div>
+
 @include('admin.partials.add-user-modal')
 
 <script>
+document.addEventListener('DOMContentLoaded', function () {
+    const addModalEl = document.getElementById('addUserModal');
+    if (addModalEl) {
+        const passwordInput = addModalEl.querySelector('input[name="password"]');
+        const saveButton = addModalEl.querySelector('.btn-save-entry') || addModalEl.querySelector('button[type="submit"]');
+        const cancelButtons = addModalEl.querySelectorAll('[data-bs-dismiss="modal"], .btn-close');
+        const inputs = addModalEl.querySelectorAll('input, select');
+        
+        // Add Modal Error validation structural element creation
+        let errorMsg = document.createElement('small');
+        errorMsg.className = 'text-danger d-block mt-1 password-error-msg';
+        errorMsg.style.display = 'none';
+        errorMsg.innerText = 'Password must be at least 8 characters long.';
+        if (passwordInput) {
+            passwordInput.parentNode.appendChild(errorMsg);
+            
+            passwordInput.addEventListener('input', function() {
+                if (passwordInput.value.length > 0 && passwordInput.value.length < 8) {
+                    errorMsg.style.display = 'block';
+                    if (saveButton) saveButton.disabled = true;
+                } else {
+                    errorMsg.style.display = 'none';
+                    if (saveButton) saveButton.disabled = false;
+                }
+            });
+        }
+
+        // Add Modal Cancel confirmation popup intercept
+        cancelButtons.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                let hasValues = false;
+                inputs.forEach(input => {
+                    if(input.type !== 'submit' && input.type !== 'button' && input.value !== '' && input.name !== '_token') {
+                        hasValues = true;
+                    }
+                });
+
+                if (hasValues) {
+                    if (!confirm('You have unsaved changes. Are you sure you want to discard them?')) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                }
+            });
+        });
+    }
+});
+
 document.addEventListener('hidden.bs.modal', function () {
-
     document.body.classList.remove('modal-open');
-
     document.querySelectorAll('.modal-backdrop').forEach(function (backdrop) {
         backdrop.remove();
     });
-
-});
-</script>
-<script>
-document.addEventListener('shown.bs.modal', function (e) {
-
-    if (!e.target.id.startsWith('editUserModal')) {
-        return;
-    }
-
-    const id = e.target.id.replace('editUserModal', '');
-
-    const deptSel = document.getElementById('department_' + id);
-    const roleSel = document.getElementById('role_' + id);
-    const permContainer = document.getElementById('permission_level_container_' + id);
-    const permInput = document.getElementById('permission_level_' + id);
-
-    const targetRole = roleSel.dataset.role;
-
-    function injectHiddenInput(value) {
-
-        const old = document.getElementById('hidden-role-edit_' + id);
-        if (old) old.remove();
-
-        const hidden = document.createElement('input');
-        hidden.type = 'hidden';
-        hidden.name = 'role';
-        hidden.id = 'hidden-role-edit_' + id;
-        hidden.value = value;
-
-        roleSel.form.appendChild(hidden);
-    }
-
-    function syncRoles() {
-
-        roleSel.innerHTML = '';
-
-        const old = document.getElementById('hidden-role-edit_' + id);
-        if (old) old.remove();
-
-        switch (deptSel.value) {
-
-            case 'System Administration':
-
-                roleSel.innerHTML =
-                    '<option value="admin">Admin</option>';
-
-                roleSel.disabled = true;
-
-                injectHiddenInput('admin');
-
-                permContainer.classList.add('d-none');
-
-                permInput.required = false;
-
-                break;
-
-            case 'Budget':
-
-                roleSel.innerHTML =
-                    '<option value="budget">Budget</option>';
-
-                roleSel.disabled = true;
-
-                injectHiddenInput('budget');
-
-                permContainer.classList.add('d-none');
-
-                permInput.required = false;
-
-                break;
-
-            default:
-
-                roleSel.innerHTML = `
-                    <option value="accountant">Accountant</option>
-                    <option value="bookkeeper">Book Keeper</option>
-                `;
-
-                roleSel.disabled = false;
-                roleSel.value = targetRole;
-
-                permContainer.classList.remove('d-none');
-                permInput.required = true;
-        }
-    }
-
-    syncRoles();
-
-    deptSel.onchange = syncRoles;
 });
 </script>
 @endsection
-
-@php 
-  $pageTitle = 'Users';
-@endphp
