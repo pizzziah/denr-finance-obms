@@ -245,6 +245,25 @@ class BudgetLogbookController extends Controller
                             'returned_remarks' => null,
                         ]);
                 }
+                $notificationExists = Notification::where('type', 'accounting')
+                    ->where('related_id', $budget->budget_id)
+                    ->exists();
+
+                if (! $notificationExists) {
+
+                    Notification::create([
+                        'title' => 'New Accounting Transaction',
+                        'message' => "ORS No. {$budget->ors_no} ({$budget->payee}) has been forwarded from Budget.",
+                        'type' => 'accounting',
+                        'related_id' => $budget->budget_id,
+                        'target_role' => 'accountant',
+                        'user_id' => null,
+                        'due_date' => null,
+                        'priority' => 'Medium',
+                        'is_read' => 0,
+                    ]);
+
+                }
             }
             // ================= RESET REVIEW HISTORY =================
             BudgetReviewProcess::where('budget_id', $budget_id)->delete();

@@ -441,4 +441,103 @@ document.addEventListener('DOMContentLoaded', function () {
             printWindow.close();
         },500)
 }
+// ---------------------------
+// Load Accounting Notifications
+// ---------------------------
+function loadNotifications() {
+
+    fetch("{{ route('notifications.index') }}?type=accounting&target_role=accountant")
+        .then(res => res.json())
+        .then(data => {
+
+            const badge = document.getElementById('notificationBadge');
+            const list = document.getElementById('notificationList');
+
+            // Badge
+            if (data.unreadCount > 0) {
+                badge.classList.remove('d-none');
+                badge.textContent = data.unreadCount;
+            } else {
+                badge.classList.add('d-none');
+            }
+
+            // Empty state
+            if (data.notifications.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center p-4 text-muted">
+                        No accounting notifications
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+
+            data.notifications.forEach(notification => {
+
+                html += `
+                    <div
+                        class="dropdown-item notification-item py-3 border-bottom ${notification.is_read ? '' : 'bg-light'}"
+                        data-id="${notification.id}"
+                        style="cursor:pointer;">
+
+                        <div class="d-flex justify-content-between">
+
+                            <strong>${notification.title}</strong>
+
+                            <span class="badge bg-${
+                                notification.priority === 'Critical' ? 'danger' :
+                                notification.priority === 'High' ? 'warning' :
+                                notification.priority === 'Medium' ? 'primary' :
+                                'secondary'
+                            }">
+                                ${notification.priority}
+                            </span>
+
+                        </div>
+
+                        <div class="small mt-1">
+                            ${notification.message}
+                        </div>
+
+                        <small class="text-muted">
+                            ${notification.created_at}
+                        </small>
+
+                    </div>
+                `;
+
+            });
+
+            list.innerHTML = html;
+
+        });
+
+}
+
+// ---------------------------
+// Mark One Notification Read
+// ---------------------------
+document.addEventListener('click', function (e) {
+
+    const item = e.target.closest('.notification-item');
+
+    if (!item) return;
+
+    fetch('/notifications/' + item.dataset.id + '/read', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        }
+    })
+    .then(res => res.json())
+    .then(() => {
+        loadNotifications();
+    });
+
+});
+
+loadNotifications();
+setInterval(loadNotifications, 30000);
 </script>

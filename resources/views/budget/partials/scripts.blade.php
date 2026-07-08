@@ -356,7 +356,7 @@ document.addEventListener('DOMContentLoaded', function () {
 // ---------------------------
 function loadNotifications() {
 
-    fetch('/notifications')
+    fetch("{{ route('notifications.index') }}?type=due_date")
         .then(res => res.json())
         .then(data => {
 
