@@ -28,6 +28,7 @@
   <nav class="d-flex flex-column gap-3 mb-4">
     @if(auth()->user()->role === 'admin')
       <x-sidebar-link route="admin.dashboard" icon="bi bi-columns-gap" label="Dashboard" />
+      <x-sidebar-link route="admin.unlock-requests" icon="bi bi-file-lock2" label="Unlock Requests" />
       <x-sidebar-link route="admin.users" icon="bi bi-people-fill" label="Users" />
     @endif
 

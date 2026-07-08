@@ -5,20 +5,14 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Admin\AdminDashboard;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
-class AdminDashboardController extends Controller
-{
-    /**
-     * Display the Admin Dashboard.
-     */
-    public function index()
-    {
-        // Fetch calculations out of the system model
-        $metrics = AdminDashboard::getDashboardMetrics();
+class AdminDashboardController extends Controller {
+  public function index() {
+    $metrics = AdminDashboard::getDashboardMetrics();
+    $currentUser = Auth::user();
 
-        // Grab currently logged-in authenticatable admin user context
-        $currentUser = Auth::user();
-
-        return view('admin.dashboard', compact('metrics', 'currentUser'));
-    }
+    $pendingUnlocks = DB::table('odms_admin_quarter_locks')->where('requires_admin_unlock', true)->get();
+    return view('admin.dashboard', compact('metrics', 'currentUser', 'pendingUnlocks'));
+  }
 }

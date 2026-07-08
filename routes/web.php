@@ -21,7 +21,7 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('budget')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('budget.dashboard');
 
-        Route::view('/archived', 'budget.archives')->name('budget.archives');
+        Route::get('/archived', [BudgetLogbookController::class, 'archives'])->name('budget.archives');
 
         Route::get('/logbook', [BudgetLogbookController::class, 'logbook'])->name('budget.logbook');
         Route::get('/logbook/{budget_id}/show', [BudgetLogbookController::class, 'show'])->name('budget.logbook.show');
@@ -71,6 +71,8 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/users/{id}', [AdminUserController::class, 'destroy'])->name('admin.users.destroy');
         Route::delete('/users/{id}/force-delete', [AdminUserController::class, 'forceDelete'])->name('admin.users.forceDelete');
 
+        Route::get('/unlock-requests', [AdminUserController::class, 'unlockRequests'])->name('admin.unlock-requests');
+        
         Route::post('/unlock-quarter/{id}', [AdminUserController::class, 'administrativeUnlockQuarter'])->name('admin.unlock-quarter');
         Route::delete('/unlock-quarter/deny/{id}', [AdminUserController::class, 'denyUnlockQuarter'])->name('admin.unlock-quarter.deny');
     });
