@@ -35,7 +35,7 @@ class BudgetDashboard
         $amountInProcess = 0;
         $amountForwarded = 0;
         $totalAmountPaid = 0;
-        $totalAmountCancelled = 0; // New tracking metric for subtle card indicators
+        $totalAmountCancelled = 0;
 
         $statusCounts = [
             'pending'          => 0,
