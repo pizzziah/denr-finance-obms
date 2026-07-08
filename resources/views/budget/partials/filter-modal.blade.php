@@ -1,7 +1,7 @@
 
 {{-- FILTER MODAL --}}
 <div class="modal fade" id="filterModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <form method="GET" action="{{ route('budget.logbook') }}">
             <div class="modal-content">
 
