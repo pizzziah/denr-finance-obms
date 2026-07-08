@@ -16,44 +16,44 @@
 
 <body>
   <div class="container vh-100 d-flex flex-column justify-content-center align-items-center">
+    {{-- HEADER --}}
     <div class="d-flex flex-column align-items-center lh-1 gap-0 p-0" style="color:var(--primary);">
       <img src="{{ asset('images/DENR-logo.png') }}" style="width: 15%;">
       <h3 class="text-center mt-4 fw-bold">Obligation Disbursement Monitoring System </h3>
-      <h4 class="text-center mb-4"><i>DENR CAR Finance Office</i></h4>
+      <h4 class="text-center mb-4"><i>DENR CAR Finance Division</i></h4>
     </div>
 
+    {{-- LOG IN FORM --}}
     <div class="card shadow" style="width: 450px">
       <div class="card-body p-4">
         <form method="POST" action="{{ route('login.submit') }}">
         @csrf
             <div class="mb-3">
-                <label class="form-label fw-bold">Email Address</label>
-                <input type="email" name="email" class="form-control p-2" placeholder="juandelacruz@denr.gov.ph" required>
+              <label class="form-label fw-bold">Email Address <span class="fw-medium" style="color: var(--error);">*</span></label>
+              <input type="email" name="email" class="form-control p-2" placeholder="juandelacruz@denr.gov.ph" required>
             </div>
 
             <div class="mb-4">
-                <label class="form-label fw-bold">Password</label>
-                <input type="password" name="password" class="form-control p-2" placeholder="********" required>
+              <label class="form-label fw-bold">Password <span class="fw-medium" style="color: var(--error);">*</span></label>
+              <input type="password" name="password" class="form-control p-2" placeholder="********" required>
             </div>
 
-            <button type="submit"
-                    class="btn w-100 p-2"
-                    style="background-color: var(--primary); color: var(--background);">
-                Log In
+            <button type="submit" class="btn w-100 p-2" style="background-color: var(--primary); color: var(--background);">
+              Log In
             </button>
         </form>
         </div>
     </div>
   </div>
 
+  {{-- TOAST NOTIFICATION --}}
   <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
     <div id="loginErrorToast" class="toast align-items-center text-white bg-danger border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
       <div class="d-flex">
         <div class="toast-body d-flex align-items-center gap-2">
           <i class="bi bi-exclamation-triangle-fill fs-5"></i>
           <div>
-            <strong>Login Failed!</strong><br>
-            {{ session('toast_error') }}
+            <strong>Login Failed!</strong><br>{{ session('toast_error') }}
           </div>
         </div>
         <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="modal" data-bs-dismiss="toast" aria-label="Close"></button>
@@ -61,10 +61,12 @@
     </div>
   </div>
 
+  {{-- FOOTER --}}
   <footer class="position-fixed bottom-0 end-0 p-4">
-      @include('layouts.footer')
+    @include('layouts.footer')
   </footer>
   
+  {{-- SCRIPTS --}}
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
   <script src="{{ asset('js/app.js') }}"></script>
 
@@ -79,5 +81,6 @@
       });
     </script>
   @endif
+  
 </body>
 </html>

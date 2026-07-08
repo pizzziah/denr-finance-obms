@@ -285,9 +285,14 @@ class AccountingQuarterlySummaryController extends Controller
             $received = AccountingQuarterlySummary::parseMoney($rec->nca_nta_received);
             $downloaded = AccountingQuarterlySummary::parseMoney($rec->nca_nta_downloaded);
 
-            $runningBalance = $runningBalance - $amount + $received - $downloaded;
-            $rec->balance = number_format($runningBalance, 2, '.', ',');
-            DB::table($modelInstance->getTable())->where($pkName, $rec->getKey())->update(['balance' => $rec->balance]);
+          $runningBalance = $runningBalance - $amount + $received - $downloaded;
+            $rec->balance = $runningBalance;
+
+            DB::table($modelInstance->getTable())
+                ->where($pkName, $rec->getKey())
+                ->update([
+                    'balance' => $runningBalance
+                ]);
         }
     }
 

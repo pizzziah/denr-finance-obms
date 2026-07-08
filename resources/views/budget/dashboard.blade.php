@@ -3,6 +3,14 @@
 @section('title', 'Dashboard')
 
 @section('content')
+@php
+  $selectedYear = request('year', now()->year);
+  $selectedMonth = request('month');
+    
+  $monthName = $selectedMonth ? DateTime::createFromFormat('!m', $selectedMonth)->format('F') : '';
+  $timelineLabel = $selectedMonth ? "$monthName $selectedYear" : "$selectedYear";
+@endphp
+
 <div class="container-fluid mt-4 px-4">
   <div class="row">
 
@@ -21,18 +29,36 @@
             </h6>
           </div>
           
-          <div class="bg-white p-2 rounded shadow-sm d-flex align-items-center gap-2 m-0" style="min-width: 160px;">
-            <label class="small text-muted fw-bold text-uppercase mb-0 ps-1" style="font-size: 0.65rem; color: #044709 !important;">
+          {{-- FILTER CONTROLS --}}
+          <div class="bg-white p-2 rounded shadow-sm d-flex flex-column flex-sm-row align-items-sm-center gap-2 m-0" style="min-width: 320px;">
+            <label class="small text-muted fw-bold text-uppercase mb-0 ps-1" style="font-size: 0.65rem; color: #044709 !important; white-space: nowrap;">
               Filter Dashboard:
             </label>
-            <form method="GET" class="m-0 flex-grow-1">
-              <select name="year" class="form-select form-select-sm border-0 fw-bold" onchange="this.form.submit()" style="color: #044709; cursor: pointer; focus: none;">
+            <form method="GET" class="m-0 d-flex gap-2 flex-grow-1 align-items-center">
+              {{-- Year Dropdown --}}
+              <select name="year" class="form-select form-select-sm border-0 fw-bold bg-light" style="color: #044709; cursor: pointer;">
                 @for($year = now()->year; $year >= 2025; $year--)
-                  <option value="{{ $year }}" {{ request('year', now()->year) == $year ? 'selected' : '' }}>
-                    {{ $year }} Data
+                  <option value="{{ $year }}" {{ $selectedYear == $year ? 'selected' : '' }}>
+                    {{ $year }}
                   </option>
                 @endfor
               </select>
+
+              {{-- Month Dropdown --}}
+              <select name="month" class="form-select form-select-sm border-0 fw-bold bg-light" style="color: #044709; cursor: pointer;">
+                <option value="">Full Year</option>
+                @for($m = 1; $m <= 12; $m++)
+                  @php $mVal = sprintf('%02d', $m); @endphp
+                  <option value="{{ $mVal }}" {{ $selectedMonth == $mVal ? 'selected' : '' }}>
+                    {{ DateTime::createFromFormat('!m', $m)->format('F') }}
+                  </option>
+                @endfor
+              </select>
+
+              {{-- Filter Trigger Button --}}
+              <button type="submit" class="btn btn-sm text-white fw-bold px-3" style="background-color: #044709;">
+                Filter
+              </button>
             </form>
           </div>
         </div>
@@ -49,7 +75,7 @@
                   Amount in Process
                 </h6>
                 <p class="mb-2">
-                  <small><i>{{ request('year', now()->year) }}</i></small>
+                  <small><i>{{ $timelineLabel }}</i></small>
                 </p>
                 <h2 class="fw-bold fs-2 m-0" style="color: var(--primary)">
                   ₱{{ number_format($metrics['amountInProcess'] ?? 0, 2) }}
@@ -71,7 +97,7 @@
                   Forwarded to Accounting
                 </h6>
                 <p class="mb-2">
-                  <small><i>{{ request('year', now()->year) }}</i></small>
+                  <small><i>{{ $timelineLabel }}</i></small>
                 </p>
                 <h2 class="fw-bold fs-2 m-0" style="color: var(--secondary)">
                   ₱{{ number_format($metrics['amountForwarded'] ?? 0, 2) }}
@@ -93,7 +119,7 @@
                   Total Amount Paid
                 </h6>
                 <p class="mb-2">
-                  <small><i>{{ request('year', now()->year) }}</i></small>
+                  <small><i>{{ $timelineLabel }}</i></small>
                 </p>
                 <h2 class="fw-bold fs-2 m-0" style="color: var(--primary-variant)">
                   ₱{{ number_format($metrics['totalAmountPaid'] ?? 0, 2) }}
@@ -113,19 +139,18 @@
           Workflow Status
         </h6>
         <p class="mb-3 text-center">
-          <small><i>{{ request('year', now()->year) }}</i></small>
+          <small><i>{{ $timelineLabel }}</i></small>
         </p>
 
         <div class="row g-3 text-center">
           @php
             $statuses = [
-              ['key' => 'for_review', 'label' => 'For Review', 'color' => '#0B879D', 'bg' => '#EFF9FA'],
               ['key' => 'pending', 'label' => 'Pending', 'color' => '#9D6B0B', 'bg' => '#FFFBF3'],
               ['key' => 'processing', 'label' => 'Processing', 'color' => '#fd7e14', 'bg' => '#FFF6EF'],
               ['key' => 'for_obligation', 'label' => 'For Obligation', 'color' => '#271ECE', 'bg' => '#BCC3F6'],
-              ['key' => 'returned', 'label' => 'Returned', 'color' => '#6f42c1', 'bg' => '#EFDFFF'],
+              ['key' => 'returned', 'label' => 'Returned to End User', 'color' => '#6f42c1', 'bg' => '#EFDFFF'],
               ['key' => 'cancelled', 'label' => 'Cancelled', 'color' => '#C61919', 'bg' => '#FFC2C2'],
-              ['key' => 'forwarded', 'label' => 'Forwarded', 'color' => 'var(--primary)', 'bg' => '#E5F2D7'],
+              ['key' => 'forwarded', 'label' => 'Forwarded to Accounting', 'color' => 'var(--primary)', 'bg' => '#E5F2D7'],
               ['key' => 'paid', 'label' => 'Paid', 'color' => 'var(--secondary)', 'bg' => '#EDFADF'],
             ];
 
@@ -139,7 +164,7 @@
               $percentage = ($count / $totalSum) * 100;
               $offset = 113 - (113 * $percentage) / 100;
             @endphp
-            <div class="col-4">
+            <div class="col-3">
               <div class="p-0 py-2 border rounded h-100 d-flex flex-column align-items-center justify-content-center" 
                   style="border-color: {{ $status['color'] }} !important; background: {{ $status['bg'] }};">
                 
@@ -168,7 +193,6 @@
           @endforeach
         </div>
       </div>
-      
     </div>
 
     {{-- RIGHT-SIDE COLUMN --}}
@@ -179,19 +203,30 @@
           Total Transactions
         </h6>
         <p class="mb-0">
-          <small><i>{{ request('year', now()->year) }}</i></small>
+          <small><i>{{ $timelineLabel }}</i></small>
         </p>
         <h2 class="display-4 fw-bold p-0 m-0" style="color: var(--primary)">
           {{ $metrics['totalTransactions'] ?? 0 }}
         </h2>
+        
+        {{-- Secondary monitoring label for isolated Cancelled Value --}}
+        <div class="mt-2 pt-2 border-top border-light-subtle">
+           <small class="fw-bold text-danger d-block" style="font-size: 0.78rem;">
+              Cancelled Value: ₱{{ number_format($metrics['totalAmountCancelled'] ?? 0, 2) }}
+           </small>
+        </div>
       </div>
+
       {{-- ROW 3/VISUALIZATION CARD --}}
       <div class="card glass-card card-f p-3 m-0">
-        <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="text-center mb-3">
           <h6 class="fw-bold m-0 text-uppercase" style="color: var(--primary)">
             Amount Per Office
           </h6>
-          </div>
+          <p class="m-0 mt-1">
+            <small class="text-muted"><i>{{ $timelineLabel }}</i></small>
+          </p>
+        </div>
 
         <div class="p-1" style="height: 350px; position: relative;">
           <canvas id="officeChart"></canvas>
@@ -268,7 +303,6 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 @endsection
-
 @php
     $pageTitle = 'Dashboard';
 @endphp

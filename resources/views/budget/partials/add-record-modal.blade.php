@@ -54,7 +54,7 @@
                                                 <option value="For Obligation" selected> For Obligation</option>
                                                 <option value="Forwarded to Accounting">Forwarded to Accounting </option>
                                                 <option value="Returned">Returned</option> <option value="Paid"> Paid </option>
-                                                <option value="Canceled">Canceled</option>
+                                                <option value="Cancelled">Cancelled</option>
                                             </select>
                                         </div>
 

@@ -172,7 +172,7 @@
                                       'Paid'                    => 'background-color: #DEF5C4; color: var(--secondary);',
                                       'For Review'              => 'background-color: #CFF0F1; color: #066B6B;',
                                       'For Obligation'          => 'background-color: #BCC3F6; color: #271ECE;',
-                                      'Canceled'                => 'background-color: #FFC2C2; color: var(--error);',
+                                      'Cancelled'                => 'background-color: #FFC2C2; color: var(--error);',
                                       'Forwarded to Accounting' => 'background-color: var(--secondary-variant); color: var(--primary);',
                                       default                   => 'background-color: #F8F9FA; color: #6C757D;'
                                   };
