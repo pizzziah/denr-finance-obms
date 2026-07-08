@@ -55,64 +55,66 @@
 
     </div>
       
-    <div class="col-12 col-lg-3 d-flex flex-column gap-3">
-      
-      <div class="card shadow glass-card p-2 m-0 rounded">
-        <h4 class="fw-bold mb-0 p-3 border-0 fs-6">
-          <i class="bi bi-pie-chart-fill me-2" style="color: var(--primary);"></i>
-          User Distribution
-        </h4>
+    <div class="col-12 col-lg-3">
+      <div class="card shadow glass-card h-100 rounded">
+        <div class="card-header bg-transparent border-0 pt-3 px-3 pb-0">
+          <h5 class="fw-bold mb-0 fs-6 text-dark">
+            System Metrics Overview
+          </h5>
+        </div>
 
-        <div class="card-body d-flex align-items-center justify-content-center pt-0">
-          @if(count($metrics['by_department']) > 0)
-            <div style="width: 100%; max-width: 200px; margin: 0 auto;">
-              <canvas id="deptDistributionChart"></canvas>
+        <div class="card-body d-flex flex-column gap-4">
+          <div>
+            <span class="text-muted d-block small mb-2 fw-semibold text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">User Distribution</span>
+            @if(count($metrics['by_department']) > 0)
+              <div style="width: 100%; max-width: 180px; margin: 0 auto;">
+                <canvas id="deptDistributionChart"></canvas>
+              </div>
+            @else
+              <div class="text-center py-3 small text-muted">
+                <i class="bi bi-exclamation-circle d-block mb-1 fs-5"></i>
+                No breakdown data located.
+              </div>
+            @endif
+          </div>
+
+          <hr class="my-0 opacity-10">
+
+          <div class="d-flex flex-column gap-3">
+            <span class="text-muted d-block small mb-2 fw-semibold text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">User Count</span>
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center gap-2">
+                <div class="fs-4 rounded px-2" style="color: var(--primary); background-color: rgba(11, 135, 157, 0.1);">
+                  <i class="bi bi-people-fill"></i>
+                </div>
+                <span class="small fw-bold text-secondary">Total Accounts</span>
+              </div>
+              <h4 class="fw-bold mb-0 fs-5 text-dark">{{ $metrics['total_users'] }}</h4>
             </div>
-          @else
-            <div class="text-center py-4 small">
-              <i class="bi bi-exclamation-circle d-block mb-2 fs-4"></i>
-              No data located.
+
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center gap-2">
+                <div class="fs-4 rounded px-2" style="color: #9D6B0B; background-color: rgba(157, 107, 11, 0.1);">
+                  <i class="bi bi-person-check-fill"></i>
+                </div>
+                <span class="small fw-bold text-secondary">Active Sessions</span>
+              </div>
+              <h4 class="fw-bold mb-0 fs-5 text-dark">{{ $metrics['active_users'] }}</h4>
             </div>
-          @endif
-        </div>
-      </div>
 
-      <div class="card glass-card-hover shadow p-2 m-0 rounded">
-        <div class="card-body d-flex align-items-center justify-content-between">
-          <div>
-            <h6 class="text-uppercase mb-1 small fw-bold">Total Accounts</h6>
-            <h2 class="fw-bold fs-3 mb-0">{{ $metrics['total_users'] }}</h2>
-          </div>
-          <div class="fs-2 opacity-60" style="color: var(--primary);">
-            <i class="bi bi-people-fill"></i>
-          </div>
-        </div>
-      </div>
+            <div class="d-flex align-items-center justify-content-between">
+              <div class="d-flex align-items-center gap-2">
+                <div class="fs-4 rounded px-2" style="color: var(--error); background-color: rgba(220, 53, 69, 0.1);">
+                  <i class="bi bi-person-x-fill"></i>
+                </div>
+                <span class="small fw-bold text-secondary">Deactivated</span>
+              </div>
+              <h4 class="fw-bold mb-0 fs-5 text-dark">{{ $metrics['inactive_users'] }}</h4>
+            </div>
 
-      <div class="card glass-card-hover shadow p-2 m-0 rounded">
-        <div class="card-body d-flex align-items-center justify-content-between">
-          <div>
-            <h6 class="text-uppercase mb-1 small fw-bold">Active Sessions</h6>
-            <h2 class="fw-bold fs-3 mb-0">{{ $metrics['active_users'] }}</h2>
-          </div>
-          <div class="fs-2 opacity-60" style="color: #9D6B0B;">
-            <i class="bi bi-person-check-fill"></i>
           </div>
         </div>
       </div>
-
-      <div class="card glass-card-hover shadow p-2 m-0 rounded">
-        <div class="card-body d-flex align-items-center justify-content-between">
-          <div>
-            <h6 class="text-uppercase mb-1 small fw-bold">Deactivated Accounts</h6>
-            <h2 class="fw-bold fs-3 mb-0">{{ $metrics['inactive_users'] }}</h2>
-          </div>
-          <div class="fs-2 opacity-60" style="color: var(--error);">
-            <i class="bi bi-person-x-fill"></i>
-          </div>
-        </div>
-      </div>
-
     </div>
 
   </div>
@@ -133,7 +135,7 @@ document.addEventListener("DOMContentLoaded", function () {
             labels: chartLabels,
             datasets: [{
                 data: chartData,
-                backgroundColor: ['#4CAF50', '#0B879D', '#ffc107', '#dc3545'],
+                backgroundColor: ['#75B432', '#0B879D', '#044709'],
                 borderWidth: 1,
                 borderColor: 'transparent'
             }]
@@ -144,9 +146,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 legend: {
                     position: 'bottom',
                     labels: {
-                        boxWidth: 10,
-                        font: { size: 10, family: 'Montserrat' },
-                        padding: 10
+                        boxWidth: 8,
+                        font: { size: 9, family: 'Montserrat' },
+                        padding: 8
                     }
                 },
                 tooltip: {
