@@ -59,7 +59,7 @@
             };
           @endphp
           <tr>
-            <td>{{ $user->email }}</td>
+            <td class="fw-bold">{{ $user->email }}</td>
             <td>{{ $user->department === 'Admin' ? 'System Administration' : $user->department }}</td>
             <td>
               <span style="{{ $roleColorStyle }} font-size: 0.85rem;">
@@ -82,7 +82,7 @@
               @endif
             </td>
             <td>
-              <span class="fw-bold" style="{{ $user->is_active === 'active' ? 'color: var(--primary);' : 'color: var(--error);' }}">
+              <span style="{{ $user->is_active === 'active' ? 'color: var(--primary);' : 'color: var(--error);' }}">
                 {{ ucwords($user->is_active) }}
               </span>
             </td>
