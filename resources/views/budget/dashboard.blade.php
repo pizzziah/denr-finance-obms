@@ -80,6 +80,9 @@
                 <h2 class="fw-bold fs-2 m-0" style="color: var(--primary)">
                   ₱{{ number_format($metrics['amountInProcess'] ?? 0, 2) }}
                 </h2>
+                <small class="fw-bold d-block" style="font-size: 0.78rem; color: #ff000000">
+                  -
+                </small>
               </div>
               <div class="fs-1 opacity-60" style="color: var(--primary);">
                 <i class="bi bi-database-exclamation"></i>
@@ -102,6 +105,9 @@
                 <h2 class="fw-bold fs-2 m-0" style="color: var(--secondary)">
                   ₱{{ number_format($metrics['amountForwarded'] ?? 0, 2) }}
                 </h2>
+                <small class="text-uppercase fw-bold d-block" style="font-size: 0.78rem; color: #ff0000c0">
+                  Total Amount Cancelled: ₱{{ number_format($metrics['totalAmountCancelled'] ?? 0, 2) }}
+                </small>
               </div>
               <div class="fs-1 opacity-60" style="color: var(--secondary);">
                 <i class="bi bi-database-fill-up"></i>
@@ -124,10 +130,13 @@
                 <h2 class="fw-bold fs-2 m-0" style="color: var(--primary-variant)">
                   ₱{{ number_format($metrics['totalAmountPaid'] ?? 0, 2) }}
                 </h2>
+                <small class="fw-bold d-block" style="font-size: 0.78rem; color: #ff000000">
+                  -
+                </small>
               </div>
               <div class="fs-1 opacity-60" style="color: var(--primary-variant);">
                 <i class="bi bi-database-fill-check"></i>
-              </div>  
+              </div>
             </div>
           </div>
         </div>
@@ -208,13 +217,6 @@
         <h2 class="display-4 fw-bold p-0 m-0" style="color: var(--primary)">
           {{ $metrics['totalTransactions'] ?? 0 }}
         </h2>
-        
-        {{-- Secondary monitoring label for isolated Cancelled Value --}}
-        <div class="mt-2 pt-2 border-top border-light-subtle">
-           <small class="fw-bold text-danger d-block" style="font-size: 0.78rem;">
-              Cancelled Value: ₱{{ number_format($metrics['totalAmountCancelled'] ?? 0, 2) }}
-           </small>
-        </div>
       </div>
 
       {{-- ROW 3/VISUALIZATION CARD --}}
