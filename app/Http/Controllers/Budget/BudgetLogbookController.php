@@ -148,7 +148,7 @@ class BudgetLogbookController extends Controller
 
             'ors_no' => 'nullable|regex:/^[0-9]+$/',
             'date_received' => 'nullable|date',
-            'due_date' => 'nullable|date',
+            'due_date' => 'nullable|date', 
             'payee' => 'nullable|string|max:255',
             'issuing_office' => 'nullable|string|max:255',
             'classification' => 'nullable|string|max:255',
@@ -414,32 +414,62 @@ class BudgetLogbookController extends Controller
 
     private function checkDueDateNotifications()
     {
-        $targetDate = Carbon::today()->addDays(3);
+        $today = Carbon::today();
         $records = DB::table('odms_budget')
-            ->whereDate(
-                'due_date',
-                $targetDate
-            )
+            ->whereNotNull('due_date')
             ->get();
 
         foreach ($records as $record) {
-            $exists = Notification::where('type', 'due_date')
-                ->where(
-                    'related_id',
-                    $record->budget_id
-                )
+            $due = Carbon::parse($record->due_date);
+
+            // positive = future
+            // zero = today
+            // negative = overdue
+            $days = $today->diffInDays($due, false);
+
+            if (!in_array($days, [3, 2, 1, 0]) && $days > 0) {
+                continue;
+            }
+            if ($days == 3) {
+                $title = 'Due Date Reminder';
+                $message = "ORS No. {$record->ors_no} ({$record->payee}) is due in 3 days.";
+                $priority = 'Low';
+            }
+            elseif ($days == 2) {
+                $title = 'Due Date Reminder';
+                $message = "ORS No. {$record->ors_no} ({$record->payee}) is due in 2 days.";
+                $priority = 'Medium';
+            }
+            elseif ($days == 1) {
+                $title = 'Due Date Reminder';
+                $message = "ORS No. {$record->ors_no} ({$record->payee}) is due tomorrow.";
+                $priority = 'High';
+            }
+            elseif ($days == 0) {
+                $title = 'Due Today';
+                $message = "ORS No. {$record->ors_no} ({$record->payee}) is due today.";
+                $priority = 'High';
+            }
+            else {
+                $title = 'Overdue';
+                $message = "ORS No. {$record->ors_no} ({$record->payee}) is overdue by " . abs($days) . " day(s).";
+                $priority = 'Critical';
+            }
+
+            $exists = Notification::where('related_id', $record->budget_id)
+                ->where('title', $title)
                 ->exists();
 
-            if (! $exists) {
+            if (!$exists) {
                 Notification::create([
-                    'title' => 'Due Date Reminder',
-                    'message' => "ORS No. {$record->ors_no} ({$record->payee}) is due in 3 days.",
-                    'type' => 'due_date',
+                    'title'      => $title,
+                    'message'    => $message,
+                    'type'       => 'due_date',
                     'related_id' => $record->budget_id,
-                    'user_id' => auth()->id(),
-                    'due_date' => $record->due_date,
-                    'priority' => 'High',
-                    'is_read' => 0,
+                    'user_id'    => auth()->id(),
+                    'due_date'   => $record->due_date,
+                    'priority'   => $priority,
+                    'is_read'    => 0,
                 ]);
             }
         }
