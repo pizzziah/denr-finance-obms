@@ -34,6 +34,7 @@
         <input type="hidden" name="month" value="{{ request('month','all') }}">
         <input type="hidden" name="status" value="{{ request('status','all') }}">
         <input type="hidden" name="sort" value="{{ request('sort','latest') }}">
+        <input type="hidden" name="year" value="{{ request('year','all') }}">
 
         {{-- FILTER BUTTON --}}
         <button type="button"
@@ -44,6 +45,17 @@
           <small>
             <i class="bi bi-funnel"></i> Filter
           </small>
+        </button>
+
+        {{-- SORT BUTTON --}}
+        <button type="button"
+                class="btn p-1"
+                data-bs-toggle="modal"
+                data-bs-target="#sortModal"
+                style="min-width:100px;border-color:#bebebe;">
+            <small>
+                <i class="bi bi-sort-down"></i> Sort
+            </small>
         </button>
 
         {{-- SEARCH INPUT --}}
@@ -60,7 +72,7 @@
           </button>  
 
           {{-- RESET --}}
-          @if(request('search') || request('month') !== 'all' || request('status') !== 'all' || request('sort') !== 'latest')
+          @if(request('search') || request('year') !== 'all' || request('month') !== 'all' || request('status') !== 'all' || request('sort') !== 'latest')
             <a href="{{ route('accounting.logbook') }}"
                class="btn"
                title="Clear Filters"
@@ -219,6 +231,7 @@
   </div>
 </div>
 @include('accounting.partials.filter-modal')
+@include('accounting.partials.sort-modal')
 @include('accounting.partials.action-modal')
 @include('accounting.partials.details-modal')
 @include('accounting.partials.scripts')
