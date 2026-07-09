@@ -8,21 +8,16 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class AccountingQuarterlySummaryController extends Controller
-{
-    private function checkQuarterLockStatus($quarter, $year)
-    {
-        $now = Carbon::now();
+class AccountingQuarterlySummaryController extends Controller {
+  private function checkQuarterLockStatus($quarter, $year) {
+    $now = Carbon::now();
+    
+    if (empty($quarter) || $quarter < 1 || $quarter > 4) {
+      $quarter = ceil($now->month / 3);
+    } if (empty($year)) {
+      $year = $now->year;
+    }
 
-        // SAFETY FALLBACK: If quarter is missing, empty, or 0, fallback to current context
-        if (empty($quarter) || $quarter < 1 || $quarter > 4) {
-            $quarter = ceil($now->month / 3);
-        }
-        if (empty($year)) {
-            $year = $now->year;
-        }
-
-        // Calculate 14-day automatic grace period cutoff rule
         $quarterEndMonths = [1 => 3, 2 => 6, 3 => 9, 4 => 12];
         $endMonth = $quarterEndMonths[$quarter];
         $quarterEndDate = Carbon::create($year, $endMonth, 1)->endOfMonth();
@@ -153,8 +148,16 @@ class AccountingQuarterlySummaryController extends Controller
         return redirect()->back()->with('success', "Quarter {$quarter} manual lock completed.");
     }
 
-    public function requestAdminUnlock(Request $request)
-    {
+    public function requestAdminUnlock(Request $request) {
+        DB::table('odms_admin_quarter_locks')
+    ->where('year', $year)
+    ->where('quarter', $quarter)
+    ->update([
+        'requires_admin_unlock' => true,
+        'updated_at' => Carbon::now(),
+        'requested_by_email' => auth()->user()->email // Log who did it
+    ]);
+    
         if (auth()->user()->department !== 'Accounting' || auth()->user()->permission_level !== 'special') {
             return redirect()->back()->with('error', 'Action denied: Only authorized personnel can request state modifications.');
         }

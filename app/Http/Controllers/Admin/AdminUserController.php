@@ -14,11 +14,11 @@ class AdminUserController extends Controller {
   public function unlockRequests() {
     $pendingUnlocks = DB::table('odms_admin_quarter_locks')
       ->where('requires_admin_unlock', true)
+      ->latest('updated_at')
       ->get();
 
     return view('admin.unlock-requests', compact('pendingUnlocks'));
-  }
-
+}
   public function index(Request $request) {
     $query = AdminUser::query();
 
