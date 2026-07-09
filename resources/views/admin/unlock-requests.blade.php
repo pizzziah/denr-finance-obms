@@ -23,106 +23,104 @@
 
     <div class="card-body bg-transparent p-0">
       @if(isset($pendingUnlocks) && $pendingUnlocks->count() > 0)
-        <div class="table-responsive" style="max-height: 550px; overflow-y: auto;">
-          <table class="table table-bordered table-hover align-middle">
-            <thead>
-              <tr>
-                <th class="ps-3 py-3">Target Period</th>
-                <th class="py-3">Requester</th>
-                <th class="py-3">Timestamp</th>
-                <th width="360" class="text-center py-3">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              @foreach($pendingUnlocks as $lock)
+      <div class="table-responsive" style="max-height: 550px; overflow-y: auto;">
+        <table class="table table-bordered table-hover align-middle">
+          <thead>
+            <tr>
+              <th width="400">Requester</th>
+              <th>Target Period</th>
+              <th>Timestamp</th>
+              <th width="360" class="text-center py-3">Actions</th>
+            </tr>
+          </thead>
 
-              <tr>
-  <td class="ps-3">
-    <span class="fw-semibold text-dark">
-      Year {{ $lock->year }} — Quarter {{ $lock->quarter }}
-    </span>
-  </td>
-  <td>
-    <div class="d-flex align-items-center">
-      <div class="bg-light text-secondary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
-        <i class="bi bi-person-fill"></i>
-      </div>
-      <div>
-        <span class="text-dark fw-medium d-block small">
-          {{ auth()->user() && auth()->user()->department === 'Accounting' ? auth()->user()->email : ($currentUser->email ?? 'accounting@system.local') }}
-        </span>
-        <span class="text-muted tiny d-block font-monospace" style="font-size: 0.70rem;">Accounting Dept Context</span>
-      </div>
-    </div>
-  </td>
-  <td>
-    <div class="text-dark mb-0 small fw-medium">
-      {{ $lock->updated_at ? \Carbon\Carbon::parse($lock->updated_at)->setTimezone('Asia/Manila')->format('M d, Y') : \Carbon\Carbon::parse($lock->created_at)->setTimezone('Asia/Manila')->format('M d, Y') }}
-    </div>
-    <div class="text-muted tiny text-xs" style="font-size: 0.75rem;">
-      {{ $lock->updated_at ? \Carbon\Carbon::parse($lock->updated_at)->setTimezone('Asia/Manila')->format('h:i A') : \Carbon\Carbon::parse($lock->created_at)->setTimezone('Asia/Manila')->format('h:i A') }}
-    </div>
-  </td>
-              
-                  <td>
-                    <div class="d-flex gap-2 justify-content-center align-items-center">
-                      <form action="{{ route('admin.unlock-quarter', $lock->id) }}" method="POST" class="m-0">
-                        @csrf
-                        <button type="submit" class="btn btn-sm btn-warning fw-bold px-3 shadow-sm">
-                          <i class="bi bi-unlock-fill me-1"></i> Grant Unlock
-                        </button>
-                      </form>
-
-                      <button type="button" class="btn btn-sm btn-outline-danger px-3" data-bs-toggle="modal" data-bs-target="#denyUnlockModal{{ $lock->id }}">
-                        <i class="bi bi-x-lg me-1"></i> Deny
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-
-                <div class="modal fade" id="denyUnlockModal{{ $lock->id }}" tabindex="-1" data-bs-backdrop="false" aria-hidden="true">
-                  <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content shadow-lg border-0">
-                      <div class="modal-header bg-danger text-white py-3">
-                        <h5 class="modal-title fs-6 fw-bold m-0">
-                          <i class="bi bi-exclamation-triangle-fill me-2"></i>Deny Unlock Request
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                      </div>
-                      
-                      <div class="modal-body text-dark p-4">
-                        Are you sure you want to deny the administrative unlock request for 
-                        <strong class="text-danger">Year {{ $lock->year }}, Quarter {{ $lock->quarter }}</strong>? This action locks down further entries.
-                      </div>
-                      
-                      <div class="modal-footer bg-light border-0 py-2 px-3">
-                        <button type="button" class="btn btn-sm btn-secondary px-3" data-bs-dismiss="modal">
-                          Cancel
-                        </button>
-                        
-                        <form action="{{ route('admin.unlock-quarter.deny', $lock->id) }}" method="POST" class="m-0">
-                          @csrf
-                          @method('DELETE')
-                          <button type="submit" class="btn btn-sm btn-danger px-3">
-                            Deny Request
-                          </button>
-                        </form>
-                      </div>
-                    </div>
-                  </div>
+          <tbody>
+          @foreach($pendingUnlocks as $lock)
+          <tr>
+            <td>
+              <div class="d-flex align-items-center justify-content-center ">
+                <i class="bi bi-person-circle me-2"></i>
+                <div class="">
+                  <span class="text-dark fw-bold d-block">
+                    {{ auth()->user() && auth()->user()->department === 'Accounting' ? auth()->user()->email : ($currentUser->email ?? 'Accounting') }}
+                  </span>
                 </div>
-              @endforeach
-            </tbody>
-          </table>
-        </div>
+              </div>
+            </td>
+            <td class="ps-3">
+              <span class="fw-medium text-dark">
+                Year {{ $lock->year }} — Quarter {{ $lock->quarter }}
+              </span>
+            </td>
+            <td>
+              <div class="text-dark mb-0 fw-medium">
+                {{ $lock->updated_at ? \Carbon\Carbon::parse($lock->updated_at)->setTimezone('Asia/Manila')->format('M d, Y') : \Carbon\Carbon::parse($lock->created_at)->setTimezone('Asia/Manila')->format('M d, Y') }}
+              </div>
+              <div class="text-muted tiny text-xs" style="font-size: 0.75rem;">
+                {{ $lock->updated_at ? \Carbon\Carbon::parse($lock->updated_at)->setTimezone('Asia/Manila')->format('h:i A') : \Carbon\Carbon::parse($lock->created_at)->setTimezone('Asia/Manila')->format('h:i A') }}
+              </div>
+            </td>
+            <td>
+              <div class="d-flex gap-2 justify-content-center align-items-center">
+                <form action="{{ route('admin.unlock-quarter', $lock->id) }}" method="POST" class="m-0">
+                  @csrf
+                  <button type="submit" class="btn btn-sm fw-bold px-3" style="background-color: var(--secondary-variant); color: var(--primary); border: 1px solid var(--primary);">
+                    <i class="bi bi-unlock-fill me-1"></i> Grant Unlock
+                  </button>
+                </form>
+              
+                <button type="button" class="btn btn-sm fw-bold px-3" style="background-color: #ffe3e3; color: var(--error); border: 1px solid var(--error);" data-bs-toggle="modal" data-bs-target="#denyUnlockModal{{ $lock->id }}">
+                  <i class="bi bi-x-lg me-1"></i> Deny
+                </button>
+              </div>
+            </td>
+          </tr>
+        
+        <div class="modal fade" id="denyUnlockModal{{ $lock->id }}" tabindex="-1" data-bs-backdrop="false" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0">
+              <div class="modal-header bg-danger text-white py-3">
+                <h5 class="modal-title fs-6 fw-bold m-0">
+                  <i class="bi bi-exclamation-triangle-fill me-2"></i>Deny Unlock Request
+                </h5>
+                
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+                      
+              <div class="modal-body text-dark p-4">
+                Are you sure you want to deny the administrative unlock request for 
+                <strong class="text-danger">Year {{ $lock->year }}, Quarter {{ $lock->quarter }}</strong>? This action locks down further entries.
+              </div>
+              
+              <div class="modal-footer bg-light border-0 py-2 px-3">
+                <button type="button" class="btn btn-sm btn-secondary px-3" data-bs-dismiss="modal">
+                  Cancel
+                </button>
+                
+                <form action="{{ route('admin.unlock-quarter.deny', $lock->id) }}" method="POST" class="m-0">
+                  @csrf
+                  @method('DELETE')
+                  <button type="submit" class="btn btn-sm btn-danger px-3">
+                    Deny Request
+                  </button>
+                </form>
+              </div>
+            </div>
+              </div>
+            </div>
+            @endforeach
+          </tbody>
+        </table>
+      </div>
+
       @else
-        <div class="text-center py-5 my-3 text-muted">
-          <i class="bi bi-check-circle text-success fs-1 d-block mb-3 opacity-75"></i>
-          <h6 class="fw-bold text-dark">All caught up!</h6>
-          <p class="small text-secondary mb-0">No pending quarter administrative unlock requests found.</p>
-        </div>
-      @endif
-    </div>
+      <div class="text-center py-5 my-3 text-muted">
+        <i class="bi bi-check-circle text-success fs-1 d-block mb-3 opacity-75"></i>
+        <h6 class="fw-bold text-dark">All caught up!</h6>
+        <p class="small text-secondary mb-0">No pending quarter administrative unlock requests found.</p>
+      </div>
+    @endif
+  </div>
   </div>
 </div>
 
