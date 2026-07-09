@@ -293,7 +293,7 @@ public function requestAdminUnlock(Request $request)
 
       DB::table($modelInstance->getTable())
         ->where($pkName, $record->{$pkName})
-        ->update(['balance' => number_format($runningBalance, 2, '.', ',')]);
+        ->update(['balance' => number_format($runningBalance, 2, '.', '')]);
     }
   }
 

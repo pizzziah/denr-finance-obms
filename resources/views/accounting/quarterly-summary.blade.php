@@ -227,7 +227,9 @@
                 <td style="color: #9D6B0B;"><strong>{{ $cleanReceived > 0 ? '₱' . number_format($cleanReceived, 2) : '-' }}</strong></td>
                 <td style="color: var(--error);"><strong>{{ $cleanDownloaded > 0 ? '₱' . number_format($cleanDownloaded, 2) : '-' }}</strong></td>
                 <td class="small">{{ $record->emds_date ?? '-' }}</td>
-                <td style="background-color: var(--secondary-variant); color: var(--primary);"><strong>₱{{ $record->balance ?? '0.00' }}</strong></td>
+                <td style="background-color: var(--secondary-variant); color: var(--primary);">
+                  <strong>₱{{ !empty($record->balance) ? number_format((float)str_replace(',', '', $record->balance), 2) : '0.00' }}</strong>
+                </td>
                 <td>{{ $record->ada_no ?? '-' }}</td>
                 <td class="text-wrap"><em>{{ $record->remarks ?? '-' }}</em></td>
                 <td>
