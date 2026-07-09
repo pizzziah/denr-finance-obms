@@ -35,8 +35,8 @@
 
                   <div class="col-md-3">
                     <label class="form-label small fw-semibold">ORS No.</label>
-                    <input type="text" id="edit_ors_no" name="ors_no"
-                           class="form-control form-control-sm">
+                    <input type="text"id="edit_ors_no" name="ors_no"
+                          class="form-control form-control-sm" inputmode="numeric" pattern="[0-9]*">
                   </div>
 
                   <div class="col-md-3">
@@ -101,11 +101,6 @@
                     <label class="form-label small fw-semibold">Amount</label>
                     <input type="number" step="0.01" id="edit_amount"
                            name="amount" class="form-control form-control-sm">
-                  </div>
-
-                  <div class="col-md-3">
-                    <label class="form-label small fw-semibold">Date Received</label>
-                    <input type="date" name="review_date_received[]" class="form-control form-control-sm">
                   </div>                  
                 </div>
               </div>

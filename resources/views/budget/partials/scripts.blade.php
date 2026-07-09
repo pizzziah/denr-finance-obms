@@ -447,4 +447,8 @@ document.addEventListener('click', function (e) {
     });
 
 });
+
+document.getElementById("edit_ors_no").addEventListener("input", function () {
+    this.value = this.value.replace(/\D/g, "");
+});
 </script>
