@@ -13,7 +13,7 @@ class BudgetLogbookController extends Controller
 {
     public function logbook(Request $request)
     {
-        $this->checkDueDateNotifications();
+        //$this->checkDueDateNotifications();
 
         $year = $request->year ?? 'all';
         $month = $request->month;
@@ -73,56 +73,7 @@ class BudgetLogbookController extends Controller
                 $query->orderByDesc('date_received');
         }
 
-        $records = $query->get()->map(function ($row) {
-
-            // TOTAL TIME
-            $totalHours = $this->calculateWorkingHours(
-                $row->date_received,
-                $row->date_forwarded_accounting
-            );
-
-            $row->display_total_time =
-                $this->formatWorkingTime($totalHours);
-
-            // TOTAL TIME IN BUDGET
-
-            $budgetHours = $totalHours;
-
-            // Remove Review #1 returned period
-            $budgetHours -= $this->calculateWorkingHours(
-                $row->date_returned_1,
-                $row->date_received_1
-            );
-
-            // Remove Review #2 returned period
-            $budgetHours -= $this->calculateWorkingHours(
-                $row->date_returned_2,
-                $row->date_received_2
-            );
-
-            // Remove additional reviews
-            $reviews = BudgetReviewProcess::where('budget_id', $row->budget_id)
-                ->get();
-
-            foreach ($reviews as $review) {
-
-                $budgetHours -= $this->calculateWorkingHours(
-                    $review->date_returned,
-                    $review->date_received
-                );
-            }
-
-            if ($budgetHours < 0) {
-                $budgetHours = 0;
-            }
-
-            $row->display_total_time_budget =
-                $this->formatWorkingTime($budgetHours);
-
-
-            return $row;
-        });
-
+        $records = $query->get();
         $issuingOffices = DB::table('odms_dropdowns')
             ->select('issuing_office')
             ->distinct()
@@ -404,6 +355,7 @@ class BudgetLogbookController extends Controller
                 }
             }
             DB::commit();
+            $this->updateWorkingTimes($budget_id);
 
             return redirect()
                 ->route('budget.logbook')
@@ -564,6 +516,7 @@ class BudgetLogbookController extends Controller
             }
 
             DB::commit();
+            $this->updateWorkingTimes($budgetId);
 
             return redirect()
                 ->route('budget.logbook')
@@ -722,4 +675,58 @@ class BudgetLogbookController extends Controller
 
         return $days . 'd' . $remainingHours . 'h';
     }
+
+    private function updateWorkingTimes($budgetId)
+{
+    $budget = DB::table('odms_budget')
+        ->where('budget_id', $budgetId)
+        ->first();
+
+    if (!$budget) {
+        return;
+    }
+
+    $totalHours = $this->calculateWorkingHours(
+        $budget->date_received,
+        $budget->date_forwarded_accounting
+    );
+
+    $budgetHours = $totalHours;
+
+    // Review #1
+    $budgetHours -= $this->calculateWorkingHours(
+        $budget->date_returned_1,
+        $budget->date_received_1
+    );
+
+    // Review #2
+    $budgetHours -= $this->calculateWorkingHours(
+        $budget->date_returned_2,
+        $budget->date_received_2
+    );
+
+    // Additional Reviews
+    $reviews = BudgetReviewProcess::where('budget_id', $budgetId)->get();
+
+    foreach ($reviews as $review) {
+        $budgetHours -= $this->calculateWorkingHours(
+            $review->date_returned,
+            $review->date_received
+        );
+    }
+
+    if ($budgetHours < 0) {
+        $budgetHours = 0;
+    }
+
+    DB::table('odms_budget')
+        ->where('budget_id', $budgetId)
+        ->update([
+            'display_total_time' =>
+                $this->formatWorkingTime($totalHours),
+
+            'display_total_time_budget' =>
+                $this->formatWorkingTime($budgetHours),
+        ]);
+}
 }
