@@ -183,12 +183,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const row = response.budget;
             const reviews = response.reviews ?? [];
+            console.log(row);
+            console.log(reviews);
 
             $('editForm').action =
                 `/budget/logbook/${encodeURIComponent(id)}/update`;
 
             const fields = [
-                'ors_no','date_received','payee','particulars','amount',
+                'ors_no','date_received','payee','particulars','amount','due_date',
                 'date_returned_1','date_received_1','remarks_1',
                 'date_forwarded_1','date_ors_received','remarks_2',
                 'date_returned_2','date_received_2',
@@ -217,29 +219,42 @@ document.addEventListener('DOMContentLoaded', () => {
             // ===========================
             // LOAD REVIEW HISTORY
             // ===========================
-
             const container = $('reviewRowsContainer');
-
             container.innerHTML = '';
 
-            reviews.forEach(review => {
-
+            // ===========================
+            // FIRST REVIEW (odms_budget)
+            // ===========================
+            if (row.date_returned_1 || row.remarks_1 || row.date_received_1) {
                 const clone = document
                     .getElementById('reviewRowTemplate')
                     .content
                     .cloneNode(true);
 
                 clone.querySelector('[name="review_date_returned[]"]').value =
-                    formatDateTime(review.date_returned);
+                    formatDateTime(row.date_returned_1);
+                clone.querySelector('[name="review_date_received[]"]').value =
+                    formatDateTime(row.date_received_1);
+                clone.querySelector('[name="review_remarks[]"]').value =
+                    row.remarks_1 ?? '';
+                container.appendChild(clone);
+            }
 
+            // ===========================
+            // ADDITIONAL REVIEWS
+            // ===========================
+            reviews.forEach(review => {
+                const clone = document
+                    .getElementById('reviewRowTemplate')
+                    .content
+                    .cloneNode(true);
+                clone.querySelector('[name="review_date_returned[]"]').value =
+                    formatDateTime(review.date_returned);
                 clone.querySelector('[name="review_date_received[]"]').value =
                     formatDateTime(review.date_received);
-
                 clone.querySelector('[name="review_remarks[]"]').value =
                     review.remarks ?? '';
-
                 container.appendChild(clone);
-
             });
 
             // Issuing Office
@@ -325,42 +340,137 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ===================== INITIAL LOAD =====================
     initTomSelect(document);
-
-});
-
-document.addEventListener('DOMContentLoaded', function () {
-
-    const container = document.getElementById('reviewRowsContainer');
-    const template = document.getElementById('reviewRowTemplate');
-    const addBtn = document.getElementById('btnAddReviewRow');
-
-    // ADD ROW
-    addBtn.addEventListener('click', function () {
-        const clone = template.content.cloneNode(true);
-        container.appendChild(clone);
     });
 
-    // REMOVE ROW (event delegation)
-    container.addEventListener('click', function (e) {
-        if (e.target.classList.contains('btnRemoveReview')) {
-            e.target.closest('.review-row').remove();
-        }
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const container = document.getElementById('reviewRowsContainer');
+        const template = document.getElementById('reviewRowTemplate');
+        const addBtn = document.getElementById('btnAddReviewRow');
+
+        // ADD ROW
+        addBtn.addEventListener('click', function () {
+            const clone = template.content.cloneNode(true);
+            container.appendChild(clone);
+        });
+
+        // REMOVE ROW (event delegation)
+        container.addEventListener('click', function (e) {
+            if (e.target.classList.contains('btnRemoveReview')) {
+                e.target.closest('.review-row').remove();
+            }
+        });
+
     });
 
-});
+    document.addEventListener('DOMContentLoaded', function () {
 
-document.addEventListener('DOMContentLoaded', function () {
+        loadNotifications();
 
-    loadNotifications();
+        // Refresh every 30 seconds
+        setInterval(loadNotifications, 30000);
 
-    // Refresh every 30 seconds
-    setInterval(loadNotifications, 30000);
+        // Mark all as read
+        document.getElementById('readAllBtn').addEventListener('click', function (e) {
+            e.preventDefault();
 
-    // Mark all as read
-    document.getElementById('readAllBtn').addEventListener('click', function (e) {
-        e.preventDefault();
+            fetch('/notifications/read-all', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(() => loadNotifications());
+        });
 
-        fetch('/notifications/read-all', {
+    });
+
+    // ---------------------------
+    // Load Notifications
+    // ---------------------------
+    function loadNotifications() {
+
+        fetch("{{ route('notifications.index') }}?type=due_date")
+            .then(res => res.json())
+            .then(data => {
+
+                const badge = document.getElementById('notificationBadge');
+                const list = document.getElementById('notificationList');
+
+                // Badge
+                if (data.unreadCount > 0) {
+                    badge.classList.remove('d-none');
+                    badge.textContent = data.unreadCount;
+                } else {
+                    badge.classList.add('d-none');
+                }
+
+                // Empty state
+                if (data.notifications.length === 0) {
+                    list.innerHTML = `
+                        <div class="text-center p-4 text-muted">
+                            No notifications
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+
+                data.notifications.forEach(notification => {
+
+                    html += `
+                        <div
+                            class="dropdown-item notification-item py-3 border-bottom ${notification.is_read ? '' : 'bg-light'}"
+                            data-id="${notification.id}"
+                            style="cursor:pointer;">
+
+                            <div class="d-flex justify-content-between">
+
+                                <strong>${notification.title}</strong>
+
+                                <span class="badge bg-${
+                                    notification.priority === 'Critical' ? 'danger' :
+                                    notification.priority === 'High' ? 'warning' :
+                                    notification.priority === 'Medium' ? 'primary' :
+                                    'secondary'
+                                }">
+                                    ${notification.priority}
+                                </span>
+
+                            </div>
+
+                            <div class="small mt-1">
+                                ${notification.message}
+                            </div>
+
+                            <small class="text-muted">
+                                ${notification.created_at}
+                            </small>
+
+                        </div>
+                    `;
+
+                });
+
+                list.innerHTML = html;
+
+            });
+
+    }
+
+    // ---------------------------
+    // Mark One Notification Read
+    // ---------------------------
+    document.addEventListener('click', function (e) {
+
+        const item = e.target.closest('.notification-item');
+
+        if (!item) return;
+
+        fetch('/notifications/' + item.dataset.id + '/read', {
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
@@ -368,109 +478,17 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         })
         .then(res => res.json())
-        .then(() => loadNotifications());
-    });
-
-});
-
-// ---------------------------
-// Load Notifications
-// ---------------------------
-function loadNotifications() {
-
-    fetch("{{ route('notifications.index') }}?type=due_date")
-        .then(res => res.json())
-        .then(data => {
-
-            const badge = document.getElementById('notificationBadge');
-            const list = document.getElementById('notificationList');
-
-            // Badge
-            if (data.unreadCount > 0) {
-                badge.classList.remove('d-none');
-                badge.textContent = data.unreadCount;
-            } else {
-                badge.classList.add('d-none');
-            }
-
-            // Empty state
-            if (data.notifications.length === 0) {
-                list.innerHTML = `
-                    <div class="text-center p-4 text-muted">
-                        No notifications
-                    </div>
-                `;
-                return;
-            }
-
-            let html = '';
-
-            data.notifications.forEach(notification => {
-
-                html += `
-                    <div
-                        class="dropdown-item notification-item py-3 border-bottom ${notification.is_read ? '' : 'bg-light'}"
-                        data-id="${notification.id}"
-                        style="cursor:pointer;">
-
-                        <div class="d-flex justify-content-between">
-
-                            <strong>${notification.title}</strong>
-
-                            <span class="badge bg-${
-                                notification.priority === 'Critical' ? 'danger' :
-                                notification.priority === 'High' ? 'warning' :
-                                notification.priority === 'Medium' ? 'primary' :
-                                'secondary'
-                            }">
-                                ${notification.priority}
-                            </span>
-
-                        </div>
-
-                        <div class="small mt-1">
-                            ${notification.message}
-                        </div>
-
-                        <small class="text-muted">
-                            ${notification.created_at}
-                        </small>
-
-                    </div>
-                `;
-
-            });
-
-            list.innerHTML = html;
-
+        .then(() => {
+            loadNotifications();
         });
 
-}
-
-// ---------------------------
-// Mark One Notification Read
-// ---------------------------
-document.addEventListener('click', function (e) {
-
-    const item = e.target.closest('.notification-item');
-
-    if (!item) return;
-
-    fetch('/notifications/' + item.dataset.id + '/read', {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            'Accept': 'application/json'
-        }
-    })
-    .then(res => res.json())
-    .then(() => {
-        loadNotifications();
     });
 
-});
+    const ors = document.getElementById("edit_ors_no");
 
-document.getElementById("edit_ors_no").addEventListener("input", function () {
-    this.value = this.value.replace(/\D/g, "");
-});
+    if (ors) {
+        ors.addEventListener("input", function () {
+            this.value = this.value.replace(/\D/g, "");
+        });
+    }
 </script>
