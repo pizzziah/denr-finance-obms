@@ -127,6 +127,7 @@
                         'Forwarded to Accounting'  => 'background-color: var(--secondary-variant); color: var(--primary);',
                         'Forwarded to Cashier'     => 'background-color: #FFDEC5; color: #BB400D;',
                         'Returned'                 => 'background-color: #EFDFFF; color: #7909FF;',
+                        'Paid'                    => 'background-color: #D4EDDA; color: #155724;',
                         default                    => 'background-color: #F8F9FA; color: #6C757D;'
                       };
                     @endphp

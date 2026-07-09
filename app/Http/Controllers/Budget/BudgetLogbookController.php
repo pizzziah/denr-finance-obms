@@ -383,7 +383,8 @@ class BudgetLogbookController extends Controller
         $search = $request->search;
         $sort = $request->sort ?? 'latest';
 
-        $query = DB::table('odms_budget');
+        $query = DB::table('odms_budget')
+            ->where('status', 'Paid');
 
         // Filter by year
         if ($year != 'all') {
