@@ -25,6 +25,7 @@ class BudgetLogbookController extends Controller
             'for_obligation' => 'For Obligation',
             'forwarded_to_accounting' => 'Forwarded to Accounting',
             'forwarded_to_cashier' => 'Forwarded to Cashier',
+            'returned_by_accounting' => 'Returned by Accounting',
             'all' => null,
             default => ucwords(str_replace('_', ' ', $status)),
         };

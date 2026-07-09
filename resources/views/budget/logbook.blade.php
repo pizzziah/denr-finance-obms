@@ -93,7 +93,8 @@ $show = fn($col) => in_array('all', $visibleColumns) || in_array($col, $visibleC
               {{-- GROUP 2 --}}
              @if($show('forwarded'))<th colspan="3" style="background-color: #FFEECC; color: #9D6B0B">Forwarded</th>@endif
               {{-- GROUP 3 --}}
-             @if($show('returned_by_accounting'))<th colspan="2" style="background-color: #EBFEFF; color: #0B879D">Returned by Accounting</th>@endif
+             {{-- MODIFIED: Changed from checking 'returned_by_accounting' code mapping check to include visibility helper logic consistently --}}
+             @if($show('date_returned_2') || $show('date_received_2'))<th colspan="2" style="background-color: #EBFEFF; color: #0B879D">Returned by Accounting</th>@endif
 
              @if($show('date_forwarded_accounting'))<th rowspan="2" style="min-width:120px;">Date Forwarded to Accounting</th>@endif
              @if($show('total_time_budget'))<th rowspan="2" style="min-width:100px;">Total Time in Budget</th>@endif
@@ -175,8 +176,10 @@ $show = fn($col) => in_array('all', $visibleColumns) || in_array($col, $visibleC
                                       'Paid'                    => 'background-color: #DEF5C4; color: var(--secondary);',
                                       'For Review'              => 'background-color: #CFF0F1; color: #066B6B;',
                                       'For Obligation'          => 'background-color: #BCC3F6; color: #271ECE;',
-                                      'Cancelled'                => 'background-color: #FFC2C2; color: var(--error);',
+                                      'Cancelled'               => 'background-color: #FFC2C2; color: var(--error);',
                                       'Forwarded to Accounting' => 'background-color: var(--secondary-variant); color: var(--primary);',
+                                      // ADDED: Style design blueprint mapping layout for 'Returned by Accounting'
+                                      'Returned by Accounting'  => 'background-color: #EBFEFF; color: #0B879D;',
                                       default                   => 'background-color: #F8F9FA; color: #6C757D;'
                                   };
                               @endphp
@@ -204,7 +207,6 @@ $show = fn($col) => in_array('all', $visibleColumns) || in_array($col, $visibleC
                   @if($show('action'))<td>
                       @if(!empty($record->payee))
                       <div class="d-flex gap-1 justify-content-center">
-                          <!-- View -->
                           <button
                               type="button"
                               class="btn btn-sm btn-outline-info view-btn"
@@ -212,7 +214,6 @@ $show = fn($col) => in_array('all', $visibleColumns) || in_array($col, $visibleC
                               <i class="bi bi-eye"></i>
                           </button>
 
-                          <!-- Edit -->
                           <button
                               type="button"
                               class="btn btn-sm btn-outline-primary edit-btn"
@@ -220,7 +221,6 @@ $show = fn($col) => in_array('all', $visibleColumns) || in_array($col, $visibleC
                               <i class="bi bi-pencil"></i>
                           </button>
 
-                          <!-- Delete -->
                           <button
                               type="button"
                               class="btn btn-sm btn-outline-danger delete-btn"
