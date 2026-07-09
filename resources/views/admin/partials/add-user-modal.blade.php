@@ -43,7 +43,6 @@
           <div class="mb-3">
             <label class="fw-bold">Password <span class="fw-medium" style="color: var(--error);">*</span></label>
             <input type="password" name="password" id="add_password" class="form-control" placeholder="********" required>
-            <small class="text-muted d-block mt-1"><i>Password should contain at least 8 characters.</i></small>
             <div class="invalid-feedback" id="password_length_error" style="color: var(--error);">Password must be at least 8 characters long.</div>
           </div>   
 
