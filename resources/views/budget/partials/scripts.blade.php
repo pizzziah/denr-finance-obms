@@ -43,8 +43,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ===================== GET RECORD =====================
     async function getRecord(id) {
-        const res = await fetch(`/budget/logbook/${encodeURIComponent(id)}/details`);
-        if (!res.ok) throw new Error('Unable to load record.');
+
+        const url = `/budget/logbook/${encodeURIComponent(id)}/details`;
+
+        console.log("Fetching:", url);
+
+        const res = await fetch(url);
+
+        console.log("Status:", res.status);
+
+        if (!res.ok) {
+            const text = await res.text();
+            console.log(text);
+            throw new Error("HTTP " + res.status);
+        }
+
         return await res.json();
     }
 
@@ -58,120 +71,117 @@ document.addEventListener('DOMContentLoaded', () => {
 
         modal.show();
 
-        $('detailsBody').innerHTML = `
-            <div class="text-center py-5">
-                <div class="spinner-border text-success"></div>
-            </div>
-        `;
+        $('detailsLoading').classList.remove('d-none');
+        $('detailsContent').classList.add('d-none');
 
         try {
             const response = await getRecord(id);
             const row = response.budget;
+            const reviews = response.reviews ?? [];
+
+            // Hide loading spinner
+            $('detailsLoading').classList.add('d-none');
+            $('detailsContent').classList.remove('d-none');
 
             $('transactionTitle').textContent = row.ors_no ?? '-';
             $('transactionSubtitle').textContent = row.payee ?? '-';
+
 
             $('detailsEditBtn').onclick = () => {
                 modal.hide();
                 openEditModal(id);
             };
 
-            $('detailsBody').innerHTML = `
-            <div class="container-fluid">
+            // ================= REVIEW HISTORY =================
+            let reviewHtml = "";
 
-                <div class="row">
-                    <div class="col-2 fw-bold fs-4">Request<br>Information</div>
-
-                    <div class="col-5">
-                        <div>Date Received: ${row.date_received ?? '-'}</div>
-                        <div>Issuing Office: ${row.issuing_office ?? '-'}</div>
+            // First review (stored in odms_budget)
+            if (row.date_returned_1 || row.remarks_1 || row.date_received_1) {
+                reviewHtml += `
+                <div class="border rounded p-3 mb-3 bg-light">
+                    <h6 class="fw-bold mb-3">Review #1</h6>
+                    <div class="row mb-1">
+                        <div class="col-5 fw-bold">Date Returned:</div>
+                        <div class="col-7">${row.date_returned_1 ?? '-'}</div>
                     </div>
 
-                    <div class="col-5">
-                        <div>Payee: ${row.payee ?? '-'}</div>
-                        <div>Classification: ${row.classification ?? '-'}</div>
-                        <div>Particulars: ${row.particulars ?? '-'}</div>
-                        <div>Remark: ${row.particulars_remark ?? '-'}</div>
-                        <div>Due Date: ${row.due_date ?? '-'}</div>
-                        <div>
-                            Amount: ₱${Number(row.amount ?? 0).toLocaleString(undefined,{
-                                minimumFractionDigits:2,
-                                maximumFractionDigits:2
-                            })}
-                        </div>
+                    <div class="row mb-1">
+                        <div class="col-5 fw-bold">Remarks:</div>
+                        <div class="col-7">${row.remarks_1 ?? '-'}</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-5 fw-bold">Date Received:</div>
+                        <div class="col-7">${row.date_received_1 ?? '-'}</div>
                     </div>
                 </div>
+                `;
+            }
 
-                <hr>
+            // Additional reviews (stored in budget_review_processes)
+            reviews.forEach((review, index) => {
+                reviewHtml += `
+                <div class="border rounded p-3 mb-3 bg-light">
 
-                <div class="row">
-                    <div class="col-2 fw-bold fs-4">Review<br>Processing</div>
+                    <h6 class="fw-bold mb-3">Review #${index + 2}</h6>
 
-                    <div class="col-5">
-                        <div>Status: ${row.status ?? '-'}</div>
+                    <div class="row mb-1">
+                        <div class="col-5 fw-bold">Date Returned:</div>
+                        <div class="col-7">${review.date_returned ?? '-'}</div>
                     </div>
 
-                    <div class="col-5">
-                        <div>Date Returned: ${row.date_returned_1 ?? '-'}</div>
-                        <div>Remarks: ${row.remarks_1 ?? '-'}</div>
-                        <div>Date Received: ${row.date_received_1 ?? '-'}</div>
+                    <div class="row mb-1">
+                        <div class="col-5 fw-bold">Remarks:</div>
+                        <div class="col-7">${review.remarks ?? '-'}</div>
                     </div>
+
+                    <div class="row">
+                        <div class="col-5 fw-bold">Date Received:</div>
+                        <div class="col-7">${review.date_received ?? '-'}</div>
+                    </div>
+
                 </div>
+                `;
+            });
 
-                <hr>
-
-                <div class="row">
-                    <div class="col-2 fw-bold fs-4">Obligation<br>Processing</div>
-
-                    <div class="col-5">
-                        <div>ORS No: ${row.ors_no ?? '-'}</div>
+            if (reviewHtml === "") {
+                reviewHtml = `
+                    <div class="text-muted">
+                        No review history.
                     </div>
+                `;
+            }
 
-                    <div class="col-5">
-                        <div>Date Forwarded: ${row.date_forwarded_1 ?? '-'}</div>
-                        <div>Date ORS Received: ${row.date_ors_received ?? '-'}</div>
-                        <div>Date Returned: ${row.date_returned_2 ?? '-'}</div>
-                        <div>Remarks: ${row.remarks_2 ?? '-'}</div>
-                        <div>Date Received: ${row.date_received_2 ?? '-'}</div>
-                    </div>
-                </div>
+            $('view_date_received').textContent = row.date_received ?? '-';
+            $('view_issuing_office').textContent = row.issuing_office ?? '-';
+            $('view_payee').textContent = row.payee ?? '-';
+            $('view_classification').textContent = row.classification ?? '-';
+            $('view_ors_no').textContent = row.ors_no ?? '-';
+            $('view_particulars').textContent = row.particulars ?? '-';
+            $('view_particulars_remark').textContent = row.particulars_remark ?? '-';
+            $('view_due_date').textContent = row.due_date ?? '-';
+            $('view_amount').textContent =
+            Number(row.amount ?? 0).toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+            $('view_status').textContent = row.status ?? '-';
+            $('view_date_forwarded_1').textContent = row.date_forwarded_1 ?? '-';
+            $('view_date_ors_received').textContent = row.date_ors_received ?? '-';
+            $('view_date_returned_2').textContent = row.date_returned_2 ?? '-';
+            $('view_remarks_2').textContent = row.remarks_2 ?? '-';
+            $('view_date_received_2').textContent = row.date_received_2 ?? '-';
+            $('view_date_forwarded_accounting').textContent = row.date_forwarded_accounting ?? '-';
+            $('view_final_remarks').textContent = row.final_remarks ?? '-';
+            $('view_total_time_budget').textContent = row.total_time_budget ?? '-';
+            $('view_total_time').textContent = row.total_time ?? '-';
 
-                <hr>
-
-                <div class="row">
-                    <div class="col-2 fw-bold fs-4">Forwarded<br>to Accounting</div>
-
-                    <div class="col-5">
-                        <div>Date Forwarded: ${row.date_forwarded_accounting ?? '-'}</div>
-                    </div>
-
-                    <div class="col-5">
-                        <div>Remarks: ${row.final_remarks ?? '-'}</div>
-                    </div>
-                </div>
-
-                <hr>
-
-                <div class="row">
-                    <div class="col-2 fw-bold fs-4">Processing<br>Metrics</div>
-
-                    <div class="col-5">
-                        <div>Total Time in Budget: ${row.total_time_budget ?? '-'}</div>
-                    </div>
-
-                    <div class="col-5">
-                        <div>Total Time: ${row.total_time ?? '-'}</div>
-                    </div>
-                </div>
-
-            </div>
-            `;
+            // Load review history
+            $('view_review_history').innerHTML = reviewHtml;
+            
         } catch (err) {
-            $('detailsBody').innerHTML = `
-                <div class="alert alert-danger">
-                    Unable to load record.
-                </div>
-            `;
+            console.error("View Modal Error:", err);
+            console.error(err.stack);
         }
     });
 

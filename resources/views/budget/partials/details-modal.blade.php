@@ -31,7 +31,166 @@
             </div>
         </div>
             <hr>
-            <div class="modal-body" id="detailsBody"></div>
+            <div class="modal-body">
+
+                <div id="detailsLoading" class="text-center py-5 d-none">
+                    <div class="spinner-border text-success"></div>
+                </div>
+
+                <div id="detailsContent">
+                    <div class="container-fluid">
+                        {{-- ================= REQUEST INFORMATION ================= --}}
+                        <div class="row">
+                            <div class="col-2 fw-bold fs-4">Request<br>Information</div>
+
+                            <div class="col-5">
+                                <div class="row mb-2">
+                                    <div class="col-5 fw-bold">Date Received</div>
+                                    <div class="col-7" id="view_date_received">-</div>
+                                </div>
+
+                                <div class="row mb-2">
+                                    <div class="col-5 fw-bold">Issuing Office</div>
+                                    <div class="col-7" id="view_issuing_office">-</div>
+                                </div>
+                            </div>
+
+                            <div class="col-5">
+                                <div class="row mb-2">
+                                    <div class="col-5 fw-bold">Payee</div>
+                                    <div class="col-7" id="view_payee">-</div>
+                                </div>
+
+                                <div class="row mb-2">
+                                    <div class="col-5 fw-bold">Classification</div>
+                                    <div class="col-7" id="view_classification">-</div>
+                                </div>
+
+                                <div class="row mb-2">
+                                    <div class="col-5 fw-bold">Particulars</div>
+                                    <div class="col-7" id="view_particulars">-</div>
+                                </div>
+
+                                <div class="row mb-2">
+                                    <div class="col-5 fw-bold">Remark</div>
+                                    <div class="col-7" id="view_particulars_remark">-</div>
+                                </div>
+
+                                <div class="row mb-2">
+                                    <div class="col-5 fw-bold">Due Date</div>
+                                    <div class="col-7" id="view_due_date">-</div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-5 fw-bold">Amount</div>
+                                    <div class="col-7">₱<span id="view_amount">0.00</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        {{-- ================= REVIEW PROCESSING ================= --}}
+                        <div class="row">
+                            <div class="col-2 fw-bold fs-4">Review<br>Processing</div>
+
+                            <div class="col-5">
+                                <div class="row mb-2">
+                                    <div class="col-5 fw-bold">Status</div>
+                                    <div class="col-7" id="view_status">-</div>
+                                </div>
+                            </div>
+
+                            <div class="col-5">
+                                <div id="view_review_history"></div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        {{-- ================= OBLIGATION PROCESSING ================= --}}
+                        <div class="row">
+                            <div class="col-2 fw-bold fs-4">Obligation<br>Processing</div>
+
+                            <div class="col-5">
+                                <div class="row mb-2">
+                                    <div class="col-5 fw-bold">ORS No.</div>
+                                    <div class="col-7" id="view_ors_no">-</div>
+                                </div>
+                            </div>
+
+                            <div class="col-5">
+                                <div class="row mb-2">
+                                    <div class="col-5 fw-bold">Date Forwarded</div>
+                                    <div class="col-7" id="view_date_forwarded_1">-</div>
+                                </div>
+
+                                <div class="row mb-2">
+                                    <div class="col-5 fw-bold">Date ORS Received</div>
+                                    <div class="col-7" id="view_date_ors_received">-</div>
+                                </div>
+
+                                <div class="row mb-2">
+                                    <div class="col-5 fw-bold">Date Returned</div>
+                                    <div class="col-7" id="view_date_returned_2">-</div>
+                                </div>
+
+                                <div class="row mb-2">
+                                    <div class="col-5 fw-bold">Remarks</div>
+                                    <div class="col-7" id="view_remarks_2">-</div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-5 fw-bold">Date Received</div>
+                                    <div class="col-7" id="view_date_received_2">-</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        {{-- ================= FORWARDED TO ACCOUNTING ================= --}}
+                        <div class="row">
+                            <div class="col-2 fw-bold fs-4">Forwarded<br>to Accounting</div>
+
+                            <div class="col-5">
+                                <div class="row mb-2">
+                                    <div class="col-5 fw-bold">Date Forwarded</div>
+                                    <div class="col-7" id="view_date_forwarded_accounting">-</div>
+                                </div>
+                            </div>
+
+                            <div class="col-5">
+                                <div class="row mb-2">
+                                    <div class="col-5 fw-bold">Remarks</div>
+                                    <div class="col-7" id="view_final_remarks">-</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        {{-- ================= PROCESSING METRICS ================= --}}
+                        <div class="row">
+                            <div class="col-2 fw-bold fs-4">Processing<br>Metrics</div>
+
+                            <div class="col-5">
+                                <div class="row mb-2">
+                                    <div class="col-5 fw-bold">Total Time in Budget</div>
+                                    <div class="col-7" id="view_total_time_budget">-</div>
+                                </div>
+                            </div>
+
+                            <div class="col-5">
+                                <div class="row mb-2">
+                                    <div class="col-5 fw-bold">Total Time</div>
+                                    <div class="col-7" id="view_total_time">-</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div class="modal-footer">
                 <button class="btn btn-primary" onclick="printDetails()">
