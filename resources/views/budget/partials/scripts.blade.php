@@ -242,10 +242,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
             });
 
-            initTomSelect(document);
+            // Issuing Office
+            const office = $("edit_issuing_office");
+            if (office.tomselect) {
+                office.tomselect.setValue(row.issuing_office ?? "", true);
+            } else {
+                office.value = row.issuing_office ?? "";
+            }
+
+            // Classification
+            const classification = $("edit_classifications");
+            if (classification.tomselect) {
+                classification.tomselect.setValue(row.classification ?? "", true);
+            } else {
+                classification.value = row.classification ?? "";
+            }
+
+            // UACS
+            const uacs = $("edit_uac_codes");
+            if (uacs.tomselect) {
+                uacs.tomselect.setValue(row.uac_codes ?? "", true);
+            } else {
+                uacs.value = row.uac_codes ?? "";
+            }
 
             bootstrap.Modal
-                .getOrCreateInstance($('editModal'))
+                .getOrCreateInstance($("editModal"))
                 .show();
 
         }
