@@ -3,7 +3,9 @@
 @section('title', 'Log Book')
 
 @section('content')
-
+@php
+    $showStatusColumn = request('status', 'all') === 'all';
+@endphp
 <div class="container-fluid mt-3 px-0" style="min-width: 0; overflow-x: hidden;">
 
   {{-- TOP BAR --}}
@@ -14,13 +16,16 @@
   {{-- 1ST CARD --}}
   <div class="card p-3 mb-3 m-0 w-100">
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
-      <x-button
-          variant="header"
-          data-bs-toggle="modal"
-          data-bs-target="#addRecordModal">
-          <i class="bi bi-file-earmark-plus"></i>
-          Add Record
-      </x-button>
+      <div class="col-auto">
+          @if($showStatusColumn)
+              <x-button variant="header"
+                        data-bs-toggle="modal"
+                        data-bs-target="#addRecordModal">
+                  <i class="bi bi-file-earmark-plus"></i>
+                  Add Record
+              </x-button>
+          @endif
+      </div>
 
       {{-- SEARCH + FILTER --}}
       <form action="{{ route('accounting.logbook') }}"
