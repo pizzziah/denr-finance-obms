@@ -376,24 +376,22 @@ class BudgetLogbookController extends Controller
         }
     }
 
-    public function archives(Request $request)
-    {
+    public function archives(Request $request) {
         $year = $request->year ?? 'all';
-        $month = $request->month;
-        $search = $request->search;
-        $sort = $request->sort ?? 'latest';
+    $month = $request->month;
+    $search = $request->search;
+    $sort = $request->sort ?? 'latest';
 
-        $query = DB::table('odms_budget')
-            ->where('status', 'Paid');
+    $query = DB::table('odms_budget')
+        ->whereIn('status', ['Paid', 'Cancelled']);
 
-        // Filter by year
-        if ($year != 'all') {
-            $query->whereYear('date_received', $year);
-        }
-        // Filter by month
-        if ($month && $month != 'all') {
-            $query->whereMonth('date_received', $month);
-        }
+    if ($year != 'all') {
+        $query->whereYear('date_received', $year);
+    }
+
+    if ($month && $month != 'all') {
+        $query->whereMonth('date_received', $month);
+    }
 
         // Full text search handling match configurations
         if ($search) {

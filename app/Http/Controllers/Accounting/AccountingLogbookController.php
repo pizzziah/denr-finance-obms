@@ -6,23 +6,19 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class AccountingLogbookController extends Controller
-{
-    // ================= LOGBOOK MAIN VIEW =================
-    public function logbook(Request $request)
-    {
-        $month = $request->month ?? 'all';
-        $status = $request->status ?? 'all';
-        $search = trim($request->search ?? '');
-        $sort = $request->sort ?? 'latest';
+class AccountingLogbookController extends Controller {
+  public function logbook(Request $request) {
+    $month = $request->month ?? 'all';
+    $status = $request->status ?? 'all';
+    $search = trim($request->search ?? '');
+    $sort = $request->sort ?? 'latest';
 
-        $query = DB::table('odms_accounting')
-            ->where('status', '!=', 'Paid');
-
-        // ================= STATUS FILTER =================
-        if ($status !== 'all' && ! empty($status)) {
-            $query->where('status', $status);
-        }
+    $query = DB::table('odms_accounting')
+      ->where('status', '!=', 'Paid');
+      
+    if ($status !== 'all' && ! empty($status)) {
+      $query->where('status', $status);
+    }
 
         // ================= MONTH FILTER =================
         if ($month !== 'all' && ! empty($month)) {
@@ -590,148 +586,66 @@ class AccountingLogbookController extends Controller
 
     }
 
-    // ================= ARCHIVES TAB =================
-    public function archives(Request $request)
-    {
-
-        $year = $request->year ?? 'all';
-
-        $month = $request->month ?? 'all';
-
-        $search = trim($request->search ?? '');
-
-        $sort = $request->sort ?? 'latest';
-
-        $query = DB::table('odms_accounting')
-
-            ->where(
-                'status',
-                'Paid'
-            );
-
-        // YEAR FILTER
-        if ($year !== 'all' && ! empty($year)) {
-
-            $query->whereYear(
-                'date_processed',
-                (int) $year
-            );
-
-        }
-
-        // MONTH FILTER
-        if ($month !== 'all' && ! empty($month)) {
-
-            $query->whereMonth(
-                'date_processed',
-                (int) $month
-            );
-
-        }
-
-        // SEARCH
-        if (! empty($search)) {
-
-            $query->where(function ($q) use ($search) {
-
-                $q->where(
-                    'transaction_id',
-                    'like',
-                    "%{$search}%"
-                )
-                    ->orWhere(
-                        'dv_no',
-                        'like',
-                        "%{$search}%"
-                    )
-                    ->orWhere(
-                        'obr_no',
-                        'like',
-                        "%{$search}%"
-                    )
-                    ->orWhere(
-                        'payee',
-                        'like',
-                        "%{$search}%"
-                    )
-                    ->orWhere(
-                        'particulars',
-                        'like',
-                        "%{$search}%"
-                    );
-
-            });
-
-        }
-
-        // SORT
-        switch ($sort) {
-
-            case 'obr_asc':
-
-                $query->orderByRaw(
-                    "CAST(REGEXP_REPLACE(transaction_id,'[^0-9]','') AS UNSIGNED) ASC"
-                );
-
-                break;
-
-            case 'obr_desc':
-
-                $query->orderByRaw(
-                    "CAST(REGEXP_REPLACE(transaction_id,'[^0-9]','') AS UNSIGNED) DESC"
-                );
-
-                break;
-
-            default:
-
-                $query->orderByDesc(
-                    DB::raw('MAX(date_processed)')
-                );
-
-                break;
-
-        }
-
-        $records = $query->select(
-
-            'transaction_id',
-            DB::raw('MAX(dv_no) dv_no'),
-            DB::raw('MAX(accounting_id) accounting_id'),
-            DB::raw('MAX(obr_no) obr_no'),
-            DB::raw('MAX(payee) payee'),
-            DB::raw('MAX(particulars) particulars'),
-            DB::raw('MAX(status) status'),
-            DB::raw('MAX(date_received) date_received'),
-            DB::raw('MAX(date_processed) date_processed'),
-            DB::raw('COUNT(*) total_entries'),
-
-            DB::raw("
-                SUM(
-                    CAST(
-                        REPLACE(
-                            COALESCE(debit,0),
-                            ',',
-                            ''
-                        ) AS DECIMAL(15,2)
-                    )
-                ) as total_debit
-            ")
-
-        )
-            ->groupBy('transaction_id')
-            ->get();
-
-        return view(
-            'accounting.archives',
-            compact(
-                'records',
-                'year',
-                'month',
-                'search',
-                'sort'
-            )
-        );
-
+  public function archives(Request $request) {
+    $year = $request->year ?? 'all';
+    $month = $request->month ?? 'all';
+    $search = trim($request->search ?? '');
+    $sort = $request->sort ?? 'latest';
+        
+    $query = DB::table('odms_accounting')
+      ->whereIn('status', ['Paid', 'Cancelled']);
+        
+    if ($year !== 'all' && ! empty($year)) {
+      $query->whereYear(
+        'date_processed', (int) $year
+      );
     }
+
+    if ($month !== 'all' && ! empty($month)) {
+      $query->whereMonth(
+        'date_processed', (int) $month
+      );
+    }
+    
+    if (! empty($search)) {
+      $query->where(function ($q) use ($search) {
+        $q->where('transaction_id', 'like', "%{$search}%")
+        ->orWhere('dv_no', 'like', "%{$search}%")
+        ->orWhere('obr_no', 'like', "%{$search}%")
+        ->orWhere('payee', 'like', "%{$search}%")
+        ->orWhere('particulars', 'like', "%{$search}%");
+      });
+    }
+    
+    switch ($sort) {
+      case 'obr_asc':
+        $query->orderByRaw( "CAST(REGEXP_REPLACE(transaction_id,'[^0-9]','') AS UNSIGNED) ASC");
+      break;
+      
+      case 'obr_desc':
+        $query->orderByRaw( "CAST(REGEXP_REPLACE(transaction_id,'[^0-9]','') AS UNSIGNED) DESC");
+      break;
+
+      default:
+        $query->orderByDesc( DB::raw('MAX(date_processed)'));
+      break;
+    }
+
+    $records = $query->select('transaction_id',
+      DB::raw('MAX(dv_no) dv_no'),
+      DB::raw('MAX(accounting_id) accounting_id'),
+      DB::raw('MAX(obr_no) obr_no'),
+      DB::raw('MAX(payee) payee'),
+      DB::raw('MAX(particulars) particulars'),
+      DB::raw('MAX(status) status'),
+      DB::raw('MAX(date_received) date_received'),
+      DB::raw('MAX(date_processed) date_processed'),
+      DB::raw('COUNT(*) total_entries'),
+
+      DB::raw("SUM(CAST(REPLACE(COALESCE(debit,0),',','') AS DECIMAL(15,2))) as total_debit"))
+      ->groupBy('transaction_id')
+      ->get();
+
+    return view('accounting.archives', compact('records','year','month','search','sort'));
+  }
 }
