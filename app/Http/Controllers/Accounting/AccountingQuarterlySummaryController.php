@@ -140,8 +140,8 @@ class AccountingQuarterlySummaryController extends Controller {
         $year = (int) $request->input('year');
 
         DB::table('odms_admin_quarter_locks')->updateOrInsert(
-            ['year' => $year, 'quarter' => $quarter],
-            ['status' => 'locked', 'requires_admin_unlock' => true, 'updated_at' => Carbon::now()]
+          ['year' => $year, 'quarter' => $quarter],
+          ['status' => 'locked', 'requires_admin_unlock' => false, 'updated_at' => Carbon::now()]
         );
 
         return redirect()->back()->with('success', "Quarter {$quarter} manual lock completed.");
