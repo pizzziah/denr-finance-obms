@@ -19,82 +19,32 @@
         <x-main-card-dashboard-filter :selected-year="$selectedYear" :selected-month="$selectedMonth" />
       </x-main-card-dashboard>
 
-      {{-- ROW 2/METRICS CARD --}}
+      {{-- METRICS CARD --}}
       <div class="row mb-4">
-        {{-- CARD C --}}
-        <div class="col-md-4">
-          <div class="card glass-card-hover card-c p-0 h-80 border-0 border-start border-4" style="border-color: var(--primary) !important;">
-            <div class="card-body d-flex align-items-center justify-content-between">
-              <div>
-                <h6 class="text-uppercase fw-bold p-0 m-0" style="color: var(--primary)">
-                  Amount in Process
-                </h6>
-                <p class="mb-2">
-                  <small><i>{{ $timelineLabel }}</i></small>
-                </p>
-                <h2 class="fw-bold fs-2 m-0" style="color: var(--primary)">
-                  ₱{{ number_format($metrics['amountInProcess'] ?? 0, 2) }}
-                </h2>
-                <small class="fw-bold d-block" style="font-size: 0.78rem; color: #ff000000">
-                  -
-                </small>
-              </div>
-              <div class="fs-1 opacity-60" style="color: var(--primary);">
-                <i class="bi bi-database-exclamation"></i>
-              </div>  
-            </div>
-          </div>
-        </div>
+        <x-amount-card-dashboard 
+          title="Amount in Process" 
+          :value="$metrics['amountInProcess'] ?? 0"
+          icon="bi-database-exclamation"
+          :timeline-label="$timelineLabel"
+          color-var="primary"
+        />
 
-        {{-- CARD D --}}
-        <div class="col-md-4">
-          <div class="card glass-card-hover card-c p-0 h-80 border-0 border-start border-4" style="border-color: var(--secondary) !important;">
-            <div class="card-body d-flex align-items-center justify-content-between">
-              <div>
-                <h6 class="text-uppercase fw-bold p-0 m-0" style="color: var(--secondary)">
-                  Forwarded to Accounting
-                </h6>
-                <p class="mb-2">
-                  <small><i>{{ $timelineLabel }}</i></small>
-                </p>
-                <h2 class="fw-bold fs-2 m-0" style="color: var(--secondary)">
-                  ₱{{ number_format($metrics['amountForwarded'] ?? 0, 2) }}
-                </h2>
-                <small class="text-uppercase fw-bold d-block" style="font-size: 0.78rem; color: #ff0000c0">
-                  Total Amount Cancelled: ₱{{ number_format($metrics['totalAmountCancelled'] ?? 0, 2) }}
-                </small>
-              </div>
-              <div class="fs-1 opacity-60" style="color: var(--secondary);">
-                <i class="bi bi-database-fill-up"></i>
-              </div>  
-            </div>
-          </div>
-        </div>
+        <x-amount-card-dashboard 
+          title="Forwarded to Accounting" 
+          :value="$metrics['amountForwarded'] ?? 0"
+          icon="bi-database-fill-up"
+          :timeline-label="$timelineLabel"
+          color-var="secondary"
+          :cancelled-amount="$metrics['totalAmountCancelled'] ?? 0"
+        />
 
-        {{-- CARD E --}}
-        <div class="col-md-4">
-          <div class="card glass-card-hover card-c p-0 h-80 border-0 border-start border-4" style="border-color: var(--primary-variant) !important;">
-            <div class="card-body d-flex align-items-center justify-content-between">
-              <div>
-                <h6 class="text-uppercase fw-bold p-0 m-0" style="color: var(--primary-variant)">
-                  Total Amount Paid
-                </h6>
-                <p class="mb-2">
-                  <small><i>{{ $timelineLabel }}</i></small>
-                </p>
-                <h2 class="fw-bold fs-2 m-0" style="color: var(--primary-variant)">
-                  ₱{{ number_format($metrics['totalAmountPaid'] ?? 0, 2) }}
-                </h2>
-                <small class="fw-bold d-block" style="font-size: 0.78rem; color: #ff000000">
-                  -
-                </small>
-              </div>
-              <div class="fs-1 opacity-60" style="color: var(--primary-variant);">
-                <i class="bi bi-database-fill-check"></i>
-              </div>
-            </div>
-          </div>
-        </div>
+        <x-amount-card-dashboard 
+          title="Total Amount Paid" 
+          :value="$metrics['totalAmountPaid'] ?? 0"
+          icon="bi-database-fill-check"
+          :timeline-label="$timelineLabel"
+          color-var="primary-variant"
+        />
       </div>
 
       {{-- CARD H --}}
