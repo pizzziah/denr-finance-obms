@@ -1,8 +1,5 @@
 @props([
   'user' => null,
-  'selectedYear' => null,
-  'selectedMonth' => null,
-  'showFilters' => true
 ])
 
 @php
@@ -31,11 +28,8 @@
       </h6>
     </div>
 
-    {{-- Inject custom filters here if slot is filled and showFilters is true --}}
-    @if($showFilters && isset($filters))
-    <div class="bg-white p-2 rounded shadow-sm d-flex flex-column flex-sm-row align-items-sm-center gap-2 m-0" style="min-width: 320px;">
-      {{ $filters }}
-    </div>
+    @if(isset($slot) && !empty(trim($slot)))
+    {{ $slot }}
     @endif
   </div>
 </div>
