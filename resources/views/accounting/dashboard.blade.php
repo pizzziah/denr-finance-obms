@@ -24,18 +24,22 @@
               @php
                 $displayRole = $user->role ?? 'accounting';
                 if (in_array(strtolower($displayRole), ['accountant', 'bookkeeper'])) {
-                    $displayRole = ucwords(strtolower($displayRole));
+                  $displayRole = ucwords(strtolower($displayRole));
                 } else {
-                    $displayRole = 'Accounting Team';
+                  $displayRole = 'Accounting Team';
                 }
               @endphp
               {{ $displayRole }}!
             </h4>
             <h6 class="date mb-0 opacity-75">
-              <i class="bi bi-calendar3 me-2"></i>
-              {{ now()->format('F d, Y') }}
+              <i class="bi bi-calendar3-range"></i>
+              {{ \Carbon\Carbon::now('Asia/Manila')->format('F d, Y') }} | {{ \Carbon\Carbon::now('Asia/Manila')->format('h:i A') }}
             </h6>
           </div>
+
+          
+
+
           
           {{-- FILTER CONTROLS --}}
           <div class="bg-white p-2 rounded shadow-sm d-flex flex-column flex-sm-row align-items-sm-center gap-2 m-0" style="min-width: 320px;">
