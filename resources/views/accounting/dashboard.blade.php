@@ -54,7 +54,7 @@
 
               {{-- Month Dropdown --}}
               <select name="month" class="form-select form-select-sm border-0 fw-bold bg-light" style="color: #044709; cursor: pointer;">
-                <option value="">Full Year</option>
+                <option value="">—</option>
                 @for($m = 1; $m <= 12; $m++)
                   @php $mVal = sprintf('%02d', $m); @endphp
                   <option value="{{ $mVal }}" {{ $selectedMonth == $mVal ? 'selected' : '' }}>
