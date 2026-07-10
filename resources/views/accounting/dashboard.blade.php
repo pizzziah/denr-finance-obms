@@ -32,22 +32,13 @@
               {{ $displayRole }}!
             </h4>
             <h6 class="date mb-0 opacity-75">
-              <i class="bi bi-calendar3-range"></i>
-              {{ \Carbon\Carbon::now('Asia/Manila')->format('F d, Y') }} | {{ \Carbon\Carbon::now('Asia/Manila')->format('h:i A') }}
+              <i class="bi bi-calendar3-range"></i> {{ \Carbon\Carbon::now('Asia/Manila')->format('F d, Y') }} | {{ \Carbon\Carbon::now('Asia/Manila')->format('h:i A') }}
             </h6>
           </div>
 
-          
-
-
-          
           {{-- FILTER CONTROLS --}}
           <div class="bg-white p-2 rounded shadow-sm d-flex flex-column flex-sm-row align-items-sm-center gap-2 m-0" style="min-width: 320px;">
-            <label class="small text-muted fw-bold text-uppercase mb-0 ps-1" style="font-size: 0.65rem; color: #044709 !important; white-space: nowrap;">
-              Filter Dashboard:
-            </label>
             <form method="GET" class="m-0 d-flex gap-2 flex-grow-1 align-items-center">
-              {{-- Year Dropdown --}}
               <select name="year" class="form-select form-select-sm border-0 fw-bold bg-light" style="color: #044709; cursor: pointer;">
                 @for($year = now()->year; $year >= 2025; $year--)
                   <option value="{{ $year }}" {{ $selectedYear == $year ? 'selected' : '' }}>
@@ -55,8 +46,6 @@
                   </option>
                 @endfor
               </select>
-
-              {{-- Month Dropdown --}}
               <select name="month" class="form-select form-select-sm border-0 fw-bold bg-light" style="color: #044709; cursor: pointer;">
                 <option value="">—</option>
                 @for($m = 1; $m <= 12; $m++)
@@ -66,11 +55,9 @@
                   </option>
                 @endfor
               </select>
-
-              {{-- Filter Trigger Button --}}
-              <button type="submit" class="btn btn-sm text-white fw-bold px-3" style="background-color: #044709;">
+              <x-button variant="primary" type="submit" class="fw-bold">
                 Filter
-              </button>
+              </x-button>
             </form>
           </div>
         </div>
