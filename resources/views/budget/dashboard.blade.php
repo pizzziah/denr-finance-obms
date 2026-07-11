@@ -15,13 +15,13 @@
   <div class="row">
     <div class="col-lg-9">
       {{-- WELCOME CARD --}}
-      <x-main-card-dashboard :user="$user">
-        <x-main-card-dashboard-filter :selected-year="$selectedYear" :selected-month="$selectedMonth" />
-      </x-main-card-dashboard>
+      <x-db-main-card :user="$user">
+        <x-db-main-card-filter :selected-year="$selectedYear" :selected-month="$selectedMonth" />
+      </x-db-main-card>
 
       {{-- METRICS CARD --}}
       <div class="row mb-4">
-        <x-amount-card-dashboard 
+        <x-db-amount-card
           title="Amount in Process" 
           :value="$metrics['amountInProcess'] ?? 0"
           icon="bi-database-exclamation"
@@ -29,7 +29,7 @@
           color-var="primary"
         />
 
-        <x-amount-card-dashboard 
+        <x-db-amount-card
           title="Forwarded to Accounting" 
           :value="$metrics['amountForwarded'] ?? 0"
           icon="bi-database-fill-up"
@@ -38,7 +38,7 @@
           :cancelled-amount="$metrics['totalAmountCancelled'] ?? 0"
         />
 
-        <x-amount-card-dashboard 
+        <x-db-amount-card
           title="Total Amount Paid" 
           :value="$metrics['totalAmountPaid'] ?? 0"
           icon="bi-database-fill-check"
@@ -47,66 +47,26 @@
         />
       </div>
 
-      {{-- CARD H --}}
-      <div class="card glass-card card-h p-3">
-        <h6 class="fw-bold mb-0 p-0 text-center text-uppercase" style="color: var(--primary)">
-          Workflow Status
-        </h6>
-        <p class="mb-3 text-center">
-          <small><i>{{ $timelineLabel }}</i></small>
-        </p>
+      {{-- WORKFLOW STATUS --}}
+      @php
+      $budgetStatuses = [
+        ['key' => 'pending', 'label' => 'Pending', 'color' => '#9D6B0B', 'bg' => '#FFFBF3'],
+        ['key' => 'processing', 'label' => 'Processing', 'color' => '#fd7e14', 'bg' => '#FFF6EF'],
+        ['key' => 'for_obligation', 'label' => 'For Obligation', 'color' => '#271ECE', 'bg' => '#BCC3F6'],
+        ['key' => 'returned', 'label' => 'Returned to End User', 'color' => '#6f42c1', 'bg' => '#EFDFFF'],
+        ['key' => 'cancelled', 'label' => 'Cancelled', 'color' => '#C61919', 'bg' => '#FFC2C2'],
+        ['key' => 'forwarded', 'label' => 'Forwarded to Accounting', 'color' => 'var(--primary)', 'bg' => '#E5F2D7'],
+        ['key' => 'paid', 'label' => 'Paid', 'color' => 'var(--secondary)', 'bg' => '#EDFADF'],
+      ];
+      @endphp
 
-        <div class="row g-3 text-center">
-          @php
-            $statuses = [
-              ['key' => 'pending', 'label' => 'Pending', 'color' => '#9D6B0B', 'bg' => '#FFFBF3'],
-              ['key' => 'processing', 'label' => 'Processing', 'color' => '#fd7e14', 'bg' => '#FFF6EF'],
-              ['key' => 'for_obligation', 'label' => 'For Obligation', 'color' => '#271ECE', 'bg' => '#BCC3F6'],
-              ['key' => 'returned', 'label' => 'Returned to End User', 'color' => '#6f42c1', 'bg' => '#EFDFFF'],
-              ['key' => 'cancelled', 'label' => 'Cancelled', 'color' => '#C61919', 'bg' => '#FFC2C2'],
-              ['key' => 'forwarded', 'label' => 'Forwarded to Accounting', 'color' => 'var(--primary)', 'bg' => '#E5F2D7'],
-              ['key' => 'paid', 'label' => 'Paid', 'color' => 'var(--secondary)', 'bg' => '#EDFADF'],
-            ];
-
-            $totalSum = array_sum($metrics['statusCounts'] ?? []);
-            $totalSum = $totalSum > 0 ? $totalSum : 1;
-          @endphp
-
-          @foreach($statuses as $status)
-            @php
-              $count = $metrics['statusCounts'][$status['key']] ?? 0;
-              $percentage = ($count / $totalSum) * 100;
-              $offset = 113 - (113 * $percentage) / 100;
-            @endphp
-            <div class="col-3">
-              <div class="p-0 py-2 border rounded h-100 d-flex flex-column align-items-center justify-content-center" 
-                  style="border-color: {{ $status['color'] }} !important; background: {{ $status['bg'] }};">
-                
-                <div class="position-relative mb-2" style="width: 60px; height: 60px;">
-                  <svg class="w-100 h-100" viewBox="0 0 40 40" style="transform: rotate(-90deg);">
-                    <circle cx="20" cy="20" r="18" fill="transparent" stroke="rgba(0,0,0,0.05)" stroke-width="3"></circle>
-                    <circle cx="20" cy="20" r="18" fill="transparent" 
-                            stroke="{{ $status['color'] }}" 
-                            stroke-width="3" 
-                            stroke-dasharray="113" 
-                            stroke-dashoffset="{{ $offset }}"
-                            stroke-linecap="round"
-                            style="transition: stroke-dashoffset 0.5s ease-in-out;">
-                    </circle>
-                  </svg>
-                  <div class="position-absolute top-50 start-50 translate-middle fw-bold" style="color: {{ $status['color'] }}; font-size: 1.1rem;">
-                    {{ $count }}
-                  </div>
-                </div>
-
-                <span class="small text-muted d-block fw-semibold" style="font-size: 0.75rem; color: {{ $status['color'] }} !important;">
-                  {{ $status['label'] }}
-                </span>
-              </div>
-            </div>
-          @endforeach
-        </div>
-      </div>
+      <x-db-workflow-status 
+        :statuses="$budgetStatuses" 
+        :metrics="$metrics" 
+        :timeline-label="$timelineLabel" 
+        row-class="row g-3"
+        col-class="col-3"
+      />
     </div>
 
     {{-- RIGHT-SIDE COLUMN --}}
