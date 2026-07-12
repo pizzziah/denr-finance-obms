@@ -120,125 +120,181 @@ $show = fn($col) => in_array('all', $visibleColumns) || in_array($col, $visibleC
               @if($show('date_received_2'))<th style="background-color: #EBFEFF; color: #0B879D">Date Received</th>@endif
             </tr>
           </thead>
-            <tbody>
-              @forelse($records as $record)
-                <tr>
-                  @if($show('ors_no'))<td style="color: var(--primary); background-color:var(--secondary-variant)"><strong>{{ $record->ors_no ?? '-' }}</strong></td>@endif
-                  @if($show('date_received'))<td>{{ $record->date_received ?? '-' }}</td>@endif
-                  
-                  {{-- ISSUING OFFICE COLUMN WITH COLOR-CODING BADGES --}}
-                  @if($show('issuing_office'))<td>
-                    @if(!empty($record->issuing_office))
-                      @php
-                        $office = strtoupper(trim($record->issuing_office));
-                        $officeStyles = match($office) {
-                          'PMD'          => 'background-color: #E2F0D9; color: #385723;',
-                          'SMD'          => 'background-color: #FFF2CC; color: #7F6000;',
-                          'LPDD'         => 'background-color: #FCE4D6; color: #C65911;',
-                          'ADMIN'        => 'background-color: #E9EDF4; color: #305496;',
-                          'FD'           => 'background-color: #EDEDED; color: #595959;',
-                          'ORED'         => 'background-color: #F2DCDB; color: #C00000;',
-                          'ARD MS'       => 'background-color: #E4DFEC; color: #595959;',
-                          'PERSONNEL'    => 'background-color: #D9E1F2; color: #1F4E78;',
-                          'RSCIG'        => 'background-color: #E2EFDA; color: #375623;',
-                          'LEGAL'        => 'background-color: #FBE5D6; color: #A61C00;',
-                          'ARD TS'       => 'background-color: #FFF2CC; color: #D66000;',
-                          'ED'           => 'background-color: #D0CECE; color: #3A3A3A;',
-                          'CDD'          => 'background-color: #E1F5FE; color: #0288D1;',
-                          'HRDS'         => 'background-color: #F3E5F5; color: #7B1FA2;',
-                          'PROCUREMENT'  => 'background-color: #E8F5E9; color: #2E7D32;',
-                          default        => 'background-color: #F8F9FA; color: #212529;'
-                        };
-                      @endphp
-                      <span class="badge fw-bold" style="{{ $officeStyles }}; font-size: 1em;">{{ $office }}</span>
-                    @else
-                      <span class="text-muted">-</span>
-                    @endif
-                  </td>@endif
+<tbody>
+  @forelse($records as $record)
+    <tr>
+      @if($show('ors_no'))
+        <td style="color: var(--primary); background-color: var(--secondary-variant)">
+          <strong>{{ $record->ors_no ?? '-' }}</strong>
+        </td>
+      @endif
 
-                  @if($show('payee'))<td><strong>{{ $record->payee ?? '-' }}</strong></td>@endif
-                  @if($show('particulars'))<td><strong>{{ $record->particulars ?? '-' }}</strong></td>@endif
-                  @if($show('classification'))<td>{{ $record->classification ?? '-' }}</td>@endif
-                  @if($show('uac_codes'))<td>{{ $record->uac_codes ?? '-' }}</td>@endif
-                  @if($show('particulars_remark'))<td>{{ $record->particulars_remark ?? '-' }}</td>@endif
-                  @if($show('amount'))<td><strong>₱{{ number_format((float) str_replace(',', '', $record->amount ?? 0), 2) }}</strong></td>@endif
-                  
-                  @if($showStatusColumn)
-                      {{-- STATUS COLUMN WITH SPECIFIED VALUE COLOR-CODING --}}
-                      <td>
-                          @if(!empty($record->status))
-                              @php
-                                  $status = trim($record->status);
-                                  $statusStyles = match($status) {
-                                      'Pending'                 => 'background-color: #FFEECC; color: #9D6B0B;',
-                                      'Processing'              => 'background-color: #FFDEC5; color: #BB400D;',
-                                      'Returned'                => 'background-color: #EFDFFF; color: #7909FF;',
-                                      'Paid'                    => 'background-color: #DEF5C4; color: var(--secondary);',
-                                      'For Review'              => 'background-color: #CFF0F1; color: #066B6B;',
-                                      'For Obligation'          => 'background-color: #BCC3F6; color: #271ECE;',
-                                      'Cancelled'               => 'background-color: #FFC2C2; color: var(--error);',
-                                      'Forwarded to Accounting' => 'background-color: var(--secondary-variant); color: var(--primary);',
-                                      // ADDED: Style design blueprint mapping layout for 'Returned by Accounting'
-                                      'Returned by Accounting'  => 'background-color: #EBFEFF; color: #0B879D;',
-                                      default                   => 'background-color: #F8F9FA; color: #6C757D;'
-                                  };
-                              @endphp
+      @if($show('date_received'))
+        <td>{{ $record->date_received ?? '-' }}</td>
+      @endif
+      
+      {{-- ISSUING OFFICE COLUMN WITH COLOR-CODING BADGES --}}
+      @if($show('issuing_office'))
+        <td>
+          @if(!empty($record->issuing_office))
+            @php
+              $office = strtoupper(trim($record->issuing_office));
+              $officeStyles = match($office) {
+                'PMD'          => 'background-color: #E2F0D9; color: #385723;',
+                'SMD'          => 'background-color: #FFF2CC; color: #7F6000;',
+                'LPDD'         => 'background-color: #FCE4D6; color: #C65911;',
+                'ADMIN'        => 'background-color: #E9EDF4; color: #305496;',
+                'FD'           => 'background-color: #EDEDED; color: #595959;',
+                'ORED'         => 'background-color: #F2DCDB; color: #C00000;',
+                'ARD MS'       => 'background-color: #E4DFEC; color: #595959;',
+                'PERSONNEL'    => 'background-color: #D9E1F2; color: #1F4E78;',
+                'RSCIG'        => 'background-color: #E2EFDA; color: #375623;',
+                'LEGAL'        => 'background-color: #FBE5D6; color: #A61C00;',
+                'ARD TS'       => 'background-color: #FFF2CC; color: #D66000;',
+                'ED'           => 'background-color: #D0CECE; color: #3A3A3A;',
+                'CDD'          => 'background-color: #E1F5FE; color: #0288D1;',
+                'HRDS'         => 'background-color: #F3E5F5; color: #7B1FA2;',
+                'PROCUREMENT'  => 'background-color: #E8F5E9; color: #2E7D32;',
+                default        => 'background-color: #F8F9FA; color: #212529;'
+              };
+            @endphp
+            <span class="badge fw-bold" style="{{ $officeStyles }}; font-size: 1em;">{{ $office }}</span>
+          @else
+            <span class="text-muted">-</span>
+          @endif
+        </td>
+      @endif
 
-                              <span class="badge fw-bold" style="{{ $statusStyles }}; font-size: 1em;">
-                                  {{ $status }}
-                              </span>
-                          @else
-                              <span class="text-muted">-</span>
-                          @endif
-                      </td>
-                  @endif
-                  @if($show('date_returned_1'))<td>{{ $record->date_returned_1 ?? '-' }}</td>@endif
-                  @if($show('remarks_1'))<td>{{ $record->remarks_1 ?? '-' }}</td>@endif
-                  @if($show('date_received_1'))<td>{{ $record->date_received_1 ?? '-' }}</td>@endif
-                  @if($show('date_forwarded_1'))<td>{{ $record->date_forwarded_1 ?? '-' }}</td>@endif
-                  @if($show('date_ors_received'))<td>{{ $record->date_ors_received ?? '-' }}</td>@endif
-                  @if($show('date_returned_2'))<td>{{ $record->date_returned_2 ?? '-' }}</td>@endif
-                  @if($show('remarks_2'))<td>{{ $record->remarks_2 ?? '-' }}</td>@endif
-                  @if($show('date_received_2'))<td>{{ $record->date_received_2 ?? '-' }}</td>@endif
-                  @if($show('date_forwarded_accounting'))<td>{{ $record->date_forwarded_accounting ?? '-' }}</td>@endif
-                  @if($show('total_time_budget'))<td>{{ $record->display_total_time_budget ?? '-' }}</td>@endif
-                  @if($show('total_time'))<td>{{ $record->display_total_time ?? '-' }}</td>@endif
-                  @if($show('final_remarks'))<td style="min-width: 300px; white-space: normal;">{{ $record->final_remarks }}</td>@endif
-                  @if($show('action'))<td>
-                      @if(!empty($record->payee))
-                      <div class="d-flex gap-1 justify-content-center">
-                          <button
-                              type="button"
-                              class="btn btn-sm btn-outline-info view-btn"
-                              data-budget-id="{{ $record->budget_id }}">
-                              <i class="bi bi-eye"></i>
-                          </button>
+      @if($show('payee'))
+        <td><strong>{{ $record->payee ?? '-' }}</strong></td>
+      @endif
 
-                          <button
-                              type="button"
-                              class="btn btn-sm btn-outline-primary edit-btn"
-                              data-budget-id="{{ $record->budget_id }}">
-                              <i class="bi bi-pencil"></i>
-                          </button>
+      @if($show('particulars'))
+        <td><strong>{{ $record->particulars ?? '-' }}</strong></td>
+      @endif
 
-                          <button
-                              type="button"
-                              class="btn btn-sm btn-outline-danger delete-btn"
-                              data-budget-id="{{ $record->budget_id}}"
-                              data-payee="{{ $record->budget_id }}">
-                              <i class="bi bi-trash"></i>
-                          </button>
-                      @else
-                          <span class="text-muted">No DV No.</span>
-                      @endif
-                  </td>@endif
-                </tr>
-              @empty
-                <tr>
-                  <td colspan="22" class="text-center text-muted py-3">No records found matching parameters.</td>
-                </tr>
-              @endforelse
-            </tbody>
+      @if($show('classification'))
+        <td>{{ $record->classification ?? '-' }}</td>
+      @endif
+
+      @if($show('uac_codes'))
+        <td>{{ $record->uac_codes ?? '-' }}</td>
+      @endif
+
+      @if($show('particulars_remark'))
+        <td>{{ $record->particulars_remark ?? '-' }}</td>
+      @endif
+
+      @if($show('amount'))
+        <td><strong>₱{{ number_format((float) str_replace(',', '', $record->amount ?? 0), 2) }}</strong></td>
+      @endif
+      
+      @if($showStatusColumn)
+        {{-- STATUS COLUMN WITH SPECIFIED VALUE COLOR-CODING --}}
+        <td>
+          @if(!empty($record->status))
+            @php
+              $status = trim($record->status);
+              $statusStyles = match($status) {
+                'Pending'                 => 'background-color: #FFEECC; color: #9D6B0B;',
+                'Processing'              => 'background-color: #FFDEC5; color: #BB400D;',
+                'Returned'                => 'background-color: #EFDFFF; color: #7909FF;',
+                'Paid'                    => 'background-color: #DEF5C4; color: var(--secondary);',
+                'For Review'              => 'background-color: #CFF0F1; color: #066B6B;',
+                'For Obligation'          => 'background-color: #BCC3F6; color: #271ECE;',
+                'Cancelled'               => 'background-color: #FFC2C2; color: var(--error);',
+                'Forwarded to Accounting' => 'background-color: var(--secondary-variant); color: var(--primary);',
+                'Returned by Accounting'  => 'background-color: #EBFEFF; color: #0B879D;',
+                default                   => 'background-color: #F8F9FA; color: #6C757D;'
+              };
+            @endphp
+            <span class="badge fw-bold" style="{{ $statusStyles }}; font-size: 1em;">
+              {{ $status }}
+            </span>
+          @else
+            <span class="text-muted">-</span>
+          @endif
+        </td>
+      @endif
+
+      {{-- GROUP 1: Returned to End User --}}
+      @if($show('date_returned_1'))
+        <td>{{ $record->date_returned_1 ?? '-' }}</td>
+      @endif
+      @if($show('remarks_1'))
+        <td>{{ $record->remarks_1 ?? '-' }}</td>
+      @endif
+      @if($show('date_received_1'))
+        <td>{{ $record->date_received_1 ?? '-' }}</td>
+      @endif
+
+      {{-- GROUP 2: Forwarded --}}
+      @if($show('date_forwarded_1'))
+        <td>{{ $record->date_forwarded_1 ?? '-' }}</td>
+      @endif
+      @if($show('date_ors_received'))
+        <td>{{ $record->date_ors_received ?? '-' }}</td>
+      @endif
+      @if($show('remarks_2'))
+        <td>{{ $record->remarks_2 ?? '-' }}</td>
+      @endif
+
+      {{-- GROUP 3: Returned by Accounting --}}
+      @if($show('date_returned_2'))
+        <td>{{ $record->date_returned_2 ?? '-' }}</td>
+      @endif
+      @if($show('date_received_2'))
+        <td>{{ $record->date_received_2 ?? '-' }}</td>
+      @endif
+
+      @if($show('date_forwarded_accounting'))
+        <td>{{ $record->date_forwarded_accounting ?? '-' }}</td>
+      @endif
+
+      @if($show('total_time_budget'))
+        <td>{{ $record->display_total_time_budget ?? '-' }}</td>
+      @endif
+
+      @if($show('total_time'))
+        <td>{{ $record->display_total_time ?? '-' }}</td>
+      @endif
+
+      @if($show('final_remarks'))
+        <td style="min-width: 300px; white-space: normal;">{{ $record->final_remarks ?? '-' }}</td>
+      @endif
+
+      {{-- ACTION BUTTONS COLUMN --}}
+      @if($show('action'))
+        <td>
+          <div class="d-flex gap-1 justify-content-center">
+            <button type="button" class="btn btn-sm btn-outline-info view-btn" data-budget-id="{{ $record->budget_id }}">
+              <i class="bi bi-eye"></i>
+            </button>
+
+            <button type="button" class="btn btn-sm btn-outline-primary edit-btn" data-budget-id="{{ $record->budget_id }}">
+              <i class="bi bi-pencil"></i>
+            </button>
+
+            <button type="button" class="btn btn-sm btn-outline-danger delete-btn" data-budget-id="{{ $record->budget_id }}" data-payee="{{ $record->payee }}">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
+        </td>
+      @endif
+    </tr>
+  @empty
+    <tr>
+      <td colspan="22" class="text-center text-muted py-3">No records found matching parameters.</td>
+    </tr>
+  @endforelse
+</tbody>
+          
+          
+
+
+
+
+
         </table>
       </div>
       @if(method_exists($records, 'links'))
