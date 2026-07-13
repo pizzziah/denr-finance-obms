@@ -249,13 +249,13 @@ $show = fn($col) => in_array('all', $visibleColumns) || in_array($col, $visibleC
     </div>
   </div>
 </div>
+@include('budget.partials.add-modal')
+@include('budget.partials.edit-modal')
 @include('budget.partials.filter-modal')
 @include('budget.partials.sort-modal')
-@include('budget.partials.add-record-modal')
 @include('budget.partials.action-modal')
 @include('budget.partials.details-modal')
 @include('budget.partials.scripts')
-@include('budget.partials.edit-modal')
 
 @endsection
 
