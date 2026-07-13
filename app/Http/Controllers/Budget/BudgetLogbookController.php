@@ -575,6 +575,7 @@ class BudgetLogbookController extends Controller
                 $message = "ORS No. {$record->ors_no} ({$record->payee}) is due in 3 days.";
                 $priority = 'Low';
             }
+            
             elseif ($days == 2) {
                 $title = 'Due Date Reminder';
                 $message = "ORS No. {$record->ors_no} ({$record->payee}) is due in 2 days.";
