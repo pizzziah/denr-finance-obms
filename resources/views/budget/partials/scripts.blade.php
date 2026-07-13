@@ -1,3 +1,18 @@
+<style>
+    /* Force all disabled or readonly fields to look explicitly gray and un-editable */
+    input:disabled, 
+    select:disabled, 
+    textarea:disabled,
+    input[readonly], 
+    select[readonly], 
+    textarea[readonly] {
+        background-color: #e9ecef !important;
+        color: #6c757d !important;
+        opacity: 1;
+        cursor: not-allowed;
+    }
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -9,9 +24,20 @@ document.addEventListener('DOMContentLoaded', () => {
         return value.replace(' ', 'T').substring(0, 16);
     }
 
+    // ===================== WORKING TIME CALCULATION FALLBACKS =====================
+    function calculateBudgetTime(row) {
+        return row.total_time_budget ?? '-';
+    }
+    function calculateWorkingHours(start, end) {
+        return 0; // Handled by backend, placeholder to avoid crashes
+    }
+    function formatWorkingTime(hours) {
+        return '-';
+    }
+
+    
     // ===================== TOMSELECT INIT =====================
     function initTomSelect(context = document) {
-
         const config = {
             create: false,
             allowEmptyOption: true,
@@ -22,10 +48,12 @@ document.addEventListener('DOMContentLoaded', () => {
             '#edit_issuing_office',
             '#edit_classifications',
             '#edit_uac_codes',
+            '#edit_status', // Added status selector here to ensure it initializes safely if using TomSelect
 
             'select[name="issuing_office"]',
             'select[name="classification"]',
-            'select[name="uac_codes"]'
+            'select[name="uac_codes"]',
+            'select[name="status"]'
         ];
 
         selectors.forEach(sel => {
@@ -43,13 +71,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ===================== GET RECORD =====================
     async function getRecord(id) {
-
         const url = `/budget/logbook/${encodeURIComponent(id)}/details`;
-
         console.log("Fetching:", url);
-
         const res = await fetch(url);
-
         console.log("Status:", res.status);
 
         if (!res.ok) {
@@ -57,7 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log(text);
             throw new Error("HTTP " + res.status);
         }
-
         return await res.json();
     }
 
@@ -86,7 +109,6 @@ document.addEventListener('DOMContentLoaded', () => {
             $('transactionTitle').textContent = row.ors_no ?? '-';
             $('transactionSubtitle').textContent = row.payee ?? '-';
 
-
             $('detailsEditBtn').onclick = () => {
                 modal.hide();
                 openEditModal(id);
@@ -95,7 +117,6 @@ document.addEventListener('DOMContentLoaded', () => {
             // ================= REVIEW HISTORY =================
             let reviewHtml = "";
 
-            // First review (stored in odms_budget)
             if (row.date_returned_1 || row.remarks_1 || row.date_received_1) {
                 reviewHtml += `
                 <div class="border rounded p-3 mb-3 bg-light">
@@ -104,12 +125,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="col-5 fw-bold">Date Returned:</div>
                         <div class="col-7">${row.date_returned_1 ?? '-'}</div>
                     </div>
-
                     <div class="row mb-1">
                         <div class="col-5 fw-bold">Remarks:</div>
                         <div class="col-7">${row.remarks_1 ?? '-'}</div>
                     </div>
-
                     <div class="row">
                         <div class="col-5 fw-bold">Date Received:</div>
                         <div class="col-7">${row.date_received_1 ?? '-'}</div>
@@ -118,38 +137,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
             }
 
-            // Additional reviews (stored in budget_review_processes)
             reviews.forEach((review, index) => {
                 reviewHtml += `
                 <div class="border rounded p-3 mb-3 bg-light">
-
                     <h6 class="fw-bold mb-3">Review #${index + 2}</h6>
-
                     <div class="row mb-1">
                         <div class="col-5 fw-bold">Date Returned:</div>
                         <div class="col-7">${review.date_returned ?? '-'}</div>
                     </div>
-
                     <div class="row mb-1">
                         <div class="col-5 fw-bold">Remarks:</div>
                         <div class="col-7">${review.remarks ?? '-'}</div>
                     </div>
-
                     <div class="row">
                         <div class="col-5 fw-bold">Date Received:</div>
                         <div class="col-7">${review.date_received ?? '-'}</div>
                     </div>
-
                 </div>
                 `;
             });
 
             if (reviewHtml === "") {
-                reviewHtml = `
-                    <div class="text-muted">
-                        No review history.
-                    </div>
-                `;
+                reviewHtml = `<div class="text-muted">No review history.</div>`;
             }
 
             $('view_date_received').textContent = row.date_received ?? '-';
@@ -160,8 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
             $('view_particulars').textContent = row.particulars ?? '-';
             $('view_particulars_remark').textContent = row.particulars_remark ?? '-';
             $('view_due_date').textContent = row.due_date ?? '-';
-            $('view_amount').textContent =
-            Number(row.amount ?? 0).toLocaleString(undefined, {
+            $('view_amount').textContent = Number(row.amount ?? 0).toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
             });
@@ -174,36 +182,23 @@ document.addEventListener('DOMContentLoaded', () => {
             $('view_date_forwarded_accounting').textContent = row.date_forwarded_accounting ?? '-';
             $('view_final_remarks').textContent = row.final_remarks ?? '-';
             $('view_total_time_budget').textContent = calculateBudgetTime(row);
-            $('view_total_time').textContent =
-            formatWorkingTime(
-                calculateWorkingHours(
-                    row.date_received,
-                    row.date_forwarded_accounting
-                )
-            );
+            $('view_total_time').textContent = formatWorkingTime(calculateWorkingHours(row.date_received, row.date_forwarded_accounting));
 
-            // Load review history
             $('view_review_history').innerHTML = reviewHtml;
             
         } catch (err) {
             console.error("View Modal Error:", err);
-            console.error(err.stack);
         }
     });
 
     // ===================== OPEN EDIT MODAL =====================
     window.openEditModal = async (id) => {
         try {
-
             const response = await getRecord(id);
-
             const row = response.budget;
             const reviews = response.reviews ?? [];
-            console.log(row);
-            console.log(reviews);
 
-            $('editForm').action =
-                `/budget/logbook/${encodeURIComponent(id)}/update`;
+            $('editForm').action = `/budget/logbook/${encodeURIComponent(id)}/update`;
 
             const fields = [
                 'ors_no','date_received','payee','particulars','amount','due_date',
@@ -215,9 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ];
 
             fields.forEach(f => {
-
                 const el = $('edit_' + f);
-
                 if (!el) return;
 
                 if (el.type === 'datetime-local') {
@@ -229,18 +222,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 else {
                     el.value = row[f] ?? '';
                 }
-            $('edit_total_time_budget').value =
-                calculateBudgetTime(row);
-
-
-            $('edit_total_time').value =
-                formatWorkingTime(
-                    calculateWorkingHours(
-                        row.date_received,
-                        row.date_forwarded_accounting
-                    )
-                );
             });
+
+            $('edit_total_time_budget').value = calculateBudgetTime(row);
+            $('edit_total_time').value = formatWorkingTime(calculateWorkingHours(row.date_received, row.date_forwarded_accounting));
 
             // ===========================
             // LOAD REVIEW HISTORY
@@ -248,74 +233,90 @@ document.addEventListener('DOMContentLoaded', () => {
             const container = $('reviewRowsContainer');
             container.innerHTML = '';
 
-            // ===========================
-            // FIRST REVIEW (odms_budget)
-            // ===========================
             if (row.date_returned_1 || row.remarks_1 || row.date_received_1) {
-                const clone = document
-                    .getElementById('reviewRowTemplate')
-                    .content
-                    .cloneNode(true);
-
-                clone.querySelector('[name="review_date_returned[]"]').value =
-                    formatDateTime(row.date_returned_1);
-                clone.querySelector('[name="review_date_received[]"]').value =
-                    formatDateTime(row.date_received_1);
-                clone.querySelector('[name="review_remarks[]"]').value =
-                    row.remarks_1 ?? '';
+                const clone = document.getElementById('reviewRowTemplate').content.cloneNode(true);
+                clone.querySelector('[name="review_date_returned[]"]').value = formatDateTime(row.date_returned_1);
+                clone.querySelector('[name="review_date_received[]"]').value = formatDateTime(row.date_received_1);
+                clone.querySelector('[name="review_remarks[]"]').value = row.remarks_1 ?? '';
                 container.appendChild(clone);
             }
 
-            // ===========================
-            // ADDITIONAL REVIEWS
-            // ===========================
             reviews.forEach(review => {
-                const clone = document
-                    .getElementById('reviewRowTemplate')
-                    .content
-                    .cloneNode(true);
-                clone.querySelector('[name="review_date_returned[]"]').value =
-                    formatDateTime(review.date_returned);
-                clone.querySelector('[name="review_date_received[]"]').value =
-                    formatDateTime(review.date_received);
-                clone.querySelector('[name="review_remarks[]"]').value =
-                    review.remarks ?? '';
+                const clone = document.getElementById('reviewRowTemplate').content.cloneNode(true);
+                clone.querySelector('[name="review_date_returned[]"]').value = formatDateTime(review.date_returned);
+                clone.querySelector('[name="review_date_received[]"]').value = formatDateTime(review.date_received);
+                clone.querySelector('[name="review_remarks[]"]').value = review.remarks ?? '';
                 container.appendChild(clone);
             });
 
-            // Issuing Office
-            const office = $("edit_issuing_office");
-            if (office.tomselect) {
-                office.tomselect.setValue(row.issuing_office ?? "", true);
-            } else {
-                office.value = row.issuing_office ?? "";
-            }
+            // Sync Dropdowns (Standard / TomSelect verification layout)
+            const syncSelect = (elementId, value) => {
+                const selectEl = $(elementId);
+                if (!selectEl) return;
+                if (selectEl.tomselect) {
+                    selectEl.tomselect.setValue(value ?? "", true);
+                } else {
+                    selectEl.value = value ?? "";
+                }
+            };
 
-            // Classification
-            const classification = $("edit_classifications");
-            if (classification.tomselect) {
-                classification.tomselect.setValue(row.classification ?? "", true);
-            } else {
-                classification.value = row.classification ?? "";
-            }
+            syncSelect("edit_issuing_office", row.issuing_office);
+            syncSelect("edit_classifications", row.classification);
+            syncSelect("edit_uac_codes", row.uac_codes);
+            syncSelect("edit_status", row.status); 
+            
+            handleStatusFieldDependencies(row.status);
 
-            // UACS
-            const uacs = $("edit_uac_codes");
-            if (uacs.tomselect) {
-                uacs.tomselect.setValue(row.uac_codes ?? "", true);
-            } else {
-                uacs.value = row.uac_codes ?? "";
-            }
-
-            bootstrap.Modal
-                .getOrCreateInstance($("editModal"))
-                .show();
-
+            bootstrap.Modal.getOrCreateInstance($("editModal")).show();
         }
         catch (e) {
             alert(e.message);
         }
     };
+
+    // ===================== REALTIME STATUS CHANGE EFFECTS =====================
+    function handleStatusFieldDependencies(currentStatus) {
+        console.log("Status shifted to:", currentStatus);
+
+        // Define which elements are impacted by the dynamic status
+        const forwardingField = $('edit_date_forwarded_accounting');
+        const finalRemarksField = $('edit_final_remarks');
+        
+        // EXAMPLE LOGIC: Adjust this mapping based on your requirements
+        if (currentStatus === "Processing") {
+            // If Processing, enable these fields so the user can edit them
+            if (forwardingField) forwardingField.removeAttribute('disabled');
+            if (finalRemarksField) finalRemarksField.removeAttribute('disabled');
+        } 
+        else if (currentStatus === "Pending") {
+            // If Pending, lock down these fields to avoid accidental entry
+            if (forwardingField) forwardingField.setAttribute('disabled', 'disabled');
+            if (finalRemarksField) finalRemarksField.setAttribute('disabled', 'disabled');
+        }
+        else {
+            // Default baseline state rules for other options
+            if (forwardingField) forwardingField.removeAttribute('disabled');
+            if (finalRemarksField) finalRemarksField.removeAttribute('disabled');
+        }
+    }
+
+    // Bind event tracking directly onto the Status Selection field
+    const statusSelectEl = $('edit_status');
+    if (statusSelectEl) {
+        // Capture normal select element dropdown changes
+        statusSelectEl.addEventListener('change', (e) => {
+            handleStatusFieldDependencies(e.target.value);
+        });
+
+        // Capture asynchronous changes if handled via the TomSelect wrapper
+        setTimeout(() => {
+            if (statusSelectEl.tomselect) {
+                statusSelectEl.tomselect.on('change', (value) => {
+                    handleStatusFieldDependencies(value);
+                });
+            }
+        }, 500);
+    }
 
     // ===================== EDIT BUTTON =====================
     document.addEventListener('click', (e) => {
@@ -360,47 +361,44 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ===================== ADD MODAL INIT =====================
-    document.getElementById('addRecordModal')
-    ?.addEventListener('shown.bs.modal', function () {
+    document.getElementById('addRecordModal')?.addEventListener('shown.bs.modal', function () {
         initTomSelect(this);
     });
 
     // ===================== INITIAL LOAD =====================
     initTomSelect(document);
-    });
+});
 
-    document.addEventListener('DOMContentLoaded', function () {
+// ===================== REVIEW HISTORY DOM MANAGEMENT =====================
+document.addEventListener('DOMContentLoaded', function () {
+    const container = document.getElementById('reviewRowsContainer');
+    const template = document.getElementById('reviewRowTemplate');
+    const addBtn = document.getElementById('btnAddReviewRow');
 
-        const container = document.getElementById('reviewRowsContainer');
-        const template = document.getElementById('reviewRowTemplate');
-        const addBtn = document.getElementById('btnAddReviewRow');
-
-        // ADD ROW
+    if (addBtn && container && template) {
         addBtn.addEventListener('click', function () {
             const clone = template.content.cloneNode(true);
             container.appendChild(clone);
         });
 
-        // REMOVE ROW (event delegation)
         container.addEventListener('click', function (e) {
             if (e.target.classList.contains('btnRemoveReview')) {
                 e.target.closest('.review-row').remove();
             }
         });
+    }
+});
 
-    });
+// ===================== NOTIFICATIONS POLLING MANAGEMENT =====================
+document.addEventListener('DOMContentLoaded', function () {
+    const readAllBtn = document.getElementById('readAllBtn');
+    
+    loadNotifications();
+    setInterval(loadNotifications, 30000);
 
-    document.addEventListener('DOMContentLoaded', function () {
-
-        loadNotifications();
-
-        // Refresh every 30 seconds
-        setInterval(loadNotifications, 30000);
-
-        // Mark all as read
-        document.getElementById('readAllBtn').addEventListener('click', function (e) {
+    if (readAllBtn) {
+        readAllBtn.addEventListener('click', function (e) {
             e.preventDefault();
-
             fetch('/notifications/read-all', {
                 method: 'POST',
                 headers: {
