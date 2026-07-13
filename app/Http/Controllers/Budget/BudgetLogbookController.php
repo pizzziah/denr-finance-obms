@@ -20,6 +20,7 @@ class BudgetLogbookController extends Controller
         $status = $request->status ?? 'all';
         $search = $request->search;
         $sort = $request->sort ?? 'latest';
+        $highlight = $request->highlight;
 
         $statusText = match ($status) {
             'for_obligation' => 'For Obligation',
@@ -165,7 +166,8 @@ class BudgetLogbookController extends Controller
             'issuingOffices',
             'classifications',
             'uacs',
-            'visibleColumns'
+            'visibleColumns',
+            'highlight'
         ));
     }
 
@@ -306,6 +308,7 @@ class BudgetLogbookController extends Controller
                 }
                 $notificationExists = Notification::where('type', 'accounting')
                     ->where('related_id', $budget->budget_id)
+                    ->where('is_read', 0)
                     ->exists();
 
                 if (! $notificationExists) {
@@ -316,14 +319,13 @@ class BudgetLogbookController extends Controller
                         'type' => 'accounting',
                         'related_id' => $budget->budget_id,
                         'target_role' => 'accountant',
-                        'user_id' => null,
-                        'due_date' => null,
                         'priority' => 'Medium',
                         'is_read' => 0,
                     ]);
 
                 }
             }
+
             // ================= RESET REVIEW HISTORY =================
             BudgetReviewProcess::where('budget_id', $budget_id)->delete();
 

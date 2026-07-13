@@ -12,6 +12,7 @@ class AccountingLogbookController extends Controller {
     $status = $request->status ?? 'all';
     $search = trim($request->search ?? '');
     $sort = $request->sort ?? 'latest';
+    $highlight = $request->highlight;
 
     $query = DB::table('odms_accounting')
       ->whereIn('status', ['Pending', 'Returned', 'Forwarded to Cashier', 'Cancelled']);
@@ -103,6 +104,10 @@ class AccountingLogbookController extends Controller {
             ->groupBy('transaction_id')
             ->get();
 
+        $records = AccountingRecord::query()
+            ->latest()
+            ->get();
+
         return view(
             'accounting.logbook',
             compact(
@@ -110,7 +115,8 @@ class AccountingLogbookController extends Controller {
                 'month',
                 'status',
                 'search',
-                'sort'
+                'sort',
+                'highlight'
             )
         );
     }
@@ -308,7 +314,6 @@ class AccountingLogbookController extends Controller {
 
         // Prevent direct Paid status
         if ($request->status === 'Paid') {
-
             return redirect()
                 ->back()
                 ->withInput()
@@ -369,6 +374,29 @@ class AccountingLogbookController extends Controller {
 
             }
 
+        }
+        $accounting = DB::table('odms_accounting')
+            ->where('transaction_id', $transaction_id)
+            ->first();
+
+        if ($request->status == 'Returned') {
+
+            DB::table('odms_budget')
+                ->where('budget_id', $accounting->budget_id)
+                ->update([
+                    'status' => 'Returned',
+                    'final_remarks' => $request->returned_remarks,
+                ]);
+
+            Notification::create([
+                'title' => 'Transaction Returned',
+                'message' => "ORS No. {$accounting->ors_no} ({$accounting->payee}) was returned by Accounting.",
+                'type' => 'returned',
+                'related_id' => $accounting->budget_id,
+                'target_role' => 'budget',
+                'priority' => 'High',
+                'is_read' => 0,
+            ]);
         }
 
         return redirect()

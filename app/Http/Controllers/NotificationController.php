@@ -10,7 +10,7 @@ class NotificationController extends Controller
     {
         $query = Notification::query();
 
-        // Admin sees all notifications
+        // Admin sees everything
         if (auth()->user()->role != 'admin') {
             $query->where('target_role', auth()->user()->role);
         }
@@ -45,24 +45,22 @@ class NotificationController extends Controller
                         ]
                     );
                     break;
-
+                    
                 case 'admin':
                     $notification->url = route(
-                        'admin.unlock-requests',
-                        [
-                            'highlight' => $notification->related_id
-                        ]
+                        'admin.unlock-requests'
                     );
                     break;
 
                 default:
                     $notification->url = '#';
+                    break;
             }
         }
 
         return response()->json([
             'unreadCount' => $notifications->where('is_read', 0)->count(),
-            'notifications' => $notifications,
+            'notifications' => $notifications
         ]);
     }
 
