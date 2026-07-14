@@ -538,25 +538,26 @@ if (! $notificationExists) {
         $priority = 'Critical';
       }
 
-      $exists = Notification::where('related_id', $record->budget_id)
-    ->where('title', $title)
-    ->exists();
+      foreach (['budget', 'accountant'] as $role) {
+          Notification::updateOrCreate(
+              [
+                  'type'        => 'due_date',
+                  'related_id'  => $record->budget_id,
+                  'target_role' => $role,
+              ],
+              [
+                  'title'      => $title,
+                  'message'    => $message,
+                  'user_id'    => auth()->id(),
+                  'due_date'   => $record->due_date,
+                  'priority'   => $priority,
+                  'is_read'    => 0,
+              ]
+          );
 
-if (!$exists) {
-    Notification::create([
-        'title'      => $title,
-        'message'    => $message,
-        'type'       => 'due_date',
-        'related_id' => $record->budget_id,
-        'target-role'  => 'budget',
-        'user_id'    => auth()->id(),
-        'due_date'   => $record->due_date,
-        'priority'   => $priority,
-        'is_read'    => 0,
-    ]);
-}
-        }
+      }
     }
+  }
 
   private function generateTransactionId() {
     $latest = DB::table('odms_accounting')
