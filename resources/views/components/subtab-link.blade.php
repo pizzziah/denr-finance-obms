@@ -19,9 +19,10 @@
 <style>
 .subtab-link{
     display:flex;
+    font-size: 0.9em;
     align-items:center;
     justify-content:center;
-    padding:.75rem 1.25rem;
+    padding:.5rem .75rem;
     border:1px solid var(--primary);
     border-radius:20px;
     color:var(--primary);
