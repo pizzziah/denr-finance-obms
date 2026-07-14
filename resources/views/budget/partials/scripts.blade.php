@@ -86,6 +86,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!btn) return;
 
     const id = btn.dataset.budgetId;
+    const isArchive = btn.dataset.archive === 'true';
+
     const modal = bootstrap.Modal.getOrCreateInstance($('detailsModal'));
 
     modal.show();
@@ -94,20 +96,27 @@ document.addEventListener('DOMContentLoaded', () => {
     $('detailsContent').classList.add('d-none');
 
     try {
-      const response = await getRecord(id);
-      const row = response.budget;
-      const reviews = response.reviews ?? [];
+        const response = await getRecord(id);
+        const row = response.budget;
+        const reviews = response.reviews ?? [];
 
-      $('detailsLoading').classList.add('d-none');
-      $('detailsContent').classList.remove('d-none');
+        $('detailsLoading').classList.add('d-none');
+        $('detailsContent').classList.remove('d-none');
 
-      $('transactionTitle').textContent = row.ors_no ?? '-';
-      $('transactionSubtitle').textContent = row.payee ?? '-';
+        $('transactionTitle').textContent = row.ors_no ?? '-';
+        $('transactionSubtitle').textContent = row.payee ?? '-';
 
-      $('detailsEditBtn').onclick = () => {
-        modal.hide();
-        openEditModal(id);
-      };
+        // Show or hide Edit button
+        if (isArchive) {
+            $('detailsEditBtn').classList.add('d-none');
+        } else {
+            $('detailsEditBtn').classList.remove('d-none');
+
+            $('detailsEditBtn').onclick = () => {
+                modal.hide();
+                openEditModal(id);
+            };
+        }
 
       // ================= REVIEW HISTORY =================
       let reviewHtml = "";

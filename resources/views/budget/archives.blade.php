@@ -138,11 +138,9 @@
                 <td class="text-center">
                   @if(!empty($record->budget_id))
                       <button type="button"
-                              class="btn btn-sm btn-outline-info action-btn"
-                              data-action="view"
-                              data-id="{{ $record->budget_id }}"
-                              data-bs-toggle="modal"
-                              data-bs-target="#actionModal">
+                          class="btn btn-sm btn-outline-info view-btn"
+                          data-budget-id="{{ $record->budget_id }}"
+                          data-archive="true">
                           <i class="bi bi-eye"></i> View
                       </button>
                   @else
