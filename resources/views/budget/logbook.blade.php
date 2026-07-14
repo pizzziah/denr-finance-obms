@@ -74,21 +74,20 @@
           <thead class="sticky-top bg-white" style="z-index: 5;">
             {{-- FIRST HEADER ROW --}}
             <tr class="header-main">
-             <th rowspan="2" style="min-width:80px;">ORS No.</th> 
              <th rowspan="2" style="min-width:100px;">Date Received</th> 
              <th rowspan="2" style="min-width:80px;">Issuing Office</th> 
              <th rowspan="2" style="min-width:180px;">Payee</th> 
+             <th rowspan="2" style="min-width:80px;">Classification</th>                         
              <th rowspan="2" style="min-width:230px;">Particulars</th> 
-             <th rowspan="2" style="min-width:80px;">Classification</th> 
-             <th rowspan="2" style="min-width:80px;">UACs Codes</th> 
              <th rowspan="2" style="min-width:230px;">Particulars Remark</th> 
-             <th rowspan="2">Amount</th> 
+             <th rowspan="2">Amount</th>
+             <th rowspan="2" style="min-width:80px;">UACs Codes</th> 
              <th rowspan="2" style="min-width:100px;">Status</th>
 
               {{-- GROUP 1 --}}
              <th colspan="3" style="background-color: #EFDFFF; color: #7909FF">Returned to End User</th>
               {{-- GROUP 2 --}}
-             <th colspan="3" style="background-color: #FFEECC; color: #9D6B0B">Forwarded</th>
+             <th colspan="4" style="background-color: #FFEECC; color: #9D6B0B">Forwarded</th>
               {{-- GROUP 3 --}}
              <th colspan="2" style="background-color: #EBFEFF; color: #0B879D">Returned by Accounting</th>
 
@@ -106,6 +105,7 @@
               <th style="background-color: #EFDFFF; color: #7909FF; min-width:100px;">Date Received</th>
 
               {{-- Forwarded --}}
+              <th style="background-color: #FFEECC; color: #9D6B0B">ORS No.</th>
               <th style="background-color: #FFEECC; color: #9D6B0B; min-width:100px;">Date Forwarded</th>
               <th style="background-color: #FFEECC; color: #9D6B0B; min-width:100px;">Date ORS Received</th>
               <th style="background-color: #FFEECC; color: #9D6B0B">Remarks</th>
@@ -118,7 +118,6 @@
             <tbody>
               @forelse($records as $record)
                 <tr>
-                  <td style="color: var(--primary); background-color:var(--secondary-variant)"><strong>{{ $record->ors_no ?? '-' }}</strong></td>
                   <td>{{ $record->date_received ?? '-' }}</td>
                   
                   {{-- ISSUING OFFICE COLUMN WITH COLOR-CODING BADGES --}}
@@ -152,11 +151,11 @@
                   </td>
 
                   <td><strong>{{ $record->payee ?? '-' }}</strong></td>
-                  <td><strong>{{ $record->particulars ?? '-' }}</strong></td>
                   <td>{{ $record->classification ?? '-' }}</td>
-                  <td>{{ $record->uac_codes ?? '-' }}</td>
+                  <td><strong>{{ $record->particulars ?? '-' }}</strong></td>
                   <td>{{ $record->particulars_remark ?? '-' }}</td>
                   <td style="color:var(--primary);"><strong>₱{{ number_format((float) str_replace(',', '', $record->amount ?? 0), 2) }}</strong></td>
+                  <td>{{ $record->uac_codes ?? '-' }}</td>
                   
                   @if($showStatusColumn)
                       {{-- STATUS COLUMN WITH SPECIFIED VALUE COLOR-CODING --}}
@@ -190,6 +189,7 @@
                  <td>{{ $record->date_returned_1 ?? '-' }}</td>
                   <td>{{ $record->remarks_1 ?? '-' }}</td>
                   <td>{{ $record->date_received_1 ?? '-' }}</td>
+                  <td style="color: #9D6B0B; background-color:#FFEECC"><strong>{{ $record->ors_no ?? '-' }}</strong></td>
                   <td>{{ $record->date_forwarded_1 ?? '-' }}</td>
                   <td>{{ $record->date_ors_received ?? '-' }}</td>
                   <td>{{ $record->date_returned_2 ?? '-' }}</td>
