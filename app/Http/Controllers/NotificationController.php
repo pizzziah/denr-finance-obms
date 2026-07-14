@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Notification;
+use Illuminate\Support\Facades\DB;
 
 class NotificationController extends Controller
 {
@@ -10,10 +11,13 @@ class NotificationController extends Controller
     {
         $query = Notification::query();
 
-        // Admin sees everything
-        if (auth()->user()->role != 'admin') {
+        // Filter notifications by logged-in user's role
+        if (auth()->user()->role === 'admin') {
+            $query->where('target_role', 'admin');
+        } else {
             $query->where('target_role', auth()->user()->role);
         }
+
 
         if ($request->filled('type')) {
             $query->where('type', $request->type);
@@ -38,12 +42,28 @@ class NotificationController extends Controller
                     break;
 
                 case 'accountant':
-                    $notification->url = route(
-                        'accounting.logbook',
-                        [
+                    if (
+                        in_array($notification->type, [
+                            'unlock_approved',
+                            'unlock_denied'
+                        ])
+                    ) {
+                        $lock = DB::table('odms_admin_quarter_locks')
+                            ->find($notification->related_id);
+                        if ($lock) {
+                            $notification->url = route('accounting.quarterly-summary', [
+                                'year'    => $lock->year,
+                                'quarter' => $lock->quarter,
+                            ]);
+                        } else {
+                            $notification->url = route('accounting.quarterly-summary');
+                        }
+                    } else {
+
+                        $notification->url = route('accounting.logbook', [
                             'highlight' => $notification->related_id
-                        ]
-                    );
+                        ]);
+                    }
                     break;
                     
                 case 'admin':
