@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 
       $year = $request->year ?? 'all';
       $month = $request->month;
+      $day = $request->day ?? 'all';
       $status = $request->status ?? 'all';
       $search = $request->search;
       $sort = $request->sort ?? 'latest';
@@ -43,6 +44,9 @@ use Illuminate\Support\Facades\DB;
       }
       if ($month) {
         $query->whereMonth('date_received', $month);
+      }
+      if ($day && $day != 'all') {
+          $query->whereDay('date_received', $day);
       }
       if ($statusText) {
         $query->where('status', $statusText);
@@ -109,13 +113,13 @@ use Illuminate\Support\Facades\DB;
         'records',
         'year',
         'month',
+        'day',
         'status',
         'search',
         'sort',
         'issuingOffices',
         'classifications',
         'uacs',
-    
         'highlight'
       ));
     }
