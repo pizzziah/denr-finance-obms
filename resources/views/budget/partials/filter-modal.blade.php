@@ -34,23 +34,6 @@
                             @endfor
                         </select>
                     </div>
-
-                    <div class="mb-3">
-                        <label><strong>Status</strong></label>
-                        <select name="status" class="form-select">
-                            <option value="all">All</option>
-                            <option value="pending">Pending</option>
-                            <option value="processing">Processing</option>
-                            <option value="for_review">For Review</option>
-                            <option value="for_obligation">For Obligation</option>
-                            <option value="forwarded_to_accounting">Forwarded to Accounting</option>
-                            <option value="forwarded_to_cashier">Forwarded to Cashier</option>
-                            <option value="paid">Paid</option>
-                            <option value="returned">Returned</option>
-                        </select>
-                    </div>
-                    <input type="hidden" name="search" value="{{ request('search') }}">
-
                 </div>
 
                 <div class="modal-footer">
