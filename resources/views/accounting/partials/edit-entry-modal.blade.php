@@ -46,10 +46,6 @@
                     <label class="form-label small fw-semibold">OBR No.</label>
                     <input type="text" name="obr_no" id="edit_obr_no" class="form-control form-control-sm">
                   </div>
-                  <div class="col-md-4">
-                    <label class="form-label small fw-semibold">ORS No.</label>
-                    <input type="text" name="ors_no" id="edit_ors_no" class="form-control form-control-sm">
-                  </div>
                   <div class="col-md-8">
                     <label class="form-label small fw-semibold">Payee <span class="text-danger">*</span></label>
                     <input type="text" name="payee" id="edit_payee" class="form-control form-control-sm" required>

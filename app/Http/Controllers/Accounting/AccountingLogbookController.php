@@ -3,615 +3,406 @@
 namespace App\Http\Controllers\Accounting;
 
 use App\Http\Controllers\Controller;
+use App\Models\Notification;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class AccountingLogbookController extends Controller {
+  /**
+   * Each transaction_id in odms_accounting is a GROUP of rows:
+   *  - one "debit" row  -> the original entry forwarded from Budget
+   *                         (payee, particulars, obr_no, ors_no, uac_codes, debit)
+   *  - zero+ "credit" rows -> added by Accounting to segment the debit amount
+   *                         under different UACS codes (uac_codes, credit, tax_*)
+   *
+   * Accounting is NOT allowed to change the debit row's:
+   *  payee, particulars, obr_no (Budget's ors_no), uac_codes, debit
+   */
+
   public function logbook(Request $request) {
-    $month = $request->month ?? 'all';
-    $status = $request->status ?? 'all';
-    $search = trim($request->search ?? '');
-    $sort = $request->sort ?? 'latest';
+    $year      = $request->year ?? 'all';
+    $month     = $request->month;
+    $day       = $request->day ?? 'all';
+    $status    = $request->status ?? 'all';
+    $search    = $request->search;
+    $sort      = $request->sort ?? 'latest';
     $highlight = $request->highlight;
 
-    $query = DB::table('odms_accounting')
-      ->whereIn('status', [
-        'Pending', 'Processing', 'Returned to End User', 'Returned to Budget', 'Forwarded to Cashier', 'Cancelled',
-      ]);
+    $statusText = match ($status) {
+      'pending'              => 'Pending',
+      'processing'           => 'Processing',
+      'returned_to_end_user' => 'Returned to End User',
+      'returned_to_budget'   => 'Returned to Budget',
+      'forwarded_to_cashier' => 'Forwarded to Cashier',
+      'paid'                 => 'Paid',
+      'all'                  => null,
+      default                => null,
+    };
 
-    if ($status !== 'all' && ! empty($status)) {
-      $query->where('status', $status);
+    $query = DB::table('odms_accounting');
+
+    if ($year !== 'all') {
+      $query->whereYear('date_received', $year);
+    }
+    if ($month && $month !== 'all') {
+      $query->whereMonth('date_received', $month);
+    }
+    if ($day && $day !== 'all') {
+      $query->whereDay('date_received', $day);
+    }
+    if ($statusText) {
+      $query->where('status', $statusText);
     }
 
-    // ================= MONTH FILTER =================
-    if ($month !== 'all' && ! empty($month)) {
-      $query->whereMonth('date_received', (int) $month);
-    }
-
-    // ================= SEARCH =================
-    if (! empty($search)) {
+    if ($search) {
       $query->where(function ($q) use ($search) {
-        $q->where('transaction_id', 'like', "%{$search}%")
-          ->orWhere('dv_no', 'like', "%{$search}%")
+        $q->where('dv_no', 'like', "%{$search}%")
           ->orWhere('obr_no', 'like', "%{$search}%")
+          ->orWhere('ors_no', 'like', "%{$search}%")
           ->orWhere('payee', 'like', "%{$search}%")
           ->orWhere('particulars', 'like', "%{$search}%")
-          ->orWhere('uac_codes', 'like', "%{$search}%")
-          ->orWhere('status', 'like', "%{$search}%");
+          ->orWhere('particulars_remark', 'like', "%{$search}%")
+          ->orWhere('status', 'like', "%{$search}%")
+          ->orWhere('uac_codes', 'like', "%{$search}%");
       });
     }
 
-    // ================= SORT =================
-    switch ($sort) {
-      case 'obr_asc':
-        $query->orderByRaw(
-          "CAST(REGEXP_REPLACE(transaction_id,'[^0-9]','') AS UNSIGNED) ASC"
-        );
-        break;
+    $query->select(
+      'transaction_id',
+      DB::raw('MAX(accounting_id) as max_accounting_id'),
+      DB::raw('MAX(budget_id) as budget_id'),
+      DB::raw('MAX(obr_no) as obr_no'),
+      DB::raw('MAX(ors_no) as ors_no'),
+      DB::raw('MAX(dv_no) as dv_no'),
+      DB::raw('MAX(payee) as payee'),
+      DB::raw('MAX(particulars) as particulars'),
+      DB::raw('MAX(particulars_remark) as particulars_remark'),
+      DB::raw('MAX(returned_remarks) as returned_remarks'),
+      DB::raw('MAX(status) as status'),
+      DB::raw('MAX(signed) as signed'),
+      DB::raw('MAX(signed_by_accountant) as signed_by_accountant'),
+      DB::raw('MAX(date_signed) as date_signed'),
+      DB::raw('MAX(date_forwarded) as date_forwarded'),
+      DB::raw('MAX(date_received) as date_received'),
+      DB::raw('MAX(date_processed) as date_processed'),
+      DB::raw('MAX(obr_date) as obr_date'),
+      DB::raw('SUM(debit) as total_debit'),
+      DB::raw('SUM(credit) as total_credit'),
+      DB::raw('COUNT(*) as total_entries')
+    )->groupBy('transaction_id');
 
-      case 'obr_desc':
-        $query->orderByRaw(
-          "CAST(REGEXP_REPLACE(transaction_id,'[^0-9]','') AS UNSIGNED) DESC"
-        );
-        break;
-
-      default:
-        $query->orderByDesc(
-          DB::raw('MAX(accounting_id)')
-        );
-        break;
+    if ($sort === 'latest') {
+      $query->orderByDesc(DB::raw('MAX(accounting_id)'));
+    } elseif ($sort === 'oldest') {
+      $query->orderBy(DB::raw('MAX(accounting_id)')); 
+    } elseif ($sort === 'dv_asc') {
+      $query->orderBy(DB::raw('MAX(dv_no)'));
+    } elseif ($sort === 'dv_desc') {
+      $query->orderByDesc(DB::raw('MAX(dv_no)'));
     }
 
-    $records = $query->select(
-      'transaction_id',
-      DB::raw('MAX(accounting_id) accounting_id'),
-      DB::raw('MAX(dv_no) dv_no'),
-      DB::raw('MAX(obr_no) obr_no'),
-      DB::raw('MAX(payee) payee'),
-      DB::raw('MAX(particulars) particulars'),
-      DB::raw('MAX(particulars_remark) particulars_remark'),
-      DB::raw('MAX(status) status'),
-      DB::raw('MAX(date_received) date_received'),
-      DB::raw('MAX(date_processed) date_processed'),
-      DB::raw('MAX(obr_date) obr_date'),
-      DB::raw('MAX(date_signed) date_signed'),
-      DB::raw('MAX(date_forwarded) date_forwarded'),
-      DB::raw('MAX(signed_by_accountant) signed_by_accountant'),
-      DB::raw('MAX(signed_by_accountant) signed'), // <-- added: aliases the same value so the view's $record->signed check works
-      DB::raw('COUNT(*) total_entries'),
-      DB::raw("
-  SUM(CAST(REPLACE(COALESCE(credit,0), ',', '') AS DECIMAL(15,2)))
-  as total_credit
-")
-    )
-    
-    ->groupBy('transaction_id')
-    ->get();
-    
-    $uacCodes = DB::table('odms_accounting_uac_codes')
-      ->orderBy('classification')
-      ->orderBy('uac_codes')
-      ->get();
-      
-      return view(
-        'accounting.logbook',
-        compact(
-          'records',
-          'month',
-          'status',
-          'search',
-          'sort',
-          'highlight',
-          'uacCodes'
-        )
-      );
+    $records = $query->get();
+
+    return view('accounting.logbook', compact(
+      'records', 'year', 'month', 'day', 'status', 'search', 'sort', 'highlight'
+    ));
   }
 
-  
-  // ================= VIEW JSON =================
+  /**
+   * Full breakdown of one transaction (debit row + all credit rows).
+   * Used by the View action modal and by the Edit modal to prefill itself.
+   */
   public function show($transaction_id) {
-    $records = DB::table('odms_accounting as a')
-      ->leftJoin(
-        'odms_budget as b',
-        'b.transaction_id',
-        '=',
-        'a.transaction_id'
-      )
-
+    $entries = DB::table('odms_accounting')
       ->where('transaction_id', $transaction_id)
-      ->select(
-  'a.*',
-  DB::raw('b.ors_no'),
-DB::raw('b.ors_date')
-)
-->get();
+      ->orderBy('accounting_id')
+      ->get();
 
-    if ($records->isEmpty()) {
-      return response()->json([
-        'message' => 'Record not found.',
-      ], 404);
+    if ($entries->isEmpty()) {
+      return response()->json(['message' => 'Record not found'], 404);
     }
 
+    $debitRow = $entries->first(fn ($e) => (float) $e->debit > 0) ?? $entries->first();
+
     return response()->json([
-      'summary' => [
-        'transaction_id' => $transaction_id,
-        'dv_no' => optional($records->first())->dv_no,
-        'date_received' => optional($records->first())->date_received,
-        'date_processed' => optional($records->first())->date_processed,
-        'obr_date' => optional($records->first())->obr_date,
-        'obr_no' => optional($records->first())->obr_no,
-        'payee' => optional($records->first())->payee,
-        'particulars' => optional($records->first())->particulars,
-        'remarks' => optional($records->first())->particulars_remark,
-        'status' => optional($records->first())->status,
-        'signed' => optional($records->first())->signed_by_accountant,
-        'date_signed' => optional($records->first())->date_signed,
-        'date_forwarded' => optional($records->first())->date_forwarded,
-      ],
-      'details' => $records->sortByDesc(function ($row) {
-        return $row->debit;
-      })->values()
+      'transaction_id' => $transaction_id,
+      'record'         => $debitRow,
+      'entries'        => $entries,
+      'credit_entries' => $entries->filter(fn ($e) => (float) $e->debit == 0 && $e->accounting_id !== $debitRow->accounting_id)->values(),
+      'total_debit'    => $entries->sum('debit'),
+      'total_credit'   => $entries->sum('credit'),
     ]);
   }
 
-  // ================= STORE NEW LOGBOOK RECORD =================
+  public function details($transaction_id) {
+    return $this->show($transaction_id);
+  }
+
+  /**
+   * Manually create a brand new accounting record (used when the Accounting
+   * clerk needs to log something directly, outside the Budget hand-off flow).
+   */
   public function store(Request $request) {
     $request->validate([
-      'payee'  => 'required|string',
-      'status' => 'nullable|string',
+      'date_received'       => 'nullable|date',
+      'obr_date'            => 'nullable|date',
+      'obr_no'              => 'nullable|string|max:255',
+      'payee'               => 'required|string|max:255',
+      'particulars'         => 'required|string',
+      'particulars_remark'    => 'nullable|string',
+      'date_processed'      => 'nullable|date',
+      'dv_no'               => 'nullable|string|max:255',
+      'uac_codes'           => 'nullable|string|max:255',
+      'debit'               => 'nullable|numeric',
+      'credit_uac_codes'      => 'nullable|array',
+      'credit_uac_codes.*'    => 'nullable|string|max:255',
+      'credit_amounts'        => 'nullable|array',
+      'credit_amounts.*'      => 'nullable|numeric',
+      'credit_tax_percent'    => 'nullable|array',
+      'credit_tax_remarks'    => 'nullable|array',
+      'signed'              => 'required|in:Yes,No',
+      'signed_by_accountant'  => 'required_if:signed,Yes|nullable|string|max:255',
+      'date_signed'           => 'required_if:signed,Yes|nullable|date',
+      'status'              => 'required|string|max:255',
+      'date_forwarded'        => 'nullable|date',
+      'returned_remarks'      => 'nullable|string',
     ]);
 
-    $status = $request->status ?? 'Pending';
+    DB::beginTransaction();
+    try {
+      $transactionId = $this->generateTransactionId();
+      $debit = $request->debit ?? 0;
 
-    if ($status === 'Paid') {
-      $message = 'Paid status can only be assigned through Cashier workflow.';
+      $shared = [
+        'transaction_id'       => $transactionId,
+        'budget_id'            => null,
+        'obr_no'               => $request->obr_no,
+        'ors_no'               => $request->ors_no,
+        'dv_no'                => $request->dv_no,
+        'payee'                => $request->payee,
+        'particulars'          => $request->particulars,
+        'particulars_remark'   => $request->particulars_remark,
+        'returned_remarks'     => $request->returned_remarks,
+        'signed'               => $request->signed,
+        'signed_by_accountant' => $request->signed === 'Yes' ? $request->signed_by_accountant : null,
+        'status'               => $request->status,
+        'budget_year'          => $request->date_received ? Carbon::parse($request->date_received)->year : null,
+        'source_month'         => $request->date_received ? Carbon::parse($request->date_received)->format('F') : null,
+        'date_received'        => $request->date_received,
+        'date_processed'       => $request->date_processed,
+        'obr_date'             => $request->obr_date,
+        'date_signed'          => $request->signed === 'Yes' ? $request->date_signed : null,
+        'date_forwarded'       => $request->date_forwarded,
+      ];
 
-      if ($request->wantsJson()) {
-        return response()->json(['error' => $message], 422);
+      // Debit (original) row
+      DB::table('odms_accounting')->insert(array_merge($shared, [
+        'uac_codes'   => $request->uac_codes,
+        'debit'       => $debit,
+        'credit'      => 0,
+        'tax_percent' => null,
+        'tax_remarks' => null,
+      ]));
+
+      // Credit rows entered by Accounting
+      if ($request->filled('credit_uac_codes')) {
+        foreach ($request->credit_uac_codes as $i => $uac) {
+          $amount = $request->credit_amounts[$i] ?? null;
+          if (empty($uac) && empty($amount)) {
+            continue;
+          }
+          DB::table('odms_accounting')->insert(array_merge($shared, [
+            'uac_codes'   => $uac,
+            'debit'       => 0,
+            'credit'      => $amount ?? 0,
+            'tax_percent' => $request->credit_tax_percent[$i] ?? null,
+            'tax_remarks' => $request->credit_tax_remarks[$i] ?? null,
+          ]));
+        }
       }
 
-      return redirect()->back()->withInput()->with('error', $message);
+      DB::commit();
+
+      return redirect()
+        ->route('accounting.logbook')
+        ->with('success', "Record {$transactionId} added successfully.");
+
+    } catch (\Throwable $e) {
+      DB::rollBack();
+      \Log::error('Accounting store failed', ['error' => $e->getMessage()]);
+
+      return back()->withInput()->with('error', 'Insert failed: '.$e->getMessage());
     }
-
-    $dv_suffix = $request->filled('dv_no') ? $request->dv_no : 'TMP-' . strtoupper(bin2hex(random_bytes(4))); 
-    $transaction_id = 'TXN-' . $dv_suffix;
-
-    $parseDate = function($value) {
-      return $value ? date('Y-m-d H:i:s', strtotime($value)) : null;
-    };
-
-    $baseData = [
-      'transaction_id'       => $transaction_id,
-      'dv_no'                => $request->dv_no,
-      'ors_no'               => $request->ors_no,
-      'obr_no'               => $request->obr_no,
-      'payee'                => $request->payee,
-      'particulars'          => $request->particulars,
-      'particulars_remark'   => $request->particulars_remark,
-      'signed_by_accountant' => $request->signed_by_accountant ?? $request->signed,
-      'status'               => $status,
-      'budget_year'          => $request->budget_year,
-      'source_month'         => $request->source_month,
-      'date_received'        => $request->date_received ? $parseDate($request->date_received) : now(),
-      'date_processed'       => $parseDate($request->date_processed),
-      'obr_date'             => $parseDate($request->obr_date),
-      'date_signed'          => $parseDate($request->date_signed),
-      'date_forwarded'       => $parseDate($request->date_forwarded),
-      'returned_remarks'     => $request->returned_remarks,
-    ];
-
-    // FIX: Changed $request->total_credit to $request->total_debit to match input field
-    if (!$request->filled('rows')) {
-      $request->merge([
-        'rows' => [[
-          'uac_codes' => $request->uacs_code,
-          'debit' => $request->total_debit, 
-          'credit' => $request->credit ?? 0,
-          'tax_percent' => $request->tax_percentage,
-          'tax_remarks' => $request->tax_remarks
-        ]]
-      ]);
-    }
-    $rows = $request->rows;
-
-    if (count($rows)) {
-      foreach ($rows as $index => $row) {
-        DB::table('odms_accounting')->insert(array_merge(
-          $baseData,
-          [
-            'uac_codes' => $row['uac_codes'],
-            'debit' => $index == 0 ? ($row['debit'] ?? 0) : 0,
-            'credit' => $row['credit'] ?? 0,
-            'tax_percent' => $row['tax_percent'],
-            'tax_remarks' => $row['tax_remarks']
-          ]
-        ));
-      }
-    }
-
-    if ($request->wantsJson()) {
-      // FIX: total_credit calculations aligned to match logbook() view aggregation (SUM of credit)
-      $record = DB::table('odms_accounting')
-        ->where('transaction_id', $transaction_id)
-        ->selectRaw('
-          transaction_id, MAX(dv_no) dv_no, MAX(payee) payee, MAX(status) status,
-          MAX(date_received) date_received, COUNT(*) total_entries,
-          SUM(CAST(REPLACE(COALESCE(credit,0), \',\', \'\') AS DECIMAL(15,2))) as total_credit
-        ')
-        ->groupBy('transaction_id')
-        ->first();
-
-      return response()->json([
-        'success' => true,
-        'message' => 'New record saved successfully.',
-        'record'  => $record,
-      ]);
-    }
-
-    return redirect()
-      ->route('accounting.logbook')
-      ->with('success', 'New record saved successfully.');
   }
 
-// ================= UPDATE LOGBOOK RECORD =================
+  /**
+   * Update the Accounting-owned fields of a transaction, and replace its
+   * credit-entry rows. The debit row's locked fields are never touched.
+   */
   public function update(Request $request, $transaction_id) {
     $request->validate([
-      'status' => 'required|string',
+      'date_received'        => 'nullable|date',
+      'obr_date'             => 'nullable|date',
+      'particulars_remark'    => 'nullable|string',
+      'date_processed'        => 'required|date',
+      'dv_no'                 => 'nullable|string|max:255',
+      'credit_uac_codes'      => 'nullable|array',
+      'credit_uac_codes.*'    => 'nullable|string|max:255',
+      'credit_amounts'        => 'nullable|array',
+      'credit_amounts.*'      => 'nullable|numeric',
+      'credit_tax_percent'    => 'nullable|array',
+      'credit_tax_remarks'    => 'nullable|array',
+      'signed'                => 'required|in:Yes,No',
+      'signed_by_accountant'  => 'required_if:signed,Yes|nullable|string|max:255',
+      'date_signed'           => 'required_if:signed,Yes|nullable|date',
+      'status'                => 'required|string|max:255',
+      'date_forwarded'        => 'nullable|date',
+      'returned_remarks'      => 'nullable|string',
     ]);
-    
-    $status = $request->status;
-    $signedValue = $request->signed_by_accountant ?? $request->signed ?? '';
 
-    if ($status === 'Forwarded to Cashier') {
-      $isSigned = trim(strtolower($signedValue));
+    $entries = DB::table('odms_accounting')->where('transaction_id', $transaction_id)->get();
 
-      if (!in_array($isSigned, ['yes', '1']) || empty($request->date_signed)) {
-        return redirect()
-          ->back()
-          ->withInput()
-          ->with('error', 'Cannot forward without signature and date signed.');
+    if ($entries->isEmpty()) {
+      $message = "Record {$transaction_id} was not found. It may have been deleted.";
+      if ($request->wantsJson()) {
+        return response()->json(['success' => false, 'message' => $message], 404);
       }
+      return back()->withInput()->with('error', $message);
     }
 
-    if ($status === 'Paid') {
-      return redirect()
-        ->back()
-        ->withInput()
-        ->with('error', 'Paid status can only be assigned through Cashier workflow.');
-    }
+    DB::beginTransaction();
+    try {
+      $debitRow = $entries->first(fn ($e) => (float) $e->debit > 0) ?? $entries->first();
 
-    $parseDate = function($value) {
-      return $value ? date('Y-m-d H:i:s', strtotime($value)) : null;
-    };
-
-    // FIX: Removed broken duplicate text blocks and isolated syntax fragments
-    DB::table('odms_accounting')
-      ->where('transaction_id', $transaction_id)
-      ->delete();
-
-    $rows = $request->rows ?? [];
-
-    if (empty($rows)) {
-      $rows[] = [
-        'uac_codes' => $request->uacs_code,
-        'debit' => $request->total_debit,
-        'credit' => 0,
-        'tax_percent' => $request->tax_percentage,
-        'tax_remarks' => $request->tax_remarks
+      // Fields Accounting IS allowed to edit; shared across every row
+      // of the transaction so the grouped/aggregated logbook view
+      // (status, dv_no, signature, etc.) stays consistent.
+      $shared = [
+        'date_received'        => $request->date_received,
+        'obr_date'             => $request->obr_date,
+        'particulars_remark'    => $request->particulars_remark,
+        'date_processed'        => $request->date_processed,
+        'dv_no'                 => $request->dv_no,
+        'returned_remarks'      => $request->returned_remarks,
+        'signed'                => $request->signed,
+        'signed_by_accountant'  => $request->signed === 'Yes' ? $request->signed_by_accountant : null,
+        'date_signed'           => $request->signed === 'Yes' ? $request->date_signed : null,
+        'status'                => $request->status,
+        'date_forwarded'        => $request->date_forwarded,
       ];
-    }
-    
-    foreach ($rows as $index => $row) {
+
+      // LOCKED, untouched on the debit row: payee, particulars,
+      // obr_no, ors_no, uac_codes, debit.
       DB::table('odms_accounting')
-        ->insert([
-          'transaction_id' => $transaction_id,
-          'dv_no' => $request->dv_no,
-          'ors_no' => $request->ors_no,
-          'obr_no' => $request->obr_no,
-          'budget_id' => $request->budget_id,
-          'payee' => $request->payee,
-          'particulars' => $request->particulars,
-          'particulars_remark' => $request->particulars_remark,
-          'status' => $request->status,
-          'date_received' => $parseDate($request->date_received),
-          'date_processed' => $parseDate($request->date_processed),
-          'obr_date' => $parseDate($request->obr_date),
-          'date_signed' => $parseDate($request->date_signed),
-          'date_forwarded' => $parseDate($request->date_forwarded),
-          'signed_by_accountant' => $signedValue,
-          'uac_codes' => $row['uac_codes'],
-          'debit' => $index == 0 ? ($row['debit'] ?? 0) : 0,
-          'credit' => $row['credit'] ?? 0,
-          'tax_percent' => $row['tax_percent'],
-          'tax_remarks' => $row['tax_remarks']
-        ]);
-    }
-      
-    $accounting = DB::table('odms_accounting')->where('transaction_id', $transaction_id)->first();
+        ->where('accounting_id', $debitRow->accounting_id)
+        ->update($shared);
 
-    if ($accounting && $status == 'Returned to Budget') {
-      DB::table('odms_budget')
-        ->where('budget_id', $accounting->budget_id)
-        ->update([
-          'status'        => 'Returned',
-          'final_remarks' => $request->returned_remarks,
-        ]);
+      // Drop the old credit rows, then reinsert from the submitted list.
+      DB::table('odms_accounting')
+        ->where('transaction_id', $transaction_id)
+        ->where('accounting_id', '!=', $debitRow->accounting_id)
+        ->delete();
 
-      if (class_exists(\App\Models\Notification::class)) {
-        \App\Models\Notification::create([
-          'title'       => 'Transaction Returned',
-          'message'     => "ORS No. {$accounting->obr_no} ({$accounting->payee}) was returned by Accounting.",
-          'type'        => 'returned',
-          'related_id'  => $accounting->budget_id,
-          'target_role' => 'budget',
-          'priority'    => 'High',
-          'is_read'     => 0,
-        ]);
-      }
-    }
-
-    return redirect()
-      ->route('accounting.logbook')
-      ->with('success', 'Transaction updated successfully.');
-  }
-
-  // ================= EDIT JSON =================
-  public function edit($transaction_id) {
-    $records = DB::table('odms_accounting as a')
-  ->leftJoin(
-    'odms_budget as b',
-    'b.transaction_id',
-    '=',
-    'a.transaction_id'
-  )
-
-      ->where('transaction_id', $transaction_id)
-      ->select(
-  'a.*',
-  DB::raw('b.ors_no'),
-DB::raw('b.ors_date')
-)
-->get();
-
-    if ($records->isEmpty()) {
-      return response()->json([
-        'message' => 'Record not found.',
-      ], 404);
-    }
-
-    $records = $records
-  ->sortByDesc(function ($row) {
-    return (float) $row->debit;
-  })
-  ->values();
-
-    return response()->json([
-      
-      'summary' => $records->first(),
-      'details' => $records->values(),
-    ]);
-  }
-  
-  // ================= DELETE =================
-  public function destroy($transaction_id) {
-    DB::table('odms_accounting')
-      ->where(
-        'transaction_id',
-        $transaction_id
-      )
-      ->delete();
-
-    return redirect()
-      ->route('accounting.logbook')
-      ->with(
-        'success',
-        'Transaction deleted successfully.'
-      );
-  }
-
-  // ================= CASHIER STATUS TAB =================
-  public function cashierStatus(Request $request) {
-    $search = trim($request->search ?? '');
-    $sort = $request->sort ?? 'latest';
-
-    $query = DB::table('odms_accounting')
-      ->where('status', 'Forwarded to Cashier')
-      ->where(function ($q) {
-        $q->where('signed_by_accountant', 'Yes')
-          ->orWhere('signed_by_accountant', '1');
-      })
-      ->whereNotNull('date_signed')
-      ->where('date_signed', '!=', '');
-
-    // SEARCH
-    if (! empty($search)) {
-      $query->where(function ($q) use ($search) {
-        $q->where('transaction_id', 'like', "%{$search}%")
-          ->orWhere('dv_no', 'like', "%{$search}%")
-          ->orWhere('obr_no', 'like', "%{$search}%")
-          ->orWhere('payee', 'like', "%{$search}%")
-          ->orWhere('particulars', 'like', "%{$search}%");
-      });
-    }
-
-    // SORT
-    switch ($sort) {
-      case 'obr_asc':
-        $query->orderByRaw(
-          "CAST(REGEXP_REPLACE(transaction_id,'[^0-9]','') AS UNSIGNED) ASC"
-        );
-        break;
-
-      case 'obr_desc':
-        $query->orderByRaw(
-          "CAST(REGEXP_REPLACE(transaction_id,'[^0-9]','') AS UNSIGNED) DESC"
-        );
-        break;
-
-      default:
-        $query->orderByDesc(
-          DB::raw('MAX(accounting_id)')
-        );
-        break;
-    }
-
-    $records = $query->select(
-      'transaction_id',
-      DB::raw('MAX(dv_no) dv_no'),
-      DB::raw('MAX(accounting_id) accounting_id'),
-      DB::raw('MAX(obr_no) obr_no'),
-      DB::raw('MAX(payee) payee'),
-      DB::raw('MAX(particulars) particulars'),
-      DB::raw('MAX(particulars_remark) particulars_remark'),
-      DB::raw('MAX(status) status'),
-      DB::raw('MAX(signed_by_accountant) signed_by_accountant'),
-      DB::raw('MAX(date_signed) date_signed'),
-      DB::raw('MAX(date_received) date_received'),
-      DB::raw('MAX(date_processed) date_processed'),
-      DB::raw('COUNT(*) total_entries'),
-      DB::raw("
-        SUM(
-        CAST(
-        REPLACE(
-        COALESCE(credit,0),
-        ',',
-        ''
-        ) AS DECIMAL(15,2)
-        )
-        )
-        as total_credit
-        ")
-    )
-      ->groupBy('transaction_id')
-      ->get();
-
-    return view(
-      'accounting.cashier-status',
-      compact(
-        'records',
-        'search',
-        'sort'
-      )
-    );
-  }
-
-  // ================= MARK AS PAID ACTION =================
-  public function markAsPaid(Request $request, $transaction_id) {
-    $eligible = DB::table('odms_accounting')
-      ->where(
-        'transaction_id',
-        $transaction_id
-      )
-      ->where(
-        'status',
-        'Forwarded to Cashier'
-      )
-      ->whereIn(
-        'signed_by_accountant',
-        [
-          'Yes',
-          '1',
-        ]
-      )
-      ->whereNotNull('date_signed')
-      ->where(
-        'date_signed',
-        '!=',
-        ''
-      )
-      ->exists();
-
-    if (! $eligible) {
-      return redirect()
-        ->route('accounting.cashier-status')
-        ->with(
-          'error',
-          'Action denied. Record fails documentation requirements.'
-        );
-    }
-
-    DB::table('odms_accounting')
-      ->where(
-        'transaction_id',
-        $transaction_id
-      )
-      ->update([
-        'status' => 'Paid',
-        'date_processed' => now()->toDateTimeString(),
+      $creditCommon = array_merge($shared, [
+        'transaction_id' => $transaction_id,
+        'budget_id'      => $debitRow->budget_id,
+        'obr_no'         => $debitRow->obr_no,
+        'ors_no'         => $debitRow->ors_no,
+        'payee'          => $debitRow->payee,
+        'particulars'    => $debitRow->particulars,
+        'budget_year'    => $debitRow->budget_year,
+        'source_month'   => $debitRow->source_month,
+        'debit'          => 0,
       ]);
 
-    return redirect()
-      ->route('accounting.cashier-status')
-      ->with(
-        'success',
-        "Record {$transaction_id} updated to Paid and archived."
-      );
+      if ($request->filled('credit_uac_codes')) {
+        foreach ($request->credit_uac_codes as $i => $uac) {
+          $amount = $request->credit_amounts[$i] ?? null;
+          if (empty($uac) && empty($amount)) {
+            continue;
+          }
+          DB::table('odms_accounting')->insert(array_merge($creditCommon, [
+            'uac_codes'   => $uac,
+            'credit'      => $amount ?? 0,
+            'tax_percent' => $request->credit_tax_percent[$i] ?? null,
+            'tax_remarks' => $request->credit_tax_remarks[$i] ?? null,
+          ]));
+        }
+      }
+
+      // Example downstream notification when routed onward.
+      if ($request->status === 'Forwarded to Cashier') {
+        $notificationExists = Notification::where('type', 'cashier')
+          ->where('related_id', $debitRow->accounting_id)
+          ->where('is_read', 0)
+          ->exists();
+
+        if (! $notificationExists) {
+          Notification::create([
+            'title'       => 'Transaction Forwarded to Cashier',
+            'message'     => "DV No. {$request->dv_no} ({$debitRow->payee}) has been forwarded to Cashier.",
+            'type'        => 'cashier',
+            'related_id'  => $debitRow->accounting_id,
+            'target_role' => 'cashier',
+            'priority'    => 'Medium',
+            'is_read'     => 0,
+          ]);
+        }
+      }
+
+      DB::commit();
+
+      $fresh = DB::table('odms_accounting')->where('transaction_id', $transaction_id)->get();
+
+      if ($request->wantsJson()) {
+        return response()->json([
+          'success' => true,
+          'message' => 'Record updated successfully.',
+          'entries' => $fresh,
+        ]);
+      }
+
+      return back()->with('success', 'Record updated successfully.');
+
+    } catch (\Throwable $e) {
+      DB::rollBack();
+
+      \Log::error('Accounting update failed', [
+        'transaction_id' => $transaction_id,
+        'error' => $e->getMessage(),
+      ]);
+
+      if ($request->wantsJson()) {
+        return response()->json([
+          'success' => false,
+          'message' => 'Update failed: '.$e->getMessage(),
+        ], 500);
+      }
+
+      return back()->withInput()->with('error', 'Update failed: '.$e->getMessage());
+    }
   }
 
-  public function archives(Request $request) {
-    $year = $request->year ?? 'all';
-    $month = $request->month ?? 'all';
-    $search = trim($request->search ?? '');
-    $sort = $request->sort ?? 'latest';
-        
-    $query = DB::table('odms_accounting')
-      ->whereIn('status', ['Paid', 'Cancelled']);
-        
-    if ($year !== 'all' && ! empty($year)) {
-      $query->whereYear(
-        'date_processed', (int) $year
-      );
+  public function destroy($transaction_id) {
+    DB::table('odms_accounting')->where('transaction_id', $transaction_id)->delete();
+
+    return redirect()
+      ->route('accounting.logbook')
+      ->with('success', 'Record deleted successfully.');
+  }
+
+  private function generateTransactionId() {
+    $latest = DB::table('odms_accounting')
+      ->orderByDesc('accounting_id')
+      ->first();
+
+    if (! $latest || empty($latest->transaction_id)) {
+      return 'TXN-000001';
     }
 
-    if ($month !== 'all' && ! empty($month)) {
-      $query->whereMonth(
-        'date_processed', (int) $month
-      );
-    }
-    
-    if (! empty($search)) {
-      $query->where(function ($q) use ($search) {
-        $q->where('transaction_id', 'like', "%{$search}%")
-          ->orWhere('dv_no', 'like', "%{$search}%")
-          ->orWhere('obr_no', 'like', "%{$search}%")
-          ->orWhere('payee', 'like', "%{$search}%")
-          ->orWhere('particulars', 'like', "%{$search}%");
-      });
-    }
-    
-    switch ($sort) {
-      case 'obr_asc':
-        $query->orderByRaw( "CAST(REGEXP_REPLACE(transaction_id,'[^0-9]','') AS UNSIGNED) ASC");
-        break;
-      
-      case 'obr_desc':
-        $query->orderByRaw( "CAST(REGEXP_REPLACE(transaction_id,'[^0-9]','') AS UNSIGNED) DESC");
-        break;
+    $number = intval(str_replace('TXN-', '', $latest->transaction_id));
 
-      default:
-        $query->orderByDesc( DB::raw('MAX(accounting_id)'));
-        break;
-    }
-
-    $records = $query->select(
-      'transaction_id',
-      DB::raw('MAX(dv_no) dv_no'),
-      DB::raw('MAX(accounting_id) accounting_id'),
-      DB::raw('MAX(obr_no) obr_no'),
-      DB::raw('MAX(payee) payee'),
-      DB::raw('MAX(particulars) particulars'),
-      DB::raw('MAX(status) status'),
-      DB::raw('MAX(date_received) date_received'),
-      DB::raw('MAX(date_processed) date_processed'),
-      DB::raw('COUNT(*) total_entries'),
-      DB::raw("
-  SUM(CAST(REPLACE(COALESCE(credit,0), ',', '') AS DECIMAL(15,2)))
-  as total_credit
-")
-    )
-      ->groupBy('transaction_id')
-      ->get();
-
-    return view('accounting.archives', compact('records','year','month','search','sort'));
+    return 'TXN-'.str_pad($number + 1, 6, '0', STR_PAD_LEFT);
   }
 }

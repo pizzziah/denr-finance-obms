@@ -230,6 +230,7 @@
                       <button type="button"
                               class="btn btn-sm btn-outline-info action-btn"
                               data-action="view"
+                              data-id="{{ $record->transaction_id }}"
                               data-dv="{{ $record->transaction_id }}"
                               data-entries="{{ $record->total_entries }}"
                               data-amount="{{ $record->total_credit }}"
@@ -242,17 +243,20 @@
                       <button type="button"
                               class="btn btn-sm btn-outline-primary action-btn"
                               data-action="edit"
+                              data-id="{{ $record->transaction_id }}"
                               data-dv="{{ $record->transaction_id }}"
                               data-status="{{ $record->status }}"
                               data-bs-toggle="modal"
                               data-bs-target="#editRecordModal">
                           <i class="bi bi-pencil"></i>
                       </button>
+                      
                       <button type="button"
-                              class="btn btn-sm btn-outline-danger action-btn"
-                              data-action="delete"
+                              class="btn btn-sm btn-danger action-btn" 
+                              data-action="delete" 
+                              data-id="{{ $record->transaction_id }}"
                               data-dv="{{ $record->transaction_id }}"
-                              data-bs-toggle="modal"
+                              data-bs-toggle="modal" 
                               data-bs-target="#actionModal">
                           <i class="bi bi-trash"></i>
                       </button>
