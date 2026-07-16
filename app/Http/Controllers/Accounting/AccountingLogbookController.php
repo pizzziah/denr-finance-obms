@@ -237,19 +237,70 @@ class AccountingLogbookController extends Controller {
   }
 
   /**
+   * Display tracking records grouped for Cashier view interface.
+   */
+  public function cashierStatus(Request $request) {
+    // Queries all records forwarded to the cashier or already processed as paid
+    $query = DB::table('odms_accounting')
+      ->whereIn('status', ['Forwarded to Cashier', 'Paid']);
+
+    if ($request->filled('search')) {
+      $search = $request->search;
+      $query->where(function($q) use ($search) {
+        $q->where('dv_no', 'like', "%{$search}%")
+          ->orWhere('payee', 'like', "%{$search}%")
+          ->orWhere('particulars', 'like', "%{$search}%");
+      });
+    }
+
+    $records = $query->select(
+      'transaction_id',
+      DB::raw('MAX(dv_no) as dv_no'),
+      DB::raw('MAX(payee) as payee'),
+      DB::raw('MAX(particulars) as particulars'),
+      DB::raw('MAX(status) as status'),
+      DB::raw('MAX(date_forwarded) as date_forwarded'),
+      DB::raw('MAX(date_signed) as date_signed'), 
+      DB::raw('SUM(debit) as total_debit'),
+      DB::raw('COUNT(*) as total_entries') 
+    )
+    ->groupBy('transaction_id')
+    ->orderByDesc(DB::raw('MAX(accounting_id)'))
+    ->get();
+
+    return view('accounting.cashier-status', compact('records'));
+  }
+
+  /**
+   * Update operational workflow flag markers to Paid.
+   */
+  public function markAsPaid(Request $request, $transaction_id) {
+    // Update all matching grouped database row fields 
+    DB::table('odms_accounting')
+      ->where('transaction_id', $transaction_id)
+      ->update([
+        'status' => 'Paid',
+        'updated_at' => Carbon::now()
+      ]);
+
+    // Send a fallback global dynamic notification alert log row
+    Notification::create([
+      'title'       => 'Transaction Paid',
+      'message'     => "Transaction ID {$transaction_id} has been marked as fully Paid by Cashier.",
+      'target_role' => 'accounting',
+      'type'        => 'transaction_paid',
+      'priority'    => 'Low',
+      'is_read'     => 0,
+    ]);
+
+    return redirect()->back()->with('success', 'Operational record status shifted to Paid.');
+  }
+
+  /**
    * Update the Accounting-owned fields of a transaction, and replace its
    * credit-entry rows. The debit row's locked fields are never touched.
    */
   public function update(Request $request, $transaction_id) {
-    // Fetch current status before updating
-    $currentStatus = DB::table('odms_accounting')
-        ->where('transaction_id', $transaction_id)
-        ->value('status');
-
-    if ($currentStatus === 'Returned to Budget') {
-        return back()->with('error', 'This record is returned to Budget and cannot be edited in Accounting.');
-    }
-
     $request->validate([
       'date_received'        => 'nullable|date',
       'obr_date'             => 'nullable|date',
@@ -356,12 +407,6 @@ class AccountingLogbookController extends Controller {
           ]));
         }
       }
-
-      if ($request->status === 'Returned to Budget') {
-        DB::table('odms_budget')
-            ->where('budget_id', $debitRow->budget_id)
-            ->update(['status' => 'Returned by Accounting']);
-}
 
       // Example downstream notification when routed onward.
       if ($request->status === 'Forwarded to Cashier') {

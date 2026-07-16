@@ -159,80 +159,82 @@
 
   {{-- REORDERED LEDGER DATA TABLE --}}
   <div class="card m-0 w-100">
-    <div class="card-body p-2">
-      <div style="max-height: 520px; overflow-y: auto; overflow-x: auto; border: 1px solid #dee2e6;">
-        <table class="table table-bordered table-hover table-sm align-middle m-0" style="min-width: 1450px;">
-          <thead class="table-dark" style="position: sticky; top: 0; z-index: 10;">
+  <div class="card-body p-2">
+    <div style="max-height: 520px; overflow-y: auto; overflow-x: auto; border: 1px solid #dee2e6;">
+      <table class="table table-bordered table-hover table-sm align-middle m-0" style="min-width: 1450px;">
+        <thead class="table-dark" style="position: sticky; top: 0; z-index: 10;">
+          <tr>
+            <th style="width: 120px;">
+              <div class="d-flex align-items-center justify-content-between">
+                <span>Date Processed</span>
+                <div class="btn-group btn-group-xs ms-2">
+                  <a href="{{ request()->fullUrlWithQuery(['sort_processed' => 'asc']) }}" class="btn p-0 px-1 text-white {{ request('sort_processed') === 'asc' ? 'opacity-100 fw-bold' : 'opacity-50' }}"><i class="bi bi-sort-numeric-down"></i></a>
+                  <a href="{{ request()->fullUrlWithQuery(['sort_processed' => 'desc']) }}" class="btn p-0 px-1 text-white  {{ request('sort_processed', 'desc') === 'desc' ? 'opacity-100 fw-bold' : 'opacity-50' }}"><i class="bi bi-sort-numeric-up-alt"></i></a>
+                </div>
+              </div>
+            </th>
+            <th style="width: 120px;">DV/NCA/NTA Number</th>
+            <th style="width: 120px;">Signed DV</th>
+            <th style="width: 120px;">Amount</th>
+            <th style="width: 160px;">NCA/NTA Received</th>
+            <th style="width: 160px;">NCA/NTA Downloaded</th>
+            <th style="width: 150px;">
+              <div class="d-flex align-items-center justify-content-between">
+                <span>EMDS Date</span>
+                <div class="btn-group btn-group-xs ms-2">
+                  <a href="{{ request()->fullUrlWithQuery(['sort_date' => 'asc']) }}" class="btn p-0 px-1 text-white {{ request('sort_date') === 'asc' ? 'opacity-100 fw-bold' : 'opacity-50' }}"><i class="bi bi-sort-numeric-down"></i></a>
+                  <a href="{{ request()->fullUrlWithQuery(['sort_date' => 'desc']) }}" class="btn p-0 px-1 text-white  {{ request('sort_date', 'desc') === 'desc' ? 'opacity-100 fw-bold' : 'opacity-50' }}"><i class="bi bi-sort-numeric-up-alt"></i></a>
+                </div>
+              </div>
+            </th>
+            <th style="width: 160px;">Balance</th>
+            <th style="width: 100px;">ADA/Check No.</th>
+            <th>Remarks</th>
+            <th style="width: 150px; text-align: center;">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          @forelse($records as $record)
+            @php
+              $rowId = $record->getKey();
+              $cleanReceived = \App\Models\Accounting\AccountingQuarterlySummary::parseMoney($record->nca_nta_received);
+              $cleanDownloaded = \App\Models\Accounting\AccountingQuarterlySummary::parseMoney($record->nca_nta_downloaded);
+              $txType = $cleanReceived > 0 ? 'received' : 'downloaded';
+              
+              if ($cleanReceived > 0) {
+                  $rawAmount = $cleanReceived;
+              } elseif ($cleanDownloaded > 0) {
+                  $rawAmount = $cleanDownloaded;
+              } else {
+                  $rawAmount = \App\Models\Accounting\AccountingQuarterlySummary::parseMoney($record->amount);
+              }
+            @endphp
+
             <tr>
-              <th style="width: 120px;">
-                <div class="d-flex align-items-center justify-content-between">
-                  <span>Date Processed</span>
-                  <div class="btn-group btn-group-xs ms-2">
-                    <a href="{{ request()->fullUrlWithQuery(['sort_processed' => 'asc']) }}" class="btn p-0 px-1 text-white {{ request('sort_processed') === 'asc' ? 'opacity-100 fw-bold' : 'opacity-50' }}"><i class="bi bi-sort-numeric-down"></i></a>
-                    <a href="{{ request()->fullUrlWithQuery(['sort_processed' => 'desc']) }}" class="btn p-0 px-1 text-white  {{ request('sort_processed', 'desc') === 'desc' ? 'opacity-100 fw-bold' : 'opacity-50' }}"><i class="bi bi-sort-numeric-up-alt"></i></a>
-                  </div>
+              <td class="small">{{ $record->date_processed ?? '-' }}</td>
+              <td style="color: var(--primary);"><strong>{{ $record->particulars ?? '-' }}</strong></td>
+              <td style="color: #20c997;"><strong>{{ !empty($record->signed_dv) ? '₱' . number_format((float)str_replace(',', '', $record->signed_dv), 2) : '-' }}</strong></td>
+              <td style="color: #7909FF;">{{ !empty($record->amount) ? '₱' . number_format((float)str_replace(',', '', $record->amount), 2) : '-' }}</td>
+              <td style="color: #9D6B0B;"><strong>{{ $cleanReceived > 0 ? '₱' . number_format($cleanReceived, 2) : '-' }}</strong></td>
+              <td style="color: var(--error);"><strong>{{ $cleanDownloaded > 0 ? '₱' . number_format($cleanDownloaded, 2) : '-' }}</strong></td>
+              <td class="small">{{ $record->emds_date ?? '-' }}</td>
+              <td style="background-color: var(--secondary-variant); color: var(--primary);">
+                <strong>₱{{ !empty($record->balance) ? number_format((float)str_replace(',', '', $record->balance), 2) : '0.00' }}</strong>
+              </td>
+              <td>{{ $record->ada_no ?? '-' }}</td>
+              <td class="text-wrap"><em>{{ $record->remarks ?? '-' }}</em></td>
+              <td>
+                <div class="d-flex gap-2 justify-content-center align-items-center">
+                  <x-button type="button" variant="edit" data-bs-toggle="modal" data-bs-target="#editSummaryModal{{ $rowId }}" :disabled="$isLocked">
+                    <i class="bi bi-pencil-square"></i>
+                  </x-button>
+                  <x-button type="button" variant="alert" data-bs-toggle="modal" data-bs-target="#deleteRowModal{{ $rowId }}" :disabled="$isLocked">
+                    <i class="bi bi-trash3"></i>
+                  </x-button>
                 </div>
-              </th>
-              <th style="width: 120px;">DV Number</th>
-              <th style="width: 120px;">Amount</th>
-              <th style="width: 160px;">NCA/NTA Received</th>
-              <th style="width: 160px;">NCA/NTA Downloaded</th>
-              <th style="width: 150px;">
-                <div class="d-flex align-items-center justify-content-between">
-                  <span>EMDS Date</span>
-                  <div class="btn-group btn-group-xs ms-2">
-                    <a href="{{ request()->fullUrlWithQuery(['sort_date' => 'asc']) }}" class="btn p-0 px-1 text-white {{ request('sort_date') === 'asc' ? 'opacity-100 fw-bold' : 'opacity-50' }}"><i class="bi bi-sort-numeric-down"></i></a>
-                    <a href="{{ request()->fullUrlWithQuery(['sort_date' => 'desc']) }}" class="btn p-0 px-1 text-white  {{ request('sort_date', 'desc') === 'desc' ? 'opacity-100 fw-bold' : 'opacity-50' }}"><i class="bi bi-sort-numeric-up-alt"></i></a>
-                  </div>
-                </div>
-              </th>
-              <th style="width: 160px;">Balance</th>
-              <th style="width: 100px;">ADA/Check No.</th>
-              <th>Remarks</th>
-              <th style="width: 150px; text-align: center;">Actions</th>
+              </td>
             </tr>
-          </thead>
-
-          <tbody>
-            @forelse($records as $record)
-              @php
-                $rowId = $record->getKey();
-                $cleanReceived = \App\Models\Accounting\AccountingQuarterlySummary::parseMoney($record->nca_nta_received);
-                $cleanDownloaded = \App\Models\Accounting\AccountingQuarterlySummary::parseMoney($record->nca_nta_downloaded);
-                $txType = $cleanReceived > 0 ? 'received' : 'downloaded';
-                
-                if ($cleanReceived > 0) {
-                    $rawAmount = $cleanReceived;
-                } elseif ($cleanDownloaded > 0) {
-                    $rawAmount = $cleanDownloaded;
-                } else {
-                    $rawAmount = \App\Models\Accounting\AccountingQuarterlySummary::parseMoney($record->amount);
-                }
-              @endphp
-
-              <tr>
-                <td class="small">{{ $record->date_processed ?? '-' }}</td>
-                <td style="color: var(--primary);"><strong>{{ $record->particulars ?? '-' }}</strong></td>
-                <td style="color: #7909FF;">{{ !empty($record->amount) && (float)str_replace(',', '', $record->amount) > 0 ? '₱' . number_format((float)str_replace(',', '', $record->amount), 2) : '-' }}</td>
-                <td style="color: #9D6B0B;"><strong>{{ $cleanReceived > 0 ? '₱' . number_format($cleanReceived, 2) : '-' }}</strong></td>
-                <td style="color: var(--error);"><strong>{{ $cleanDownloaded > 0 ? '₱' . number_format($cleanDownloaded, 2) : '-' }}</strong></td>
-                <td class="small">{{ $record->emds_date ?? '-' }}</td>
-                <td style="background-color: var(--secondary-variant); color: var(--primary);">
-                  <strong>₱{{ !empty($record->balance) ? number_format((float)str_replace(',', '', $record->balance), 2) : '0.00' }}</strong>
-                </td>
-                <td>{{ $record->ada_no ?? '-' }}</td>
-                <td class="text-wrap"><em>{{ $record->remarks ?? '-' }}</em></td>
-                <td>
-                  <div class="d-flex gap-2 justify-content-center align-items-center">
-                    <x-button type="button" variant="edit" data-bs-toggle="modal" data-bs-target="#editSummaryModal{{ $rowId }}" :disabled="$isLocked">
-                      <i class="bi bi-pencil-square"></i>
-                    </x-button>
-                    <x-button type="button" variant="alert" data-bs-toggle="modal" data-bs-target="#deleteRowModal{{ $rowId }}" :disabled="$isLocked">
-                      <i class="bi bi-trash3"></i>
-                    </x-button>
-                  </div>
-                </td>
-              </tr>
 
               {{-- INLINE EDIT MODAL GENERATOR PER ROW --}}
               @if(!$isLocked)

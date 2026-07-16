@@ -98,75 +98,75 @@ class AccountingQuarterlySummaryController extends Controller {
     $allRecords = $query->get();
 
     foreach ($allRecords as $record) {
-          $record->setKeyName($pk);
-        }
+      $record->setKeyName($pk);
+    }
+    
+    $totalReceived = 0;
+    $totalDownloaded = 0;
+    
+    foreach ($allRecords as $rec) {
+      $totalReceived += AccountingQuarterlySummary::parseMoney($rec->nca_nta_received);
+      $totalDownloaded += AccountingQuarterlySummary::parseMoney($rec->nca_nta_downloaded);
+    }
+    
+    $latestRow = $modelInstance->newQuery()
+      ->orderByRaw("STR_TO_DATE(date_processed, '%c/%e/%Y') desc, {$pk} desc")
+      ->first();
+      
+    $currentBalance = $latestRow ? number_format(AccountingQuarterlySummary::parseMoney($latestRow->balance), 2) : '0.00';
 
-        // Totals calculations
-        $totalReceived = 0;
-        $totalDownloaded = 0;
-        foreach ($allRecords as $rec) {
-          $totalReceived += AccountingQuarterlySummary::parseMoney($rec->nca_nta_received);
-          $totalDownloaded += AccountingQuarterlySummary::parseMoney($rec->nca_nta_downloaded);
-        }
+    // Verify manual unlock requirement records
+    $dbLock = DB::table('odms_admin_quarter_locks')->where('year', $selectedYear)->where('quarter', $selectedQuarter)->first();
+    $requiresAdminRequest = $dbLock ? (bool) $dbLock->requires_admin_unlock : false;
 
-        $latestRow = $modelInstance->newQuery()
-          ->orderByRaw("STR_TO_DATE(date_processed, '%c/%e/%Y') desc, {$pk} desc")
-          ->first();
-          
-        $currentBalance = $latestRow ? number_format(AccountingQuarterlySummary::parseMoney($latestRow->balance), 2) : '0.00';
-
-        // Verify manual unlock requirement records
-        $dbLock = DB::table('odms_admin_quarter_locks')->where('year', $selectedYear)->where('quarter', $selectedQuarter)->first();
-        $requiresAdminRequest = $dbLock ? (bool) $dbLock->requires_admin_unlock : false;
-
-        return view('accounting.quarterly-summary', [
-          'records' => $allRecords,
-          'currentQuarter' => $currentQuarter,
-          'selectedQuarter' => $selectedQuarter,
-          'selectedYear' => $selectedYear,
-          'isLocked' => $isLocked,
-          'requiresAdminRequest' => $requiresAdminRequest,
-          'currentBalance' => $currentBalance,
-          'totalReceived' => number_format($totalReceived, 2),
-          'totalDownloaded' => number_format($totalDownloaded, 2),
-        ]);
+    return view('accounting.quarterly-summary', [
+      'records' => $allRecords,
+      'currentQuarter' => $currentQuarter,
+      'selectedQuarter' => $selectedQuarter,
+      'selectedYear' => $selectedYear,
+      'isLocked' => $isLocked,
+      'requiresAdminRequest' => $requiresAdminRequest,
+      'currentBalance' => $currentBalance,
+      'totalReceived' => number_format($totalReceived, 2),
+      'totalDownloaded' => number_format($totalDownloaded, 2),
+    ]);
   }
     
   public function manualLock(Request $request) {
     if (auth()->user()->department !== 'Accounting' || auth()->user()->permission_level !== 'special') {
-            return redirect()->back()->with('error', 'Action denied: Your account context lacks ledger locking authorization.');
-        }
-
-        $quarter = (int) $request->input('quarter');
-        $year = (int) $request->input('year');
-
-        DB::table('odms_admin_quarter_locks')->updateOrInsert(
-          ['year' => $year, 'quarter' => $quarter],
-          ['status' => 'locked', 'requires_admin_unlock' => false, 'updated_at' => Carbon::now()]
-        );
-        $lock = DB::table('odms_admin_quarter_locks')
-            ->where('year', $year)
-            ->where('quarter', $quarter)
-            ->first();
-
-        Notification::create([
-            'title'       => 'Quarter Locked',
-            'message'     => auth()->user()->name .
-                            " locked Year {$year}, Quarter {$quarter}.",
-            'target_role' => 'admin',
-            'type'        => 'quarter_locked',
-            'priority'    => 'Medium',
-            'related_id'  => $lock?->id,
-            'is_read'     => 0,
-        ]);
-
-        return redirect()->back()->with('success', "Quarter {$quarter} manual lock completed.");
+      return redirect()->back()->with('error', 'Action denied: Your account context lacks ledger locking authorization.');
     }
+    
+    $quarter = (int) $request->input('quarter');
+    $year = (int) $request->input('year');
 
-public function requestAdminUnlock(Request $request)
-{
+    DB::table('odms_admin_quarter_locks')->updateOrInsert(
+      ['year' => $year, 'quarter' => $quarter],
+      ['status' => 'locked', 'requires_admin_unlock' => false, 'updated_at' => Carbon::now()]
+    );
+    
+    $lock = DB::table('odms_admin_quarter_locks')
+      ->where('year', $year)
+      ->where('quarter', $quarter)
+      ->first();
+
+    Notification::create([
+      'title'       => 'Quarter Locked',
+      'message'     => auth()->user()->name .
+                   " locked Year {$year}, Quarter {$quarter}.",
+      'target_role' => 'admin',
+      'type'        => 'quarter_locked',
+      'priority'    => 'Medium',
+      'related_id'  => $lock?->id,
+      'is_read'     => 0,
+    ]);
+    
+    return redirect()->back()->with('success', "Quarter {$quarter} manual lock completed.");
+  }
+
+  public function requestAdminUnlock(Request $request) {
     if (auth()->user()->department !== 'Accounting' || auth()->user()->permission_level !== 'special') {
-        return redirect()->back()->with('error', 'Action denied: Only authorized personnel can request state modifications.');
+      return redirect()->back()->with('error', 'Action denied: Only authorized personnel can request state modifications.');
     }
 
     $quarter = (int) $request->input('quarter');
@@ -198,88 +198,314 @@ public function requestAdminUnlock(Request $request)
         ]);
 
     return redirect()->back()->with('success', 'Unlock request sent to System Administration.');
-}
+  }
 
-    public function store(Request $request){
-        $quarter = (int) $request->input('target_quarter');
-        $year = (int) $request->input('target_year', Carbon::now()->year);
-        $lock = $this->checkQuarterLockStatus($quarter, $year);
+  /**
+   * Manually create a brand new accounting record (used when the Accounting
+   * clerk needs to log something directly, outside the Budget hand-off flow).
+   */
+  public function store(Request $request) {
+    $request->validate([
+      'date_received'       => 'nullable|date',
+      'obr_date'            => 'nullable|date',
+      'obr_no'              => 'nullable|string|max:255',
+      'payee'               => 'required|string|max:255',
+      'particulars'         => 'required|string',
+      'particulars_remark'    => 'nullable|string',
+      'date_processed'      => 'nullable|date',
+      'dv_nca_nta_no'       => 'nullable|string|max:255', // Renamed input field mapped here
+      'uac_codes'           => 'nullable|string|max:255',
+      'debit'               => 'nullable|numeric',
+      'credit_uac_codes'      => 'nullable|array',
+      'credit_uac_codes.*'    => 'nullable|string|max:255',
+      'credit_amounts'        => 'nullable|array',
+      'credit_amounts.*'      => 'nullable|numeric',
+      'credit_tax_percent'    => 'nullable|array',
+      'credit_tax_remarks'    => 'nullable|array',
+      'signed'              => 'required|in:Yes,No',
+      'signed_by_accountant'  => 'required_if:signed,Yes|nullable|string|max:255',
+      'date_signed'           => 'required_if:signed,Yes|nullable|date',
+      'status'              => 'required|string|max:255',
+      'date_forwarded'        => 'nullable|date',
+      'returned_remarks'      => 'nullable|string',
+    ]);
 
-        if ($lock['is_locked']) {
-            return redirect()->back()->with('error', 'Write operations rejected: Closed Quarter context.');
+    DB::beginTransaction();
+    try {
+      $transactionId = $this->generateTransactionId();
+      $debit = $request->debit ?? 0;
+
+      $shared = [
+        'transaction_id'       => $transactionId,
+        'budget_id'            => null,
+        'obr_no'               => $request->obr_no,
+        'ors_no'               => $request->ors_no,
+        'dv_no'                => $request->dv_nca_nta_no, // Maps form reference value safely to the back-end schema column
+        'payee'                => $request->payee,
+        'particulars'          => $request->particulars,
+        'particulars_remark'   => $request->particulars_remark,
+        'returned_remarks'     => $request->returned_remarks,
+        'signed'               => $request->signed,
+        'signed_by_accountant' => $request->signed === 'Yes' ? $request->signed_by_accountant : null,
+        'status'               => $request->status,
+        'budget_year'          => $request->date_received ? Carbon::parse($request->date_received)->year : null,
+        'source_month'         => $request->date_received ? Carbon::parse($request->date_received)->format('F') : null,
+        'date_received'        => $request->date_received,
+        'date_processed'       => $request->date_processed,
+        'obr_date'             => $request->obr_date,
+        'date_signed'          => $request->signed === 'Yes' ? $request->date_signed : null,
+        'date_forwarded'       => $request->date_forwarded,
+      ];
+
+      // Debit (original) row
+      DB::table('odms_accounting')->insert(array_merge($shared, [
+        'uac_codes'   => $request->uac_codes,
+        'debit'       => $debit,
+        'credit'      => 0,
+        'tax_percent' => null,
+        'tax_remarks' => null,
+      ]));
+
+      // Credit rows entered by Accounting
+      if ($request->filled('credit_uac_codes')) {
+        foreach ($request->credit_uac_codes as $i => $uac) {
+          $amount = $request->credit_amounts[$i] ?? null;
+          if (empty($uac) && empty($amount)) {
+            continue;
+          }
+          DB::table('odms_accounting')->insert(array_merge($shared, [
+            'uac_codes'   => $uac,
+            'debit'       => 0,
+            'credit'      => $amount ?? 0,
+            'tax_percent' => $request->credit_tax_percent[$i] ?? null,
+            'tax_remarks' => $request->credit_tax_remarks[$i] ?? null,
+          ]));
         }
+      }
 
-        $request->validate([
-            'date_processed' => 'required|date',
-            'particulars' => 'required|string|max:255',
-            'transaction_type' => 'required|in:received,downloaded,adjustment',
-            'amount' => 'required|numeric',
-        ]);
+      DB::commit();
 
-        $entry = new AccountingQuarterlySummary;
-        $entry->setQuarterTable($quarter, $year);
+      return redirect()
+        ->route('accounting.logbook')
+        ->with('success', "Record {$transactionId} added successfully.");
 
-        $isAdjustment = $request->transaction_type === 'adjustment';
-        $received = $request->transaction_type === 'received' ? number_format($request->amount, 2, '.', ',') : null;
-        $downloaded = $request->transaction_type === 'downloaded' ? number_format($request->amount, 2, '.', ',') : null;
+    } catch (\Throwable $e) {
+      DB::rollBack();
+      \Log::error('Accounting store failed', ['error' => $e->getMessage()]);
 
-        $entry->emds_date = Carbon::parse($request->emds_date)->format('n/j/Y');
-        $entry->date_processed = Carbon::parse($request->date_processed)->format('n/j/Y');
-        $entry->particulars = $request->particulars;
-        $entry->amount = $isAdjustment ? number_format($request->amount, 2, '.', ',') : null;
-        $entry->nca_nta_received = $received;
-        $entry->nca_nta_downloaded = $downloaded;
-        $entry->balance = '0.00';
-        $entry->ada_no = $request->ada_no;
-        $entry->remarks = $request->remarks;
-        $entry->save();
+      return back()->withInput()->with('error', 'Insert failed: '.$e->getMessage());
+    }
+  }
 
-        $this->recalculateQuarterlyBalances($quarter, $year);
+  /**
+   * Update the Accounting-owned fields of a transaction, and replace its
+   * credit-entry rows. The debit row's locked fields are never touched.
+   */
+  public function update(Request $request, $transaction_id) {
+    // Fetch current status before updating
+    $currentStatus = DB::table('odms_accounting')
+        ->where('transaction_id', $transaction_id)
+        ->value('status');
 
-        return redirect()->back()->with('success', 'Entry added successfully.');
+    if ($currentStatus === 'Returned to Budget') {
+        return back()->with('error', 'This record is returned to Budget and cannot be edited in Accounting.');
     }
 
-    public function update(Request $request, $id)
-    {
-        $quarter = (int) $request->input('target_quarter');
-        $year = (int) $request->input('target_year', Carbon::now()->year);
-        $lock = $this->checkQuarterLockStatus($quarter, $year);
+    $request->validate([
+      'date_received'        => 'nullable|date',
+      'obr_date'             => 'nullable|date',
+      'particulars_remark'   => 'nullable|string',
+      'date_processed'       => 'required|date',
+      'dv_nca_nta_no'        => 'nullable|string|max:255', // Updated here too for synchronous field mapping
+      'payee'                => 'required|string|max:255',
+      'particulars'          => 'required|string',
+      'debit'                => 'required|numeric',
+      'uac_codes'            => 'nullable|string|max:255',
+      'obr_no'               => 'nullable|string|max:255',
+      'credit_uac_codes'     => 'nullable|array',
+      'credit_uac_codes.*'   => 'nullable|string|max:255',
+      'credit_amounts'       => 'nullable|array',
+      'credit_amounts.*'     => 'nullable|numeric',
+      'credit_tax_percent'   => 'nullable|array',
+      'credit_tax_remarks'   => 'nullable|array',
+      'signed'               => 'required|in:Yes,No',
+      'signed_by_accountant' => 'required_if:signed,Yes|nullable|string|max:255',
+      'date_signed'          => 'required_if:signed,Yes|nullable|date',
+      'status'               => 'required|string|max:255',
+      'date_forwarded'       => 'nullable|date',
+      'returned_remarks'     => 'nullable|string',
+    ]);
 
-        if ($lock['is_locked']) {
-            return redirect()->back()->with('error', 'Modifications locked for this quarter.');
-        }
+    $entries = DB::table('odms_accounting')->where('transaction_id', $transaction_id)->get();
 
-        $request->validate([
-            'date_processed' => 'required|date',
-            'particulars' => 'required|string|max:255',
-            'transaction_type' => 'required|in:received,downloaded,adjustment',
-            'amount' => 'required|numeric',
-        ]);
-
-        $modelInstance = new AccountingQuarterlySummary;
-        $modelInstance->setQuarterTable($quarter, $year);
-        $row = $modelInstance->newQuery()->findOrFail($id);
-
-        $row->setTable($modelInstance->getTable());
-        $row->setKeyName($modelInstance->getKeyName());
-
-        $isAdjustment = $request->transaction_type === 'adjustment';
-
-        $row->update([
-            'emds_date' => Carbon::parse($request->emds_date)->format('n/j/Y'),
-            'date_processed' => Carbon::parse($request->date_processed)->format('n/j/Y'),
-            'particulars' => $request->particulars,
-            'amount' => $isAdjustment ? number_format($request->amount, 2, '.', ',') : null,
-            'nca_nta_received' => $request->transaction_type === 'received' ? number_format($request->amount, 2, '.', ',') : null,
-            'nca_nta_downloaded' => $request->transaction_type === 'downloaded' ? number_format($request->amount, 2, '.', ',') : null,
-            'ada_no' => $request->ada_no,
-            'remarks' => $request->remarks,
-        ]);
-
-        $this->recalculateQuarterlyBalances($quarter, $year);
-
-        return redirect()->back()->with('success', 'Entry modified.');
+    if ($entries->isEmpty()) {
+      $message = "Record {$transaction_id} was not found. It may have been deleted.";
+      if ($request->wantsJson()) {
+        return response()->json(['success' => false, 'message' => $message], 404);
+      }
+      return back()->withInput()->with('error', $message);
     }
+
+    DB::beginTransaction();
+    try {
+      $debitRow = $entries->first(fn ($e) => (float) $e->debit > 0) ?? $entries->first();
+
+      // Determine if the record originated from Budget
+      $isBudgetSourced = !empty($debitRow->budget_id);
+
+      // Fields Accounting IS allowed to edit; shared across every row
+      // of the transaction so the grouped/aggregated logbook view
+      // (status, dv_no, signature, etc.) stays consistent.
+      $shared = [
+        'date_received'        => $request->date_received,
+        'obr_date'             => $request->obr_date,
+        'particulars_remark'    => $request->particulars_remark,
+        'date_processed'        => $request->date_processed,
+        'dv_no'                 => $request->dv_nca_nta_no, // Securely updating target table index
+        'returned_remarks'      => $request->returned_remarks,
+        'signed'                => $request->signed,
+        'signed_by_accountant'  => $request->signed === 'Yes' ? $request->signed_by_accountant : null,
+        'date_signed'           => $request->signed === 'Yes' ? $request->date_signed : null,
+        'status'                => $request->status,
+        'date_forwarded'        => $request->date_forwarded,
+      ];
+
+      // Conditionally merge fields only if it is NOT budget-sourced
+      if (!$isBudgetSourced) {
+        $shared['payee']       = $request->payee;
+        $shared['particulars'] = $request->particulars;
+        $shared['debit']       = $request->debit;
+        $shared['uac_codes']   = $request->uac_codes;
+        $shared['obr_no']      = $request->obr_no;
+      }
+
+      // LOCKED, untouched on the debit row: payee, particulars,
+      // obr_no, ors_no, uac_codes, debit.
+      DB::table('odms_accounting')
+        ->where('accounting_id', $debitRow->accounting_id)
+        ->update($shared);
+
+      // Drop the old credit rows, then reinsert from the submitted list.
+      DB::table('odms_accounting')
+        ->where('transaction_id', $transaction_id)
+        ->where('accounting_id', '!=', $debitRow->accounting_id)
+        ->delete();
+
+      $creditCommon = array_merge($shared, [
+        'transaction_id' => $transaction_id,
+        'budget_id'      => $debitRow->budget_id,
+        'obr_no'         => $debitRow->obr_no,
+        'ors_no'         => $debitRow->ors_no,
+        'payee'          => $debitRow->payee,
+        'particulars'    => $debitRow->particulars,
+        'budget_year'    => $debitRow->budget_year,
+        'source_month'   => $debitRow->source_month,
+        'debit'          => 0,
+      ]);
+
+      if ($request->filled('credit_uac_codes')) {
+        foreach ($request->credit_uac_codes as $i => $uac) {
+          $amount = $request->credit_amounts[$i] ?? null;
+          if (empty($uac) && empty($amount)) {
+            continue;
+          }
+          DB::table('odms_accounting')->insert(array_merge($creditCommon, [
+            'uac_codes'   => $uac,
+            'credit'      => $amount ?? 0,
+            'tax_percent' => $request->credit_tax_percent[$i] ?? null,
+            'tax_remarks' => $request->credit_tax_remarks[$i] ?? null,
+          ]));
+        }
+      }
+
+      if ($request->status === 'Returned to Budget') {
+        DB::table('odms_budget')
+            ->where('budget_id', $debitRow->budget_id)
+            ->update(['status' => 'Returned by Accounting']);
+      }
+
+      // Downstream notification when routed onward.
+      if ($request->status === 'Forwarded to Cashier') {
+        $notificationExists = Notification::where('type', 'cashier')
+          ->where('related_id', $debitRow->accounting_id)
+          ->where('is_read', 0)
+          ->exists();
+
+        if (! $notificationExists) {
+          Notification::create([
+            'title'       => 'Transaction Forwarded to Cashier',
+            'message'     => "DV/NCA/NTA No. {$request->dv_nca_nta_no} ({$debitRow->payee}) has been forwarded to Cashier.",
+            'type'        => 'cashier',
+            'related_id'  => $debitRow->accounting_id,
+            'target_role' => 'cashier',
+            'priority'    => 'Medium',
+            'is_read'     => 0,
+          ]);
+        }
+      }
+
+      DB::commit();
+
+      $fresh = DB::table('odms_accounting')->where('transaction_id', $transaction_id)->get();
+
+      if ($request->wantsJson()) {
+        return response()->json([
+          'success' => true,
+          'message' => 'Record updated successfully.',
+          'entries' => $fresh,
+        ]);
+      }
+
+      return back()->with('success', 'Record updated successfully.');
+
+    } catch (\Throwable $e) {
+      DB::rollBack();
+
+      \Log::error('Accounting update failed', [
+        'transaction_id' => $transaction_id,
+        'error' => $e->getMessage(),
+      ]);
+
+      if ($request->wantsJson()) {
+        return response()->json([
+          'success' => false,
+          'message' => 'Update failed: '.$e->getMessage(),
+        ], 500);
+      }
+
+      return back()->withInput()->with('error', 'Update failed: '.$e->getMessage());
+    }
+  }
+
+  private function recalculateQuarterlyBalances($quarter, $year = null) {
+    $modelInstance = new AccountingQuarterlySummary;
+    $modelInstance->setQuarterTable($quarter, $year);
+    $pkName = $modelInstance->getKeyName();
+
+    $records = $modelInstance->newQuery()
+      ->orderByRaw("STR_TO_DATE(date_processed, '%c/%e/%Y') asc, {$pkName} asc")
+      ->get();
+
+    $runningBalance = 0.00;
+
+    foreach ($records as $record) {
+      $received = AccountingQuarterlySummary::parseMoney($record->nca_nta_received);
+      $downloaded = AccountingQuarterlySummary::parseMoney($record->nca_nta_downloaded);
+      $adjustment = AccountingQuarterlySummary::parseMoney($record->amount);
+      $signedDv   = AccountingQuarterlySummary::parseMoney($record->signed_dv);
+
+      // Math Formula Implementation[cite: 1]
+      if ($downloaded > 0) {
+          $runningBalance = ($runningBalance + $signedDv + $adjustment) - $downloaded;
+      } else {
+          $runningBalance = ($runningBalance + $signedDv + $adjustment) + $received;
+      }
+
+      DB::table($modelInstance->getTable())
+        ->where($pkName, $record->{$pkName})
+        ->update(['balance' => number_format($runningBalance, 2, '.', '')]);
+    }
+  }
 
     public function destroy(Request $request, $id)
     {
@@ -299,32 +525,6 @@ public function requestAdminUnlock(Request $request)
 
         return redirect()->back()->with('success', 'Entry removed.');
     }
-
-  private function recalculateQuarterlyBalances($quarter, $year = null) {
-    $modelInstance = new AccountingQuarterlySummary;
-    $modelInstance->setQuarterTable($quarter, $year);
-    $pkName = $modelInstance->getKeyName();
-
-    $records = $modelInstance->newQuery()
-      ->orderByRaw("STR_TO_DATE(date_processed, '%c/%e/%Y') asc, {$pkName} asc")
-      ->get();
-
-    $runningBalance = 0.00;
-
-    foreach ($records as $record) {
-      $received = AccountingQuarterlySummary::parseMoney($record->nca_nta_received);
-      $downloaded = AccountingQuarterlySummary::parseMoney($record->nca_nta_downloaded);
-      $adjustment = AccountingQuarterlySummary::parseMoney($record->amount);
-
-      $runningBalance += $received;
-      $runningBalance -= $downloaded;
-      $runningBalance += $adjustment; 
-
-      DB::table($modelInstance->getTable())
-        ->where($pkName, $record->{$pkName})
-        ->update(['balance' => number_format($runningBalance, 2, '.', '')]);
-    }
-  }
 
   public function cancelUnlockRequest(Request $request) {
     $quarter = $request->filled('quarter') ? (int) $request->quarter : ceil(Carbon::now()->month / 3);
