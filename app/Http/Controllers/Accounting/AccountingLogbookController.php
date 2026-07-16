@@ -573,6 +573,7 @@ class AccountingLogbookController extends Controller {
 
     $records = $query->get();
 
+    
     return view('accounting.archives', compact('records', 'year', 'month', 'search', 'sort'));
   }
 }
