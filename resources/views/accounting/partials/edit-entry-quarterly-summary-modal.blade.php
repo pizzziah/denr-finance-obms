@@ -5,7 +5,6 @@
         @csrf
         @method('PUT')
         <input type="hidden" name="target_quarter" value="{{ $selectedQuarter }}">
-        <input type="hidden" name="target_year" value="{{ $selectedYear }}">
         
         <div class="modal-header bg-dark text-white py-3">
           <h5 class="fw-bold mb-0 text-white"><i class="bi bi-pencil-square me-2"></i>Modify Ledger Entry</h5>
@@ -38,7 +37,12 @@
                     <input class="form-check-input tx-type-radio-{{ $rowId }}" type="radio" name="transaction_type" id="type_adjustment_{{ $rowId }}" value="adjustment" @checked($txType === 'adjustment') required>
                     <label class="form-check-label small fw-bold" style="color: #7909FF;" for="type_adjustment_{{ $rowId }}">Adjustment</label>
                   </div>
-                  <div class="flex-grow-1 input-target-{{ $rowId }}" id="target_adjustment_{{ $rowId }}"></div>
+                  @if($txType === 'adjustment')
+                  <div class="input-group input-group-sm flex-grow-1 dynamic-input-group-{{ $rowId }}">
+                    <span class="input-group-text bg-white">₱</span>
+                    <input type="number" name="amount" id="amount_input_{{ $rowId }}" step="0.01" class="form-control font-monospace" value="{{ $rawAmount }}" required>
+                  </div>
+                  @endif
                 </div>
 
                 {{-- SIGNED DV ROW --}}
@@ -47,7 +51,12 @@
                     <input class="form-check-input tx-type-radio-{{ $rowId }}" type="radio" name="transaction_type" id="type_signed_dv_{{ $rowId }}" value="signed_dv" @checked($txType === 'signed_dv')>
                     <label class="form-check-label small fw-bold" style="color: #20c997;" for="type_signed_dv_{{ $rowId }}">Signed DV</label>
                   </div>
-                  <div class="flex-grow-1 input-target-{{ $rowId }}" id="target_signed_dv_{{ $rowId }}"></div>
+                  @if($txType === 'signed_dv')
+                  <div class="input-group input-group-sm flex-grow-1 dynamic-input-group-{{ $rowId }}">
+                    <span class="input-group-text bg-white">₱</span>
+                    <input type="number" name="amount" id="amount_input_{{ $rowId }}" step="0.01" class="form-control font-monospace" value="{{ $rawAmount }}" required>
+                  </div>
+                  @endif
                 </div>
 
                 {{-- RECEIVED ROW --}}
@@ -56,7 +65,12 @@
                     <input class="form-check-input tx-type-radio-{{ $rowId }}" type="radio" name="transaction_type" id="type_received_{{ $rowId }}" value="received" @checked($txType === 'received')>
                     <label class="form-check-label small fw-bold" style="color: #9D6B0B;" for="type_received_{{ $rowId }}">NCA/NTA Received</label>
                   </div>
-                  <div class="flex-grow-1 input-target-{{ $rowId }}" id="target_received_{{ $rowId }}"></div>
+                  @if($txType === 'received')
+                  <div class="input-group input-group-sm flex-grow-1 dynamic-input-group-{{ $rowId }}">
+                    <span class="input-group-text bg-white">₱</span>
+                    <input type="number" name="amount" id="amount_input_{{ $rowId }}" step="0.01" class="form-control font-monospace" value="{{ $rawAmount }}" required>
+                  </div>
+                  @endif
                 </div>
 
                 {{-- DOWNLOADED ROW --}}
@@ -65,19 +79,15 @@
                     <input class="form-check-input tx-type-radio-{{ $rowId }}" type="radio" name="transaction_type" id="type_downloaded_{{ $rowId }}" value="downloaded" @checked($txType === 'downloaded')>
                     <label class="form-check-label small fw-bold" style="color: var(--error);" for="type_downloaded_{{ $rowId }}">NCA/NTA Downloaded</label>
                   </div>
-                  <div class="flex-grow-1 input-target-{{ $rowId }}" id="target_downloaded_{{ $rowId }}"></div>
+                  @if($txType === 'downloaded')
+                  <div class="input-group input-group-sm flex-grow-1 dynamic-input-group-{{ $rowId }}">
+                    <span class="input-group-text bg-white">₱</span>
+                    <input type="number" name="amount" id="amount_input_{{ $rowId }}" step="0.01" class="form-control font-monospace" value="{{ $rawAmount }}" required>
+                  </div>
+                  @endif
                 </div>
 
               </div>
-              
-              {{-- SINGLE GLOBAL DYNAMIC INPUT FIELD (Moves via JavaScript) --}}
-              <div id="dynamic_input_source_{{ $rowId }}" class="d-none mt-2">
-                <div class="input-group input-group-sm flex-grow-1 dynamic-input-group-{{ $rowId }}">
-                  <span class="input-group-text bg-white">₱</span>
-                  <input type="number" name="amount" id="amount_input_{{ $rowId }}" step="0.01" class="form-control font-monospace" value="{{ $rawAmount }}" required>
-                </div>
-              </div>
-
               <div class="mt-2 tiny font-monospace text-muted px-1">
                 Live Preview: <span id="amount_preview_{{ $rowId }}" class="fw-bold text-dark">₱{{ number_format((float)$rawAmount, 2) }}</span>
               </div>
@@ -135,10 +145,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const cancelModalEl = document.getElementById('editCancelConfirmModal_{{ $rowId }}');
     const form = document.getElementById('editSummaryForm_{{ $rowId }}');
     
-    const editAmountInput = document.getElementById('amount_input_{{ $rowId }}');
-    const editAmountPreview = document.getElementById('amount_preview_{{ $rowId }}');
+    let editAmountInput = document.getElementById('amount_input_{{ $rowId }}');
+    let editAmountPreview = document.getElementById('amount_preview_{{ $rowId }}');
     const radios = document.querySelectorAll('.tx-type-radio-{{ $rowId }}');
-    const inputGroup = document.querySelector('.dynamic-input-group-{{ $rowId }}');
     
     let originalFormDataString = "";
 
@@ -146,36 +155,16 @@ document.addEventListener('DOMContentLoaded', function () {
         return new URLSearchParams(new FormData(form)).toString();
     }
 
-    // Safely appends the single numeric input field to the currently active radio option wrapper
-    function positionDynamicInput() {
-        const checkedRadio = document.querySelector('.tx-type-radio-{{ $rowId }}:checked');
-        if (checkedRadio) {
-            const targetContainer = document.getElementById('target_' + checkedRadio.value + '_{{ $rowId }}');
-            if (targetContainer && inputGroup) {
-                targetContainer.appendChild(inputGroup);
-            }
-        }
-    }
-
-    // Triggered when opening the modal
-    mainModalEl.addEventListener('show.bs.modal', function() {
-        positionDynamicInput();
-    });
-
     mainModalEl.addEventListener('shown.bs.modal', function () {
         originalFormDataString = getFormSnapshot();
-        if (editAmountInput) {
-            editAmountInput.focus();
-        }
     });
 
-    // Handle interactive transitions of our single input group
+    // Handle dynamic shifting of input group location based on selected radio button
     radios.forEach(radio => {
         radio.addEventListener('change', function() {
-            positionDynamicInput();
-            if (editAmountInput) {
-                editAmountInput.focus();
-            }
+            let inputGroup = document.querySelector('.dynamic-input-group-{{ $rowId }}');
+            this.closest('.d-flex').appendChild(inputGroup);
+            editAmountInput.focus();
         });
     });
 
