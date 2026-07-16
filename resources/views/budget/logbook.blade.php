@@ -82,7 +82,9 @@
              <th rowspan="2" style="min-width:230px;">Particulars Remark</th> 
              <th rowspan="2">Amount</th>
              <th rowspan="2" style="min-width:120px;">UACS Codes</th> 
+            @if($showStatusColumn)
              <th rowspan="2" style="min-width:100px;">Status</th>
+             @endif
 
               {{-- GROUP 1 --}}
              <th colspan="3" style="background-color: #EFDFFF; color: #7909FF">Returned to End User</th>
