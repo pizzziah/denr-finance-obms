@@ -116,8 +116,12 @@ class AccountingLogbookController extends Controller {
 
     $records = $query->get();
 
+    $uacs = DB::table('odms_accounting_uac_codes')
+    ->orderBy('uac_codes')
+    ->get();
+
     return view('accounting.logbook', compact(
-      'records', 'year', 'month', 'day', 'status', 'search', 'sort', 'highlight', 'view'
+      'records', 'year', 'month', 'day', 'status', 'search', 'sort', 'highlight', 'view', 'uacs'
     ));
   }
 

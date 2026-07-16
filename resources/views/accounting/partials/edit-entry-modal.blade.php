@@ -81,7 +81,15 @@
                   </div>
                   <div class="col-md-3">
                     <label class="form-label small fw-semibold">UACS Code</label>
-                    <input type="text" name="uac_codes" id="edit_uac_codes" class="form-control form-control-sm">
+                    <select name="credit_uac_codes[]" class="form-select add-credit-uacs">
+                      <option value="">Select UACS Code</option>
+
+                        @foreach($uacs as $uacs)
+                            <option value="{{ $uacs->uac_codes }}">
+                                {{ $uacs->uac_codes }} - {{ $uacs-> classification}}
+                            </option>
+                        @endforeach
+                    </select>
                   </div>
                   <div class="col-md-3">
                     <label class="form-label small fw-semibold">Debit Amount <span class="text-danger">*</span></label>

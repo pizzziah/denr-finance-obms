@@ -386,5 +386,10 @@ document.addEventListener('DOMContentLoaded', function () {
           }, 500);
       }
   }
+
+    new TomSelect(newRow.querySelector('.add-credit-uacs'), {
+      create: false,
+      searchField: ['text']
+  });
 });
 </script>
