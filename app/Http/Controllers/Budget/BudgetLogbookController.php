@@ -155,6 +155,12 @@ use Illuminate\Support\Facades\DB;
   
 
   public function update(Request $request, $budget_id) {
+    $currentBudget = DB::table('odms_budget')->where('budget_id', $budget_id)->first();
+
+    if ($currentBudget->status === 'Forwarded to Accounting') {
+        return back()->with('error', 'This record has been forwarded to Accounting and cannot be edited in Budget.');
+    }
+
     $validated = $request->validate([
       'ors_no' => 'nullable|regex:/^[0-9]+$/',
       'date_received' => 'nullable|date',

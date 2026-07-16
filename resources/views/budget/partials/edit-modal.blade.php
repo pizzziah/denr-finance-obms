@@ -207,7 +207,6 @@
                       <option value="Returned to End User">Returned to End User</option>
                       <option value="For Obligation">For Obligation</option>
                       <option value="Forwarded to Accounting">Forwarded to Accounting</option>
-                      <option value="Returned by Accounting">Returned by Accounting</option>
                       <option value="Cancelled">Cancelled</option>
                     </select>
                   </div>

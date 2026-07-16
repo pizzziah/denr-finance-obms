@@ -241,6 +241,15 @@ class AccountingLogbookController extends Controller {
    * credit-entry rows. The debit row's locked fields are never touched.
    */
   public function update(Request $request, $transaction_id) {
+    // Fetch current status before updating
+    $currentStatus = DB::table('odms_accounting')
+        ->where('transaction_id', $transaction_id)
+        ->value('status');
+
+    if ($currentStatus === 'Returned to Budget') {
+        return back()->with('error', 'This record is returned to Budget and cannot be edited in Accounting.');
+    }
+
     $request->validate([
       'date_received'        => 'nullable|date',
       'obr_date'             => 'nullable|date',
@@ -347,6 +356,12 @@ class AccountingLogbookController extends Controller {
           ]));
         }
       }
+
+      if ($request->status === 'Returned to Budget') {
+        DB::table('odms_budget')
+            ->where('budget_id', $debitRow->budget_id)
+            ->update(['status' => 'Returned by Accounting']);
+}
 
       // Example downstream notification when routed onward.
       if ($request->status === 'Forwarded to Cashier') {

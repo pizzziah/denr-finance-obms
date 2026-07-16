@@ -81,7 +81,7 @@
              <th rowspan="2" style="min-width:230px;">Particulars</th> 
              <th rowspan="2" style="min-width:230px;">Particulars Remark</th> 
              <th rowspan="2">Amount</th>
-             <th rowspan="2" style="min-width:80px;">UACs Codes</th> 
+             <th rowspan="2" style="min-width:120px;">UACS Codes</th> 
              <th rowspan="2" style="min-width:100px;">Status</th>
 
               {{-- GROUP 1 --}}
@@ -172,7 +172,6 @@
                                       'For Obligation'          => 'background-color: #BCC3F6; color: #271ECE;',
                                       'Cancelled'               => 'background-color: #FFC2C2; color: var(--error);',
                                       'Forwarded to Accounting' => 'background-color: var(--secondary-variant); color: var(--primary);',
-                                      // ADDED: Style design blueprint mapping layout for 'Returned by Accounting'
                                       'Returned by Accounting'  => 'background-color: #EBFEFF; color: #0B879D;',
                                       default                   => 'background-color: #F8F9FA; color: #6C757D;'
                                   };
