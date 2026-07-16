@@ -200,109 +200,77 @@ class AccountingQuarterlySummaryController extends Controller {
     return redirect()->back()->with('success', 'Unlock request sent to System Administration.');
   }
 
-  /**
-   * Manually create a brand new accounting record (used when the Accounting
-   * clerk needs to log something directly, outside the Budget hand-off flow).
+
+/**
+   * Store a newly created quarterly summary entry in the database.
    */
   public function store(Request $request) {
+    // 1. Determine and validate the active locked state
+    $quarter = (int) $request->input('target_quarter');
+    $year = (int) $request->input('target_year', Carbon::now()->year);
+
+    if ($this->checkQuarterLockStatus($quarter, $year)['is_locked']) {
+        return redirect()->back()->with('error', 'Write access denied: Quarter is locked.');
+    }
+
+    // 2. Validate form inputs
     $request->validate([
-      'date_received'       => 'nullable|date',
-      'obr_date'            => 'nullable|date',
-      'obr_no'              => 'nullable|string|max:255',
-      'payee'               => 'required|string|max:255',
-      'particulars'         => 'required|string',
-      'particulars_remark'    => 'nullable|string',
-      'date_processed'      => 'nullable|date',
-      'dv_nca_nta_no'       => 'nullable|string|max:255', // Renamed input field mapped here
-      'uac_codes'           => 'nullable|string|max:255',
-      'debit'               => 'nullable|numeric',
-      'credit_uac_codes'      => 'nullable|array',
-      'credit_uac_codes.*'    => 'nullable|string|max:255',
-      'credit_amounts'        => 'nullable|array',
-      'credit_amounts.*'      => 'nullable|numeric',
-      'credit_tax_percent'    => 'nullable|array',
-      'credit_tax_remarks'    => 'nullable|array',
-      'signed'              => 'required|in:Yes,No',
-      'signed_by_accountant'  => 'required_if:signed,Yes|nullable|string|max:255',
-      'date_signed'           => 'required_if:signed,Yes|nullable|date',
-      'status'              => 'required|string|max:255',
-      'date_forwarded'        => 'nullable|date',
-      'returned_remarks'      => 'nullable|string',
+      'date_processed'   => 'required|date',
+      'particulars'      => 'required|string|max:255',
+      'transaction_type' => 'required|in:adjustment,signed_dv,received,downloaded',
+      'amount'           => 'required|numeric|min:0',
+      'emds_date'        => 'nullable|date',
+      'ada_no'           => 'nullable|string|max:50',
+      'remarks'          => 'nullable|string|max:255',
     ]);
 
-    DB::beginTransaction();
+    // 3. Resolve the active model based on the selected quarter/year
+    $modelInstance = new AccountingQuarterlySummary;
+    $modelInstance->setQuarterTable($quarter, $year);
+
+    // 4. Map HTML form transaction types to native database columns
+    $data = [
+      'date_processed'     => Carbon::parse($request->input('date_processed'))->format('n/j/Y'), // Matches format: %c/%e/%Y
+      'particulars'        => $request->input('particulars'),
+      'emds_date'          => $request->filled('emds_date') ? Carbon::parse($request->input('emds_date'))->format('n/j/Y') : null,
+      'ada_no'             => $request->input('ada_no'),
+      'remarks'            => $request->input('remarks'),
+      'amount'             => null,
+      'nca_nta_received'   => null,
+      'nca_nta_downloaded' => null,
+      'balance'            => '0.00' 
+    ];
+
+    $txType = $request->input('transaction_type');
+    $val = number_format($request->input('amount'), 2, '.', '');
+
+    // "adjustment" and "signed_dv" both map to the "amount" database column
+    if ($txType === 'adjustment' || $txType === 'signed_dv') {
+        $data['amount'] = $val;
+    } elseif ($txType === 'received') {
+        $data['nca_nta_received'] = $val;
+    } elseif ($txType === 'downloaded') {
+        $data['nca_nta_downloaded'] = $val;
+    }
+
+    // 5. Insert record & Recalculate downstream balances
     try {
-      $transactionId = $this->generateTransactionId();
-      $debit = $request->debit ?? 0;
+        DB::table($modelInstance->getTable())->insert($data);
+        
+        $this->recalculateQuarterlyBalances($quarter, $year);
 
-      $shared = [
-        'transaction_id'       => $transactionId,
-        'budget_id'            => null,
-        'obr_no'               => $request->obr_no,
-        'ors_no'               => $request->ors_no,
-        'dv_no'                => $request->dv_nca_nta_no, // Maps form reference value safely to the back-end schema column
-        'payee'                => $request->payee,
-        'particulars'          => $request->particulars,
-        'particulars_remark'   => $request->particulars_remark,
-        'returned_remarks'     => $request->returned_remarks,
-        'signed'               => $request->signed,
-        'signed_by_accountant' => $request->signed === 'Yes' ? $request->signed_by_accountant : null,
-        'status'               => $request->status,
-        'budget_year'          => $request->date_received ? Carbon::parse($request->date_received)->year : null,
-        'source_month'         => $request->date_received ? Carbon::parse($request->date_received)->format('F') : null,
-        'date_received'        => $request->date_received,
-        'date_processed'       => $request->date_processed,
-        'obr_date'             => $request->obr_date,
-        'date_signed'          => $request->signed === 'Yes' ? $request->date_signed : null,
-        'date_forwarded'       => $request->date_forwarded,
-      ];
-
-      // Debit (original) row
-      DB::table('odms_accounting')->insert(array_merge($shared, [
-        'uac_codes'   => $request->uac_codes,
-        'debit'       => $debit,
-        'credit'      => 0,
-        'tax_percent' => null,
-        'tax_remarks' => null,
-      ]));
-
-      // Credit rows entered by Accounting
-      if ($request->filled('credit_uac_codes')) {
-        foreach ($request->credit_uac_codes as $i => $uac) {
-          $amount = $request->credit_amounts[$i] ?? null;
-          if (empty($uac) && empty($amount)) {
-            continue;
-          }
-          DB::table('odms_accounting')->insert(array_merge($shared, [
-            'uac_codes'   => $uac,
-            'debit'       => 0,
-            'credit'      => $amount ?? 0,
-            'tax_percent' => $request->credit_tax_percent[$i] ?? null,
-            'tax_remarks' => $request->credit_tax_remarks[$i] ?? null,
-          ]));
-        }
-      }
-
-      DB::commit();
-
-      return redirect()
-        ->route('accounting.logbook')
-        ->with('success', "Record {$transactionId} added successfully.");
-
+        return redirect()->back()->with('success', 'Quarterly Summary entry recorded successfully!');
     } catch (\Throwable $e) {
-      DB::rollBack();
-      \Log::error('Accounting store failed', ['error' => $e->getMessage()]);
-
-      return back()->withInput()->with('error', 'Insert failed: '.$e->getMessage());
+        \Log::error('Quarterly summary store failed: ' . $e->getMessage());
+        return redirect()->back()->withInput()->with('error', 'Insert failed: ' . $e->getMessage());
     }
   }
-
+  
   /**
    * Update the Accounting-owned fields of a transaction, and replace its
    * credit-entry rows. The debit row's locked fields are never touched.
    */
   public function update(Request $request, $transaction_id) {
-    // Fetch current status before updating
     $currentStatus = DB::table('odms_accounting')
         ->where('transaction_id', $transaction_id)
         ->value('status');
@@ -316,7 +284,7 @@ class AccountingQuarterlySummaryController extends Controller {
       'obr_date'             => 'nullable|date',
       'particulars_remark'   => 'nullable|string',
       'date_processed'       => 'required|date',
-      'dv_nca_nta_no'        => 'nullable|string|max:255', // Updated here too for synchronous field mapping
+      'dv_nca_nta_no'        => 'nullable|string|max:255', 
       'payee'                => 'required|string|max:255',
       'particulars'          => 'required|string',
       'debit'                => 'required|numeric',
@@ -476,8 +444,7 @@ class AccountingQuarterlySummaryController extends Controller {
       return back()->withInput()->with('error', 'Update failed: '.$e->getMessage());
     }
   }
-
-  private function recalculateQuarterlyBalances($quarter, $year = null) {
+private function recalculateQuarterlyBalances($quarter, $year = null) {
     $modelInstance = new AccountingQuarterlySummary;
     $modelInstance->setQuarterTable($quarter, $year);
     $pkName = $modelInstance->getKeyName();
@@ -489,16 +456,15 @@ class AccountingQuarterlySummaryController extends Controller {
     $runningBalance = 0.00;
 
     foreach ($records as $record) {
-      $received = AccountingQuarterlySummary::parseMoney($record->nca_nta_received);
+      $received   = AccountingQuarterlySummary::parseMoney($record->nca_nta_received);
       $downloaded = AccountingQuarterlySummary::parseMoney($record->nca_nta_downloaded);
-      $adjustment = AccountingQuarterlySummary::parseMoney($record->amount);
-      $signedDv   = AccountingQuarterlySummary::parseMoney($record->signed_dv);
+      $amount     = AccountingQuarterlySummary::parseMoney($record->amount); // adjustment / signed_dv
 
-      // Math Formula Implementation[cite: 1]
+      // Math Formula Implementation
       if ($downloaded > 0) {
-          $runningBalance = ($runningBalance + $signedDv + $adjustment) - $downloaded;
+          $runningBalance = ($runningBalance + $amount) - $downloaded;
       } else {
-          $runningBalance = ($runningBalance + $signedDv + $adjustment) + $received;
+          $runningBalance = ($runningBalance + $amount) + $received;
       }
 
       DB::table($modelInstance->getTable())
@@ -506,6 +472,7 @@ class AccountingQuarterlySummaryController extends Controller {
         ->update(['balance' => number_format($runningBalance, 2, '.', '')]);
     }
   }
+  
 
     public function destroy(Request $request, $id)
     {

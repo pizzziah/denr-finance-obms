@@ -174,7 +174,6 @@
               </div>
             </th>
             <th style="width: 120px;">DV/NCA/NTA Number</th>
-            <th style="width: 120px;">Signed DV</th>
             <th style="width: 120px;">Amount</th>
             <th style="width: 160px;">NCA/NTA Received</th>
             <th style="width: 160px;">NCA/NTA Downloaded</th>
