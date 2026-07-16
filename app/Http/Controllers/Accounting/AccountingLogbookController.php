@@ -51,8 +51,12 @@ class AccountingLogbookController extends Controller {
       'all'                  => null,
       default                => null,
     };
-
+    
     $query = DB::table('odms_accounting');
+    
+    if ($status !== 'all') {
+    $query->where('status', $status);
+    }
 
     if ($year !== 'all') {
       $query->whereYear('date_received', $year);
