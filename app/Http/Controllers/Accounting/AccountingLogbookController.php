@@ -525,4 +525,54 @@ class AccountingLogbookController extends Controller {
 
     return 'TXN-'.str_pad($number + 1, 6, '0', STR_PAD_LEFT);
   }
+
+  public function archives(Request $request) {
+    $year = $request->year ?? 'all';
+    $month = $request->month;
+    $search = $request->search;
+    $sort = $request->sort ?? 'latest';
+
+    $query = DB::table('odms_accounting')
+        ->where(function ($q) {
+            $q->orWhere('status', 'Cancelled');
+        });
+
+    if ($month && $month != 'all') {
+        $query->whereMonth('date_received', $month);
+    }
+
+    if ($search) {
+      $query->where(function ($q) use ($search) {
+        $q->where('ors_no', 'like', "%{$search}%")
+          ->orWhere('payee', 'like', "%{$search}%")
+          ->orWhere('issuing_office', 'like', "%{$search}%")
+          ->orWhere('classification', 'like', "%{$search}%")
+          ->orWhere('uac_codes', 'like', "%{$search}%")
+          ->orWhere('particulars', 'like', "%{$search}%")
+          ->orWhere('status', 'like', "%{$search}%")
+          ->orWhere('final_remarks', 'like', "%{$search}%");
+      });
+    }
+
+    switch ($sort) {
+      case 'latest':
+        $query->orderByDesc('date_received');
+        break;
+      case 'oldest':
+        $query->orderBy('date_received');
+        break;
+      case 'ors_asc':
+        $query->orderBy('dv_no');
+        break;
+      case 'ors_desc':
+        $query->orderByDesc('dv_no');
+        break;
+      default:
+        $query->orderByDesc('date_received');
+    }
+
+    $records = $query->get();
+
+    return view('accounting.archives', compact('records', 'year', 'month', 'search', 'sort'));
+  }
 }
