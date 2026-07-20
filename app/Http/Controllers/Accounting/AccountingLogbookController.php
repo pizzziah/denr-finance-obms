@@ -423,19 +423,49 @@ if ($entries->isNotEmpty()) {
     }
   }
 }
+  // Get one representative record
+  $record = DB::table('odms_accounting')
+      ->where('dv_no', $dv_no)
+      ->first();
 
+  if ($record) {
 
-    // Send a fallback global dynamic notification alert log row
-    Notification::create([
-      'title'       => 'Transaction Paid',
-      'message'     => "DV No. {$dv_no} has been marked as fully Paid by Cashier.",
-      'target_role' => 'accounting',
-      'type'        => 'transaction_paid',
-      'priority'    => 'Low',
-      'is_read'     => 0,
-    ]);
+      // Notify Budget
+      if (!empty($record->budget_id)) {
 
-    return redirect()->back()->with('success', 'Operational record status shifted to Paid.');
+          Notification::create([
+              'title'       => 'Transaction Paid',
+              'message'     => "ORS No. {$record->ors_no} / DV No. {$record->dv_no} ({$record->payee}) has been marked as Paid.",
+              'type'        => 'transaction_paid',
+              'related_id'  => $record->budget_id,
+              'target_role' => 'budget',
+              'priority'    => 'Medium',
+              'is_read'     => 0,
+          ]);
+
+          // Optional: update Budget status
+          DB::table('odms_budget')
+              ->where('budget_id', $record->budget_id)
+              ->update([
+                  'status' => 'Paid'
+              ]);
+      }
+
+      // Notify Accounting
+      Notification::create([
+          'title'       => 'Transaction Paid',
+          'message'     => "DV No. {$record->dv_no} has been successfully marked as Paid.",
+          'type'        => 'transaction_paid',
+          'related_id'  => $record->accounting_id, // integer
+          'target_role' => 'accountant',
+          'priority'    => 'Low',
+          'is_read'     => 0,
+      ]);
+    }
+    return redirect()->back()->with(
+    'success',
+    'Operational record status shifted to Paid.'
+   );
   }
 
   /**
@@ -674,18 +704,29 @@ if ($entries->isNotEmpty()) {
           ->with('success', 'Record deleted successfully.');
   }
 
-  private function generateTransactionId() {
-    $latest = DB::table('odms_accounting')
-      ->orderByDesc('accounting_id')
-      ->first();
+  private function generateTransactionId()
+  {
+      do {
+          $latest = DB::table('odms_accounting')
+              ->orderByDesc('accounting_id')
+              ->lockForUpdate()
+              ->first();
 
-    if (! $latest || empty($latest->transaction_id)) {
-      return 'TXN-000001';
-    }
+          $next = 1;
 
-    $number = intval(str_replace('TXN-', '', $latest->transaction_id));
+          if ($latest && $latest->transaction_id) {
+              $next = (int) str_replace('TXN-', '', $latest->transaction_id) + 1;
+          }
 
-    return 'TXN-'.str_pad($number + 1, 6, '0', STR_PAD_LEFT);
+          $transactionId = 'TXN-' . str_pad($next, 6, '0', STR_PAD_LEFT);
+
+      } while (
+          DB::table('odms_accounting')
+              ->where('transaction_id', $transactionId)
+              ->exists()
+      );
+
+      return $transactionId;
   }
 
 
