@@ -46,27 +46,41 @@
         <input type="hidden" name="status" value="{{ request('status', 'all') }}">
         <input type="hidden" name="sort" value="{{ request('sort', 'latest') }}">
 
-        {{-- Filter --}}
-        <button type="button" class="btn btn-outline-primary d-inline-flex"data-bs-toggle="modal"data-bs-target="#filterModal">
+       {{-- FILTER BUTTON --}}
+        <button type="button"
+                class="btn p-1"
+                data-bs-toggle="modal"
+                data-bs-target="#filterModal"
+                style="min-width:100px;border-color:#bebebe;">
+          <small>
             <i class="bi bi-funnel"></i> Filter
+          </small>
         </button>
 
-        {{-- Sort --}}
-        <button type="button"class="btn btn-outline-secondary d-inline-flex"data-bs-toggle="modal"data-bs-target="#sortModal">
-            <i class="bi bi-sort-down"></i> <span>Sort</span>
+        {{-- SORT BUTTON --}}
+        <button type="button"
+                class="btn p-1"
+                data-bs-toggle="modal"
+                data-bs-target="#sortModal"
+                style="min-width:100px;border-color:#bebebe;">
+            <small>
+                <i class="bi bi-sort-down"></i> Sort
+            </small>
         </button>
 
-        <div class="input-group input-group-sm" style="min-width: 260px;">
+        {{-- SEARCH INPUT --}}
+        <div class="input-group input-group-sm" style="min-width:260px;">
           <input type="text"
                  name="search"
                  class="form-control p-1"
-                 placeholder="Search ORS, Payee, Office..."
+                 placeholder="Search DV, OBR, Payee..."
                  value="{{ request('search') }}"
                  style="border-color:#bebebe;">
 
           <button class="btn btn-dark" type="submit" style="border-color:#bebebe;">
             <i class="bi bi-search"></i>
-          </button>
+          </button>  
+          
           @if(request('search') || request('year') !== 'all' || request('month') || request('status') !== 'all')
             <a href="{{ route('budget.logbook') }}" class="btn" title="Clear Filters" style="border-color: var(--error)">
               <i class="bi bi-x-circle"></i>
