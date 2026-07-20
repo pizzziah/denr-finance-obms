@@ -285,6 +285,8 @@
 </div>
 @include('accounting.partials.action-modal')
 @include('accounting.partials.details-modal')
+@include('accounting.partials.filter-modal')
+@include('accounting.partials.sort-modal')
 @include('accounting.partials.scripts')
 @include('accounting.partials.edit-entry-modal')
 @include('accounting.partials.add-entry-modal')
