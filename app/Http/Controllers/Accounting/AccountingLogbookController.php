@@ -260,9 +260,8 @@ class AccountingLogbookController extends Controller {
    * Display tracking records grouped for Cashier view interface.
    */
   public function cashierStatus(Request $request) {
-    // Queries all records forwarded to the cashier or already processed as paid
     $query = DB::table('odms_accounting')
-      ->whereIn('status', ['Forwarded to Cashier', 'Paid']);
+      ->whereIn('status', ['Forwarded to Cashier']);
 
     if ($request->filled('search')) {
       $search = $request->search;
