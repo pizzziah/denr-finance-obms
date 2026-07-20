@@ -72,16 +72,30 @@ class AccountingLogbookController extends Controller {
     }
 
     if ($search) {
-      $query->where(function ($q) use ($search) {
-        $q->where('dv_no', 'like', "%{$search}%")
-          ->orWhere('obr_no', 'like', "%{$search}%")
-          ->orWhere('ors_no', 'like', "%{$search}%")
-          ->orWhere('payee', 'like', "%{$search}%")
-          ->orWhere('particulars', 'like', "%{$search}%")
-          ->orWhere('particulars_remark', 'like', "%{$search}%")
-          ->orWhere('status', 'like', "%{$search}%")
-          ->orWhere('uac_codes', 'like', "%{$search}%");
-      });
+        $query->where(function ($q) use ($search) {
+            $q->where('transaction_id', 'like', "%{$search}%")
+              ->orWhere('budget_id', 'like', "%{$search}%")
+              ->orWhere('accounting_id', 'like', "%{$search}%")
+              ->orWhere('dv_no', 'like', "%{$search}%")
+              ->orWhere('obr_no', 'like', "%{$search}%")
+              ->orWhere('ors_no', 'like', "%{$search}%")
+              ->orWhere('payee', 'like', "%{$search}%")
+              ->orWhere('particulars', 'like', "%{$search}%")
+              ->orWhere('particulars_remark', 'like', "%{$search}%")
+              ->orWhere('returned_remarks', 'like', "%{$search}%")
+              ->orWhere('status', 'like', "%{$search}%")
+              ->orWhere('uac_codes', 'like', "%{$search}%")
+              ->orWhere('signed', 'like', "%{$search}%")
+              ->orWhere('signed_by_accountant', 'like', "%{$search}%")
+              ->orWhere('date_received', 'like', "%{$search}%")
+              ->orWhere('date_processed', 'like', "%{$search}%")
+              ->orWhere('date_signed', 'like', "%{$search}%")
+              ->orWhere('date_forwarded', 'like', "%{$search}%")
+              ->orWhere('debit', 'like', "%{$search}%")
+              ->orWhere('credit', 'like', "%{$search}%")
+              ->orWhere('tax_percent', 'like', "%{$search}%")
+              ->orWhere('tax_remarks', 'like', "%{$search}%");
+        });
     }
 
     $query->select(
@@ -694,13 +708,30 @@ if ($entries->isNotEmpty()) {
     }
 
     if ($search) {
-      $query->where(function ($q) use ($search) {
-        $q->where('dv_no', 'like', "%{$search}%")
-          ->orWhere('obr_no', 'like', "%{$search}%")
-          ->orWhere('payee', 'like', "%{$search}%")
-          ->orWhere('particulars', 'like', "%{$search}%")
-          ->orWhere('status', 'like', "%{$search}%");
-      });
+        $query->where(function ($q) use ($search) {
+            $q->where('transaction_id', 'like', "%{$search}%")
+              ->orWhere('budget_id', 'like', "%{$search}%")
+              ->orWhere('accounting_id', 'like', "%{$search}%")
+              ->orWhere('dv_no', 'like', "%{$search}%")
+              ->orWhere('obr_no', 'like', "%{$search}%")
+              ->orWhere('ors_no', 'like', "%{$search}%")
+              ->orWhere('payee', 'like', "%{$search}%")
+              ->orWhere('particulars', 'like', "%{$search}%")
+              ->orWhere('particulars_remark', 'like', "%{$search}%")
+              ->orWhere('returned_remarks', 'like', "%{$search}%")
+              ->orWhere('status', 'like', "%{$search}%")
+              ->orWhere('uac_codes', 'like', "%{$search}%")
+              ->orWhere('signed', 'like', "%{$search}%")
+              ->orWhere('signed_by_accountant', 'like', "%{$search}%")
+              ->orWhere('date_received', 'like', "%{$search}%")
+              ->orWhere('date_processed', 'like', "%{$search}%")
+              ->orWhere('date_signed', 'like', "%{$search}%")
+              ->orWhere('date_forwarded', 'like', "%{$search}%")
+              ->orWhere('debit', 'like', "%{$search}%")
+              ->orWhere('credit', 'like', "%{$search}%")
+              ->orWhere('tax_percent', 'like', "%{$search}%")
+              ->orWhere('tax_remarks', 'like', "%{$search}%");
+        });
     }
 
     // Select aggregated column properties so that views compile successfully
