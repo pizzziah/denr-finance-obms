@@ -157,11 +157,15 @@ document.addEventListener('DOMContentLoaded', function () {
       const isBudgetSourced = (record.budget_id !== null && record.budget_id !== undefined && record.budget_id !== '');
       const fieldsToLock = ['edit_payee', 'edit_particulars', 'edit_debit', 'edit_uac_codes', 'edit_obr_no'];
 
-
       fieldsToLock.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-          el.readOnly = isBudgetSourced;
+          // If it's a select element, disable it instead of readOnly
+          if (el.tagName === 'SELECT') {
+            el.disabled = isBudgetSourced;
+          } else {
+            el.readOnly = isBudgetSourced;
+          }
           el.style.backgroundColor = isBudgetSourced ? '#e9ecef' : '';
         }
       });
@@ -181,7 +185,16 @@ document.addEventListener('DOMContentLoaded', function () {
       safelySet('edit_date_processed', formatDateTimeLocal(record.date_processed));
       safelySet('edit_dv_no', record.dv_no);
       safelySet('edit_debit', record.debit ? parseFloat(record.debit).toFixed(2) : '');
-      safelySet('edit_uac_codes', record.uac_codes);
+      const debitUacs = document.getElementById('edit_uac_codes');
+
+      if (debitUacs) {
+        debitUacs.value = record.uac_codes ?? '';
+
+        // If TomSelect is initialized
+        if (debitUacs.tomselect) {
+          debitUacs.tomselect.setValue(record.uac_codes ?? '', true);
+        }
+      }
 
       const debitTotal = document.getElementById('editDebitTotal');
       if (debitTotal) debitTotal.textContent = record.debit ? parseFloat(record.debit).toFixed(2) : '0.00';

@@ -71,10 +71,11 @@
                   </div>
                   <div class="col-md-3">
                     <label class="form-label small fw-semibold">UACS Code</label>
-                    <select name="uac_codes" id="add_uac_codes" class="form-select"> <option value="">Select UACS Code</option>
-                        @foreach($uacs as $uacs)
-                            <option value="{{ $uacs->uac_codes }}">
-                                {{ $uacs->uac_codes }} - {{ $uacs->classification }}
+                    <select name="uac_codes" id="add_uac_codes" class="form-select"> 
+                        <option value="">Select UACS Code</option>
+                        @foreach($uacs as $u)
+                            <option value="{{ $u->uac_codes }}">
+                                {{ $u->uac_codes }} - {{ $u->classification }}
                             </option>
                         @endforeach
                     </select>
@@ -189,7 +190,14 @@
   <div class="row g-2 align-items-end credit-row mb-2 border-bottom pb-2">
     <div class="col-md-4">
       <label class="form-label small mb-1">UACS Code</label>
-      <input type="text" name="credit_uac_codes[]" class="form-control form-control-sm">
+      <select name="credit_uac_codes[]" class="form-select form-select-sm add-credit-uacs">
+        <option value="">Select UACS Code</option>
+        @foreach($uacs as $u)
+            <option value="{{ $u->uac_codes }}">
+                {{ $u->uac_codes }} - {{ $u->classification }}
+            </option>
+        @endforeach
+      </select>
     </div>
     <div class="col-md-3">
       <label class="form-label small mb-1">Credit</label>

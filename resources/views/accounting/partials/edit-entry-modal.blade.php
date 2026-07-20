@@ -81,12 +81,11 @@
                   </div>
                   <div class="col-md-3">
                     <label class="form-label small fw-semibold">UACS Code</label>
-                    <select name="credit_uac_codes[]" class="form-select add-credit-uacs">
+                    <select id="edit_uac_codes" name="uac_codes" class="form-select">
                       <option value="">Select UACS Code</option>
-
-                        @foreach($uacs as $uacs)
-                            <option value="{{ $uacs->uac_codes }}">
-                                {{ $uacs->uac_codes }} - {{ $uacs-> classification}}
+                        @foreach($uacs as $u)
+                            <option value="{{ $u->uac_codes }}">
+                                {{ $u->uac_codes }} - {{ $u->classification }}
                             </option>
                         @endforeach
                     </select>

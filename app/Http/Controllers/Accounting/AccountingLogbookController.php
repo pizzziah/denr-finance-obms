@@ -301,6 +301,102 @@ class AccountingLogbookController extends Controller {
         'status' => 'Paid'
       ]);
 
+// ======================================================
+// Automatically add entry to Quarterly Summary
+// ======================================================
+
+// Get all rows for this DV
+$entries = DB::table('odms_accounting')
+  ->where('dv_no', $dv_no)
+  ->get();
+
+if ($entries->isNotEmpty()) {
+
+  // Use first row for common information
+  $header = $entries->first();
+
+  // Find the Cash-in-Bank row (10104040 / 101040400)
+  $cashRow = $entries->first(function ($row) {
+    return in_array(trim($row->uac_codes), [
+      '10104040',
+      '101040400'
+    ]);
+  });
+
+  // Only create Quarterly Summary entry if Cash row exists
+  if ($cashRow && !empty($header->date_signed)) {
+
+    // Determine amount (Debit OR Credit)
+    $amount = (float) $cashRow->debit;
+
+    if ($amount <= 0) {
+      $amount = (float) $cashRow->credit;
+    }
+
+    // Proceed only if amount is greater than zero
+    if ($amount > 0) {
+
+      $date = Carbon::parse($header->date_signed);
+
+      $year = $date->year;
+      $month = $date->month;
+      $quarter = ceil($month / 3);
+
+      // Determine quarterly table
+      $table = match ($quarter) {
+        1 => "odms_accounting_quarterly_summary_q1_{$year}",
+        2 => "odms_accounting_quarterly_summary_q2_{$year}",
+        3 => "odms_accounting_quarterly_summary_q3_{$year}",
+        4 => "odms_accounting_quarterly_summary_q4_{$year}",
+      };
+
+      // Create table if it does not yet exist
+      if (!DB::getSchemaBuilder()->hasTable($table)) {
+
+        (new \App\Models\Accounting\AccountingQuarterlySummary())
+          ->setQuarterTable($quarter, $year);
+
+      }
+
+      // Prevent duplicate insertion
+      $exists = DB::table($table)
+        ->where('transaction_type', 'adjustment')
+        ->where('particulars', $header->dv_no)
+        ->exists();
+
+      if (!$exists) {
+
+        DB::table($table)->insert([
+
+          'date_processed'     => $date->format('n/j/Y'),
+
+          // User requested DV No. here
+          'particulars'        => $header->dv_no,
+
+          'transaction_type'   => 'adjustment',
+
+          'amount'             => number_format($amount, 2, '.', ''),
+
+          'nca_nta_received'   => null,
+          'nca_nta_downloaded' => null,
+
+          'balance'            => '0.00',
+
+          'emds_date'          => null,
+          'ada_no'             => null,
+          'remarks'            => null,
+        ]);
+
+        // Recompute balances
+        app(\App\Http\Controllers\Accounting\AccountingQuarterlySummaryController::class)
+          ->recalculateQuarterlyBalances($quarter, $year);
+
+      }
+    }
+  }
+}
+
+
     // Send a fallback global dynamic notification alert log row
     Notification::create([
       'title'       => 'Transaction Paid',
