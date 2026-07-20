@@ -172,7 +172,6 @@
                       <option value="Processing">Processing</option>
                       <option value="Returned to End User">Returned to End User</option>
                       <option value="Returned to Budget">Returned to Budget</option>
-                      <option value="Paid">Paid</option>
                       <option value="Forwarded to Cashier">Forwarded to Cashier</option>
                       <option value="Cancelled">Cancelled</option>
                     </select>
