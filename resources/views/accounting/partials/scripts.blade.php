@@ -33,6 +33,20 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     container.appendChild(clone);
+
+    // Get the newly added row
+    const newRow = container.lastElementChild;
+
+    // Initialize TosmSelect for its UACS dropdown
+    const uacsSelect = newRow.querySelector('[name="credit_uac_codes[]"]');
+
+    if (uacsSelect && !uacsSelect.tomselect) {
+        new TomSelect(uacsSelect, {
+            create: false,
+            searchField: ['text'],
+            placeholder: 'Search UACS...'
+        });
+    }
   }
 
   document.getElementById('addUacsBtn-add')?.addEventListener('click', () => addCreditRow('addCreditRows'));
@@ -90,6 +104,16 @@ document.addEventListener('DOMContentLoaded', function () {
     apply();
   }
   document.querySelectorAll('.status-select').forEach(wireStatusToggle);
+  // Make all existing selects searchable
+  document.querySelectorAll('#editRecordModal select').forEach(function(select) {
+      if (!select.tomselect) {
+          new TomSelect(select, {
+              create: false,
+              searchField: ['text'],
+              placeholder: 'Search...'
+          });
+      }
+  });                              
 
   /* ---------------------------------------------------------------- *
    * Edit modal: Fetch transaction and prefill using Self-Healing URLs
@@ -437,9 +461,5 @@ document.addEventListener('DOMContentLoaded', function () {
       }
   }
 
-    new TomSelect(newRow.querySelector('.add-credit-uacs'), {
-      create: false,
-      searchField: ['text']
-  });
 });
 </script>

@@ -81,7 +81,7 @@
                   </div>
                   <div class="col-md-3">
                     <label class="form-label small fw-semibold">UACS Code</label>
-                    <select id="edit_uac_codes" name="uac_codes" class="form-select">
+                    <select id="edit_uac_codes" name="uac_codes" class="form-select searchable-select">
                       <option value="">Select UACS Code</option>
                         @foreach($uacs as $u)
                             <option value="{{ $u->uac_codes }}">
