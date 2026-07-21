@@ -98,7 +98,7 @@
               <th style="min-width: 150px;">Status</th>
               <th style="min-width: 150px;">Final Remarks</th>
               <th>Date Fwd (Accounting)</th>
-              <th style="min-width: 90px;" class="text-center">Action</th>
+              <th style="min-width: 150px; position: sticky; right: 0; z-index: 6;" class="text-center">Action</th>
             </tr>
           </thead>
 
@@ -135,7 +135,7 @@
                 </td>
                 <td><small>{{ $record->final_remarks ?? '-' }}</small></td>
                 <td>{{ $record->date_forwarded_accounting ?? '-' }}</td>
-                <td class="text-center">
+                <td style="position: sticky; right: 0; background-color: var(--light-gray); z-index: 1;">
                   @if(!empty($record->budget_id))
                       <button type="button"
                           class="btn btn-sm btn-outline-info view-btn"
