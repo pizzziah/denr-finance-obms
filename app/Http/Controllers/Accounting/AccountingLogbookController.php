@@ -587,7 +587,8 @@ class AccountingLogbookController extends Controller {
           DB::table('odms_budget')
               ->where('budget_id', $debitRow->budget_id)
               ->update([
-                  'status' => 'Returned by Accounting'
+                  'status' => 'Returned by Accounting',
+                  'returned_remarks'  => $request->returned_remarks
               ]);
 
           $budget = DB::table('odms_budget')

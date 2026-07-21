@@ -199,6 +199,7 @@ document.addEventListener('DOMContentLoaded', () => {
       $('view_total_time').textContent = formatWorkingTime(calculateWorkingHours(row.date_received, row.date_forwarded_accounting));
 
       $('view_review_history').innerHTML = reviewHtml;
+      $('#detailReturnedRemarks').text(data.returned_remarks || '-');
       
     } catch (err) {
       console.error("View Modal Error:", err);

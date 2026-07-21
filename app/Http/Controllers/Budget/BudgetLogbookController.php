@@ -261,6 +261,13 @@ use Illuminate\Support\Facades\DB;
               ->orderBy('accounting_id')
               ->first();
 
+          $accountingUacs = DB::table('odms_uacs_mapping')
+              ->whereRaw("REPLACE(budget_uac, ' ', '') = ?", [
+                  str_replace(' ', '', $budget->uac_codes)
+              ])
+              ->value('accounting_uac');
+
+          $accountingUacs = $accountingUacs ?? $budget->uac_codes;
           if ($existing) {    
               // Update the parent row
               DB::table('odms_accounting')
@@ -270,7 +277,7 @@ use Illuminate\Support\Facades\DB;
                       'payee'              => $budget->payee,
                       'particulars'        => $budget->particulars,
                       'particulars_remark' => $budget->particulars_remark,
-                      'uac_codes'          => $budget->uac_codes,
+                      'uac_codes' => $accountingUacs,
                       'debit'              => $budget->amount,
                       'status'             => 'Processing',
                       'date_received'      => $budget->date_received,
@@ -293,7 +300,7 @@ use Illuminate\Support\Facades\DB;
                   'payee'          => $budget->payee,
                   'particulars'    => $budget->particulars,
                   'particulars_remark' => $budget->particulars_remark,
-                  'uac_codes'      => $budget->uac_codes,
+                  'uac_codes' => $accountingUacs,
                   'debit'          => $budget->amount,
                   'credit'         => 0,
                   'status'         => 'Processing',
