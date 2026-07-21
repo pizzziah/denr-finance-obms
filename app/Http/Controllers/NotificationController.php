@@ -100,24 +100,24 @@ class NotificationController extends Controller
         ]);
     }
 
-    public function readAll()
-    {
-        Notification::where('is_read', 0)
-            ->update([
-                'is_read' => 1,
-            ]);
-
-        return response()->json([
-            'success' => true,
-        ]);
-    }
-
     public function read($id)
     {
         $notification = \App\Models\Notification::findOrFail($id);
 
         $notification->is_read = 1;
         $notification->save();
+
+        return response()->json([
+            'success' => true
+        ]);
+    }
+    public function markAllRead()
+    {
+        Notification::where('target_role', auth()->user()->role)
+            ->where('is_read', 0)
+            ->update([
+                'is_read' => 1,
+            ]);
 
         return response()->json([
             'success' => true

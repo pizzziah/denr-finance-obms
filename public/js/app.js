@@ -4,6 +4,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
     setInterval(loadNotifications, 3000);
 
+    const markAllBtn = document.getElementById('markAllRead');
+
+    if (markAllBtn) {
+        markAllBtn.addEventListener('click', function () {
+
+            fetch('/notifications/mark-all-read', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                console.log(data);
+                loadNotifications();
+            })
+            .catch(err => console.error(err));
+
+        });
+    }
+
 });
 
 function loadNotifications() {
@@ -49,7 +71,7 @@ function loadNotifications() {
                     badgeColor = 'primary';
 
                 html += `
-                    <a href="${notification.url}&view=${notification.related_id}"
+                    <a href="${notification.url}"
                        class="dropdown-item notification-item border-bottom ${notification.is_read ? '' : 'bg-light'}"
                        data-id="${notification.id}">
 
@@ -108,5 +130,4 @@ document.addEventListener('click', function (e) {
         window.location.href = item.href;
     })
     .catch(err => console.log(err));
-
 });

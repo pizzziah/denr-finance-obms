@@ -17,7 +17,7 @@
         <div class="dropdown-menu dropdown-menu-end shadow p-0" style="width:500px;max-height:500px;overflow-y:auto;">
           <div class="p-3 border-bottom d-flex justify-content-between">
             <strong>Notifications</strong>
-            <button class="btn btn-sm btn-link"id="readAllBtn"> Mark all as read </button>
+            <button class="btn btn-sm btn-link"id="markAllRead"> Mark all as read </button>
           </div>
           
           <div id="notificationList">
