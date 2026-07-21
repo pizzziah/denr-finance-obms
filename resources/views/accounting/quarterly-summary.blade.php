@@ -241,8 +241,6 @@
               <td>
                 @if(!empty($record->ada_no))
                   {{ $record->ada_no }}
-                @elseif(!empty($record->dv_no))
-                  {{ $record->dv_no }}
                 @else
                   -
                 @endif
