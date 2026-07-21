@@ -1,12 +1,12 @@
 {{-- EDIT RECORD MODAL --}}
 <div class="modal fade" id="editRecordModal" tabindex="-1" aria-labelledby="editRecordModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 90%;">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 80%;">
     <div class="modal-content">
       
       {{-- HEADER --}}
-      <div class="modal-header bg-dark text-white">
+      <div class="modal-header text-white" style="background-color: var(--primary);">
         <h5 class="modal-title fw-bold" id="editRecordModalLabel">
-          <i class="bi bi-pencil-square me-2"></i>Edit Transaction Details: <span id="editTransactionLabel" class="text-warning"></span>
+          <i class="bi bi-pencil-square me-2"></i>Edit Transaction Details: <span id="editTransactionLabel"></span>
         </h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
@@ -28,8 +28,8 @@
           <div id="editFormBody" style="display: none;" class="container-fluid">
 
             {{-- SECTION 1: BASIC INFORMATION --}}
-            <div class="row py-2">
-              <div class="col-md-2 fw-bold text-secondary fs-5 border-end-md pe-md-4 mb-3 mb-md-0">
+            <div class="row py-1">
+              <div class="col-md-2 fw-bold fs-5 border-end-md pe-md-4 mb-3 mb-md-0" style="color: var(--primary);">
                 Basic<br>Information
               </div>
               <div class="col-md-10 ps-md-4">
@@ -65,8 +65,8 @@
             <hr class="my-4">
 
             {{-- SECTION 2: DEBIT ENTRY --}}
-            <div class="row py-2">
-              <div class="col-md-2 fw-bold text-secondary fs-5 border-end-md pe-md-4 mb-3 mb-md-0">
+            <div class="row py-1">
+              <div class="col-md-2 fw-bold fs-5 border-end-md pe-md-4 mb-3 mb-md-0" style="color: var(--primary);">
                 Debit<br>Entry
               </div>
               <div class="col-md-10 ps-md-4">
@@ -81,11 +81,11 @@
                   </div>
                   <div class="col-md-3">
                     <label class="form-label small fw-semibold">UACS Code <span class="text-danger">*</span></label>
-                    <select id="edit_uac_codes" name="uac_codes" class="form-select searchable-select" required>
+                    <select  class="small" id="edit_uac_codes" name="uac_codes" class="form-select searchable-select" required>
                       <option value="">Select UACS Code</option>
                         @foreach($uacs as $u)
-                            <option value="{{ $u->uac_codes }}">
-                                {{ $u->uac_codes }} - {{ $u->classification }}
+                            <option value="{{ $u->uac_codes }}"  class="small">
+                              {{ $u->uac_codes }} - {{ $u->classification }}
                             </option>
                         @endforeach
                     </select>
@@ -104,8 +104,8 @@
             <hr class="my-4">
 
             {{-- SECTION 3: CREDIT ENTRIES --}}
-            <div class="row py-2">
-              <div class="col-md-2 fw-bold text-secondary fs-5 border-end-md pe-md-4 mb-3 mb-md-0">
+            <div class="row py-1">
+              <div class="col-md-2 fw-bold fs-5 border-end-md pe-md-4 mb-3 mb-md-0" style="color: var(--primary);">
                 Credit<br>Entries
               </div>
               <div class="col-md-10 ps-md-4">
@@ -130,8 +130,8 @@
             <hr class="my-4">
 
             {{-- SECTION 4: SIGN-OFF --}}
-            <div class="row py-2">
-              <div class="col-md-2 fw-bold text-secondary fs-5 border-end-md pe-md-4 mb-3 mb-md-0">
+            <div class="row py-1">
+              <div class="col-md-2 fw-bold fs-5 border-end-md pe-md-4 mb-3 mb-md-0" style="color: var(--primary);">
                 Sign-off
               </div>
               <div class="col-md-10 ps-md-4">
@@ -158,8 +158,8 @@
             <hr class="my-4">
 
             {{-- SECTION 5: STATUS --}}
-            <div class="row py-2">
-              <div class="col-md-2 fw-bold text-secondary fs-5 border-end-md pe-md-4 mb-3 mb-md-0">
+            <div class="row py-1">
+              <div class="col-md-2 fw-bold fs-5 border-end-md pe-md-4 mb-3 mb-md-0" style="color: var(--primary);">
                 Status &<br>Forwarding
               </div>
               <div class="col-md-10 ps-md-4">
@@ -193,10 +193,9 @@
 
       {{-- FOOTER --}}
       <div class="modal-footer bg-light">
-        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-        <button type="submit" form="editRecordForm" class="btn btn-success btn-sm px-4">Save Changes</button>
+          <x-button type="button" variant="secondary" data-bs-dismiss="modal">Cancel</x-button>
+          <x-button type="submit" variant="primary"  form="editRecordForm" >Save Record</x-button>
       </div>
-
     </div>
   </div>
 </div>

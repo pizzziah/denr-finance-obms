@@ -37,15 +37,15 @@ document.addEventListener('DOMContentLoaded', function () {
     // Get the newly added row
     const newRow = container.lastElementChild;
 
-    // Initialize TosmSelect for its UACS dropdown
+    // Initialize TomSelect for its UACS dropdown
     const uacsSelect = newRow.querySelector('[name="credit_uac_codes[]"]');
 
     if (uacsSelect && !uacsSelect.tomselect) {
-        new TomSelect(uacsSelect, {
-            create: false,
-            searchField: ['text'],
-            placeholder: 'Search UACS...'
-        });
+      new TomSelect(uacsSelect, {
+        create: false,
+        searchField: ['text'],
+        placeholder: 'Search UACS...'
+      });
     }
   }
 
@@ -104,15 +104,16 @@ document.addEventListener('DOMContentLoaded', function () {
     apply();
   }
   document.querySelectorAll('.status-select').forEach(wireStatusToggle);
+
   // Make all existing selects searchable
   document.querySelectorAll('#editRecordModal select').forEach(function(select) {
-      if (!select.tomselect) {
-          new TomSelect(select, {
-              create: false,
-              searchField: ['text'],
-              placeholder: 'Search...'
-          });
-      }
+    if (!select.tomselect) {
+      new TomSelect(select, {
+        create: false,
+        searchField: ['text'],
+        placeholder: 'Search...'
+      });
+    }
   });                              
 
   /* ---------------------------------------------------------------- *
@@ -123,7 +124,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!btn) return;
 
     const dbId = btn.dataset.id;
-    const dvCode = btn.dataset.dv;
+    const dvCode = btn.dataset.dv || btn.dataset.txn || dbId;
     if (!dbId) return;
 
     const loading  = document.getElementById('editLoading');
@@ -144,11 +145,11 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('editTransactionId').value = dbId;
     document.getElementById('editTransactionLabel').textContent = dvCode;
 
-    // Build URLs using the database numeric ID
+    // Build URLs using the primary ID parameter
     const restfulUrl = `${showUrlBase}/${dbId}`;
     const customUrl  = `${showUrlBase}/${dbId}/show`;
 
-    let finalUpdateUrl = `${updateUrlBase}/${dbId}`; // Standard RESTful update fallback
+    let finalUpdateUrl = `${updateUrlBase}/${dbId}`;
 
     fetch(restfulUrl, {
       headers: { 
@@ -159,7 +160,6 @@ document.addEventListener('DOMContentLoaded', function () {
     .then(res => {
       if (res.ok) return res.json();
       
-      // Fallback endpoint if RESTful is unavailable
       finalUpdateUrl = `${updateUrlBase}/${dbId}/update`;
       return fetch(customUrl, {
         headers: { 
@@ -167,15 +167,13 @@ document.addEventListener('DOMContentLoaded', function () {
           'Accept': 'application/json' 
         }
       }).then(res2 => {
-        if (!res2.ok) throw new Error('Could not retrieve transaction details from standard or custom routes.');
+        if (!res2.ok) throw new Error('Could not retrieve transaction details.');
         return res2.json();
       });
     })
     .then(data => {
-      // Correct form submission destination target
       document.getElementById('editRecordForm').action = finalUpdateUrl;
 
-      // Extract raw record properties securely
       const record = data.record || data || {};
 
       const isBudgetSourced = (record.budget_id !== null && record.budget_id !== undefined && record.budget_id !== '');
@@ -184,7 +182,6 @@ document.addEventListener('DOMContentLoaded', function () {
       fieldsToLock.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-          // If it's a select element, disable it instead of readOnly
           if (el.tagName === 'SELECT') {
             el.disabled = isBudgetSourced;
           } else {
@@ -201,20 +198,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
       safelySet('edit_date_received', formatDateTimeLocal(record.date_received));
       safelySet('edit_obr_date', (record.obr_date || '').substring(0, 10));
-      safelySet('edit_obr_no', record.obr_no);
-      safelySet('edit_ors_no', record.ors_no);
+      safelySet('edit_obr_no', record.obr_no || record.ors_no);
+      safelySet('edit_ors_no', record.ors_no || record.obr_no);
       safelySet('edit_payee', record.payee);
       safelySet('edit_particulars', record.particulars);
       safelySet('edit_particulars_remark', record.particulars_remark);
       safelySet('edit_date_processed', formatDateTimeLocal(record.date_processed));
       safelySet('edit_dv_no', record.dv_no);
       safelySet('edit_debit', record.debit ? parseFloat(record.debit).toFixed(2) : '');
+      
       const debitUacs = document.getElementById('edit_uac_codes');
-
       if (debitUacs) {
         debitUacs.value = record.uac_codes ?? '';
-
-        // If TomSelect is initialized
         if (debitUacs.tomselect) {
           debitUacs.tomselect.setValue(record.uac_codes ?? '', true);
         }
@@ -241,7 +236,6 @@ document.addEventListener('DOMContentLoaded', function () {
       safelySet('edit_date_forwarded', formatDateTimeLocal(record.date_forwarded));
       safelySet('edit_returned_remarks', record.returned_remarks);
 
-      // Populate credit items breakdown
       const creditEntries = data.credit_entries || record.credit_entries || [];
       creditEntries.forEach(entry => addCreditRow('editCreditRows', entry));
       recalcEditCreditTotal();
@@ -254,117 +248,36 @@ document.addEventListener('DOMContentLoaded', function () {
       if (loading) {
         loading.innerHTML = `
           <span class="text-danger fw-bold"><i class="bi bi-exclamation-triangle-fill"></i> Failed to load record.</span><br>
-          <small class="text-muted">Ensure your controller route mapped for transaction <b>${dvCode}</b> exists.</small>
+          <small class="text-muted">Ensure route for <b>${dvCode}</b> exists.</small>
         `;
       }
     });
   });
 
   /* ---------------------------------------------------------------- *
-   * Pay Confirmation Action: Intercept and display styled Modal layout
+   * Pay Confirmation Action
+   * ---------------------------------------------------------------- */
+/* ---------------------------------------------------------------- *
+   * View Action: Fetch & Populate dynamic details modal
    * ---------------------------------------------------------------- */
   document.addEventListener('click', function (e) {
-    const btn = e.target.closest('.action-btn[data-action="pay-confirm"]');
-    if (!btn) return;
-
-    const dvCode = btn.dataset.dv;
-    const actionUrl = btn.dataset.url;
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-    const actionTitle  = document.getElementById('actionTitle');
-    const actionBody   = document.getElementById('actionBody');
-    const actionFooter = document.getElementById('actionFooter');
-
-    if (actionTitle) {
-      actionTitle.innerHTML = `<i class="bi bi-check2-circle text-success me-2"></i>Disbursement Confirmation`;
-    }
-    
-    if (actionBody) {
-      actionBody.innerHTML = `
-        <div class="p-2 text-center">
-          <i class="bi bi-cash-coin text-success mb-2" style="font-size: 2.5rem;"></i>
-          <p class="mb-1">Are you sure you want to mark DV No. <strong class="text-primary">${dvCode}</strong> as fully <strong>Paid</strong>?</p>
-          <p class="text-muted small">Confirming shifts this workflow pipeline record directly into the Archives registry logs.</p>
-        </div>
-      `;
-    }
-
-    if (actionFooter) {
-      actionFooter.innerHTML = `
-        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-        <form action="${actionUrl}" method="POST" class="d-inline">
-          <input type="hidden" name="_token" value="${csrfToken}">
-          <input type="hidden" name="_method" value="PUT">
-          <button type="submit" class="btn btn-success btn-sm fw-bold">Confirm Payment</button>
-        </form>
-      `;
-    }
-  });
-  
-  /* ---------------------------------------------------------------- *
-   * Delete Action: Populate dynamic confirmation #actionModal
-   * ---------------------------------------------------------------- */
-  document.addEventListener('click', function (e) {
-    const btn = e.target.closest('.action-btn[data-action="delete"]');
-    if (!btn) return;
-
-    const dbId = btn.dataset.id;
-    const dvCode = btn.dataset.dv;
-    if (!dbId) return;
-
-    const actionTitle  = document.getElementById('actionTitle');
-    const actionBody   = document.getElementById('actionBody');
-    const actionFooter = document.getElementById('actionFooter');
-
-    if (actionTitle) {
-      actionTitle.innerHTML = `<i class="bi bi-trash-fill text-danger me-2"></i>Delete Record Confirmation`;
-    }
-    
-    if (actionBody) {
-      actionBody.innerHTML = `
-        <p>Are you sure you want to permanently delete transaction <strong class="text-danger">${dvCode}</strong>?</p>
-        <p class="text-muted small">This will delete all debit and credit split logs associated with this group. This cannot be undone.</p>
-      `;
-    }
-
-    if (actionFooter) {
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    const deleteUrl = `/accounting/logbook/${dbId}/destroy`;
-
-    actionFooter.innerHTML = `
-    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-    <form action="${deleteUrl}" method="POST" class="d-inline">
-      <input type="hidden" name="_token" value="${csrfToken}">
-      <input type="hidden" name="_method" value="DELETE">
-      <button type="submit" class="btn btn-danger btn-sm">Yes, Delete</button>
-    </form>
-    `;
-    }
-  });
-
-  /* ---------------------------------------------------------------- *
-   * View Action: Populate dynamic #actionModal (Bonus)
-   * ---------------------------------------------------------------- */
-  document.addEventListener('click', function (e) {
-    // Listens for elements targeting either .view-details-btn or standard view action targets
     const btn = e.target.closest('.view-details-btn') || e.target.closest('.action-btn[data-action="view"]');
     if (!btn) return;
 
     const dbId = btn.dataset.id;
     if (!dbId) return;
 
-    const loading = document.getElementById('modalLoading');
-    const content = document.getElementById('modalContent');
+    const loading = document.getElementById('detailsLoading') || document.getElementById('modalLoading');
+    const content = document.getElementById('detailsContent') || document.getElementById('modalContent');
     const errorMsg = document.getElementById('modalError');
     const creditContainer = document.getElementById('view-credit-entries');
 
-    // Reset UI Visibility elements inside the details layout framework
+    // Reset UI Visibility states
     if (loading) loading.classList.remove('d-none');
     if (content) content.classList.add('d-none');
     if (errorMsg) errorMsg.classList.add('d-none');
     if (creditContainer) creditContainer.innerHTML = '';
 
-    // Utilize self-healing routing paths mapping definitions matching your controller framework definitions
     const restfulUrl = `${showUrlBase}/${dbId}`;
     const customUrl  = `${showUrlBase}/${dbId}/show`;
 
@@ -384,59 +297,137 @@ document.addEventListener('DOMContentLoaded', function () {
       const record = data.record || data || {};
       const creditEntries = data.credit_entries || record.credit_entries || [];
 
-      // Safely inject metadata elements into layout DOM targets
       const safelyText = (id, val) => {
         const el = document.getElementById(id);
-        if (el) el.textContent = val ?? '-';
+        if (el) el.textContent = val && val !== '' ? val : '-';
       };
 
-      safelyText('view-txn-id', data.transaction_id);
-      safelyText('view-dv-no', record.dv_no);
-      safelyText('view-obr-no', record.obr_no);
-      safelyText('view-payee', record.payee);
-      safelyText('view-particulars', record.particulars);
+      // Set Sub-header Titles explicitly showing both transaction_id and dv_no
+      const txnId = record.transaction_id || data.transaction_id || '-';
+      const dvNo  = record.dv_no || '-';
+      const obrNo = record.obr_no || record.ors_no || '-';
 
-      // Total aggregated calculations updates injection
-      const totalDebit = parseFloat(data.total_debit || record.debit || 0).toLocaleString('en-US', { minimumFractionDigits: 2 });
-      safelyText('view-debit', totalDebit);
+      safelyText('transactionTitle', `DV No: ${dvNo} | TXN ID: ${txnId}`);
+      safelyText('transactionSubtitle', `OBR/ORS No: ${obrNo}`);
 
-      // Handle custom style classes decoration matching dynamic statuses parameters variations
-      const statusEl = document.getElementById('view-status');
-      if (statusEl) {
-        const status = (record.status || 'Pending').trim();
-        statusEl.textContent = status;
-        
-        let badgeClass = 'bg-secondary text-white';
-        if (status === 'Paid') badgeClass = 'bg-success text-white';
-        if (status === 'Forwarded to Cashier') badgeClass = 'bg-primary text-white';
-        if (status === 'Pending') badgeClass = 'bg-warning text-dark';
-        if (status === 'Cancelled') badgeClass = 'bg-danger text-white';
-        
-        statusEl.className = `badge ${badgeClass}`;
-      }
+      // Basic Information
+      safelyText('view_date_received', record.date_received);
+      safelyText('view_obr_date', record.obr_date);
+      safelyText('view_obr_no', obrNo);
+      safelyText('view_payee', record.payee);
+      safelyText('view_particulars', record.particulars);
+      safelyText('view_particulars_remark', record.particulars_remark);
 
-      // Populate credit items matrix loop arrays mapping definitions rows
+      // Debit Entry Information
+      safelyText('view_date_processed', record.date_processed);
+      safelyText('view_dv_no', dvNo);
+      safelyText('view_uac_codes', record.uac_codes);
+
+      const numericDebit = parseFloat(data.total_debit || record.debit || 0);
+      const formattedDebit = numericDebit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      
+      safelyText('view_debit', formattedDebit);
+      safelyText('viewDebitTotal', formattedDebit);
+
+      // Populate Credit Entries Cards Grid Breakdown
+      let totalCreditSum = 0;
       if (creditContainer) {
         if (creditEntries.length > 0) {
-          creditContainer.innerHTML = creditEntries.map(entry => `
-            <tr>
-              <td><code>${entry.uac_codes ?? '-'}</code></td>
-              <td class="text-end fw-bold">₱${parseFloat(entry.credit ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-              <td class="text-center">${entry.tax_percent ? entry.tax_percent + '%' : '-'}</td>
-              <td>${entry.tax_remarks ?? '-'}</td>
-            </tr>
-          `).join('');
+          creditContainer.innerHTML = creditEntries.map((entry, index) => {
+            const entryCredit = parseFloat(entry.credit || 0);
+            totalCreditSum += entryCredit;
+
+            return `
+              <div class="col-md-6 col-12">
+                <div class="card border border-light-subtle shadow-sm h-100">
+                  <div class="card-header bg-light py-1 px-3 d-flex justify-content-between align-items-center">
+                    <span class="fw-bold text-secondary small">Entry #${index + 1}</span>
+                    <code class="fw-bold text-dark">${entry.uac_codes ?? '-'}</code>
+                  </div>
+                  <div class="card-body p-3">
+                    <div class="row mb-2">
+                      <div class="col-5 fw-bold text-muted small">Credit Amount:</div>
+                      <div class="col-7 fw-bold text-success">₱${entryCredit.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                    </div>
+                    <div class="row mb-2">
+                      <div class="col-5 fw-bold text-muted small">Tax Percent:</div>
+                      <div class="col-7 small">${entry.tax_percent ? entry.tax_percent + '%' : '-'}</div>
+                    </div>
+                    <div class="row">
+                      <div class="col-5 fw-bold text-muted small">Tax Remarks:</div>
+                      <div class="col-7 small text-break">${entry.tax_remarks && entry.tax_remarks !== '' ? entry.tax_remarks : '-'}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join('');
         } else {
-          creditContainer.innerHTML = `<tr><td colspan="4" class="text-center text-muted py-2">No credit allocations split for this layout row.</td></tr>`;
+          creditContainer.innerHTML = `
+            <div class="col-12 text-center text-muted py-4 bg-light rounded border">
+              <i class="bi bi-inbox fs-4 d-block mb-1"></i> No credit entries found for this record.
+            </div>
+          `;
         }
       }
 
-      // Display metrics state changes toggling completion handles
+      safelyText('viewCreditTotal', totalCreditSum.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+
+      // Sign-off Information
+      safelyText('view_signed', record.signed);
+      safelyText('view_date_signed', record.date_signed);
+      safelyText('view_signed_by_accountant', record.signed_by_accountant);
+
+      // Status & Forwarding Information
+      safelyText('view_status', record.status);
+      safelyText('view_date_forwarded', record.date_forwarded);
+
+      // Handle returned remarks display toggle
+      const returnedWrap = document.getElementById('view_returned_remarks_wrap');
+      if (returnedWrap) {
+        if (RETURN_STATUSES.includes(record.status)) {
+          returnedWrap.style.display = '';
+          safelyText('view_returned_remarks', record.returned_remarks);
+        } else {
+          returnedWrap.style.display = 'none';
+        }
+      }
+
+      // Action buttons configuration
+      const editBtn = document.getElementById('detailsEditBtn');
+      if (editBtn) {
+        editBtn.setAttribute('data-id', record.accounting_id || record.transaction_id || dbId);
+        editBtn.setAttribute('data-dv', dvNo);
+        editBtn.setAttribute('data-txn', txnId);
+        editBtn.onclick = function () {
+          const detailsModalInstance = bootstrap.Modal.getInstance(document.getElementById('detailsModal'));
+          if (detailsModalInstance) detailsModalInstance.hide();
+
+          const editBtnTrigger = document.querySelector(`.action-btn[data-action="edit"][data-id="${dbId}"]`);
+          if (editBtnTrigger) editBtnTrigger.click();
+        };
+      }
+
+      const deleteBtn = document.getElementById('detailsDeleteBtn');
+      if (deleteBtn) {
+        deleteBtn.setAttribute('data-id', record.accounting_id || record.transaction_id || dbId);
+        deleteBtn.setAttribute('data-dv', dvNo);
+        deleteBtn.setAttribute('data-txn', txnId);
+        deleteBtn.onclick = function () {
+          const detailsModalInstance = bootstrap.Modal.getInstance(document.getElementById('detailsModal'));
+          if (detailsModalInstance) detailsModalInstance.hide();
+
+          const deleteBtnTrigger = document.querySelector(`.action-btn[data-action="delete"][data-id="${dbId}"]`);
+          if (deleteBtnTrigger) deleteBtnTrigger.click();
+        };
+      }
+
+      // Display metrics state changes
       if (loading) loading.classList.add('d-none');
       if (content) content.classList.remove('d-none');
     })
     .catch((error) => {
-      console.error('View details parsing crash context:', error);
+      console.error('View details parsing error:', error);
       if (loading) loading.classList.add('d-none');
       if (errorMsg) errorMsg.classList.remove('d-none');
     });
@@ -444,21 +435,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const viewId = "{{ $view ?? '' }}";
   if (viewId) {
-      const viewButton = document.querySelector(
-          `.action-btn[data-action="view"][data-id="${viewId}"]`
-      );
-      if (viewButton) {
-          // Scroll to the highlighted row
-          viewButton.closest("tr")?.scrollIntoView({
-              behavior: "smooth",
-              block: "center"
-          });
+    const viewButton = document.querySelector(
+      `.action-btn[data-action="view"][data-id="${viewId}"]`
+    );
+    if (viewButton) {
+      viewButton.closest("tr")?.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+      });
 
-          // Open the View modal
-          setTimeout(() => {
-              viewButton.click();
-          }, 500);
-      }
+      setTimeout(() => {
+        viewButton.click();
+      }, 500);
+    }
   }
 });
 </script>
