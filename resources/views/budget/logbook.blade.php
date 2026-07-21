@@ -123,7 +123,7 @@
              <th rowspan="2" style="min-width:100px;">Total Time in Budget</th>
              <th rowspan="2" style="min-width:100px;">Total Time</th>
              <th rowspan="2">Final Remarks</th>
-             <th rowspan="2" style="min-width: 150px;">Actions</th>
+             <th rowspan="2" style="min-width: 150px; position: sticky; right: 0; z-index: 6;" class="text-center">Action</th>
             </tr>
 
             {{-- SECOND HEADER ROW --}}
@@ -226,7 +226,7 @@
                   <td>{{ $record->display_total_time_budget ?? '-' }}</td>
                   <td>{{ $record->display_total_time ?? '-' }}</td>
                   <td style="min-width: 300px; white-space: normal;">{{ $record->final_remarks }}</td>
-                  <td>
+                  <td style="position: sticky; right: 0; background-color: var(--light-gray); z-index: 1;">
                       @if(!empty($record->payee))
                       <div class="d-flex gap-1 justify-content-center">
                           <button
