@@ -254,7 +254,7 @@
                               class="btn btn-sm btn-danger action-btn {{ in_array($record->status, ['Paid', 'Returned to Budget','Cancelled']) ? 'disabled' : '' }}"
                               data-action="delete"
                               data-id="{{ $record->transaction_id }}"
-                              data-dv="{{ $record->transaction_id }}"
+                              data-dv="{{ $record->dv_no }}"
                               @if($record->status !== 'Paid')
                                   data-bs-toggle="modal"
                                   data-bs-target="#actionModal"

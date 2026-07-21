@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const showUrlBase   = "{{ url('/accounting/logbook') }}"; 
   const updateUrlBase = "{{ url('/accounting/logbook') }}"; 
+  const deleteUrlBase = "{{ url('/accounting/logbook') }}"; 
   const rowTemplate   = document.getElementById('creditRowTemplate');
 
   const RETURN_STATUSES = ['Returned to End User', 'Returned to Budget'];
@@ -34,10 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     container.appendChild(clone);
 
-    // Get the newly added row
     const newRow = container.lastElementChild;
-
-    // Initialize TomSelect for its UACS dropdown
     const uacsSelect = newRow.querySelector('[name="credit_uac_codes[]"]');
 
     if (uacsSelect && !uacsSelect.tomselect) {
@@ -114,14 +112,44 @@ document.addEventListener('DOMContentLoaded', function () {
         placeholder: 'Search...'
       });
     }
-  });                              
+  });                           
 
   /* ---------------------------------------------------------------- *
-   * Edit modal: Fetch transaction and prefill using Self-Healing URLs
+   * Delete Action Listener (Table Actions)
+   * ---------------------------------------------------------------- */
+  document.addEventListener('click', function (e) {
+    const btn = e.target.closest('.action-btn[data-action="delete"]');
+    if (!btn || btn.classList.contains('disabled')) return;
+
+    const dbId = btn.dataset.id;
+    const dvNo = btn.dataset.dv || dbId;
+
+    setupDeleteModal(dbId, dvNo);
+  });
+
+  // Helper to configure and trigger the Delete Modal safely
+  function setupDeleteModal(dbId, dvNo) {
+    if (!dbId) return;
+
+    // Update form action target
+    const deleteForm = document.getElementById('deleteRecordForm') || document.querySelector('#actionModal form');
+    if (deleteForm) {
+      deleteForm.action = `${deleteUrlBase}/${dbId}/destroy`;
+    }
+
+    // Update display label in modal
+    const deleteDvText = document.getElementById('deleteDvNoText') || document.getElementById('deleteRecordDvNo');
+    if (deleteDvText) {
+      deleteDvText.textContent = dvNo || dbId;
+    }
+  }
+
+  /* ---------------------------------------------------------------- *
+   * Edit modal: Fetch transaction and prefill
    * ---------------------------------------------------------------- */
   document.addEventListener('click', function (e) {
     const btn = e.target.closest('.action-btn[data-action="edit"]');
-    if (!btn) return;
+    if (!btn || btn.classList.contains('disabled')) return;
 
     const dbId = btn.dataset.id;
     const dvCode = btn.dataset.dv || btn.dataset.txn || dbId;
@@ -131,7 +159,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const formBody = document.getElementById('editFormBody');
     const editCreditRows = document.getElementById('editCreditRows');
 
-    // Reset UI states
     if (loading) {
       loading.style.display  = '';
       loading.innerHTML = `
@@ -145,27 +172,18 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('editTransactionId').value = dbId;
     document.getElementById('editTransactionLabel').textContent = dvCode;
 
-    // Build URLs using the primary ID parameter
     const restfulUrl = `${showUrlBase}/${dbId}`;
     const customUrl  = `${showUrlBase}/${dbId}/show`;
-
     let finalUpdateUrl = `${updateUrlBase}/${dbId}`;
 
     fetch(restfulUrl, {
-      headers: { 
-        'X-Requested-With': 'XMLHttpRequest',
-        'Accept': 'application/json' 
-      }
+      headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
     })
     .then(res => {
       if (res.ok) return res.json();
-      
       finalUpdateUrl = `${updateUrlBase}/${dbId}/update`;
       return fetch(customUrl, {
-        headers: { 
-          'X-Requested-With': 'XMLHttpRequest',
-          'Accept': 'application/json' 
-        }
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
       }).then(res2 => {
         if (!res2.ok) throw new Error('Could not retrieve transaction details.');
         return res2.json();
@@ -175,7 +193,6 @@ document.addEventListener('DOMContentLoaded', function () {
       document.getElementById('editRecordForm').action = finalUpdateUrl;
 
       const record = data.record || data || {};
-
       const isBudgetSourced = (record.budget_id !== null && record.budget_id !== undefined && record.budget_id !== '');
       const fieldsToLock = ['edit_payee', 'edit_particulars', 'edit_debit', 'edit_uac_codes', 'edit_obr_no'];
 
@@ -209,24 +226,13 @@ document.addEventListener('DOMContentLoaded', function () {
       
       const debitUacs = document.getElementById('edit_uac_codes');
       if (debitUacs) {
-
-          const uacValue = record.uac_codes ?? '';
-
-          if (debitUacs.tomselect) {
-
-              // Clear old value first
-              debitUacs.tomselect.clear();
-
-              // Set database value
-              if (uacValue) {
-                  debitUacs.tomselect.setValue(uacValue, true);
-              }
-
-          } else {
-
-              debitUacs.value = uacValue;
-
-          }
+        const uacValue = record.uac_codes ?? '';
+        if (debitUacs.tomselect) {
+          debitUacs.tomselect.clear();
+          if (uacValue) debitUacs.tomselect.setValue(uacValue, true);
+        } else {
+          debitUacs.value = uacValue;
+        }
       }
 
       const debitTotal = document.getElementById('editDebitTotal');
@@ -269,9 +275,6 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   /* ---------------------------------------------------------------- *
-   * Pay Confirmation Action
-   * ---------------------------------------------------------------- */
-/* ---------------------------------------------------------------- *
    * View Action: Fetch & Populate dynamic details modal
    * ---------------------------------------------------------------- */
   document.addEventListener('click', function (e) {
@@ -286,7 +289,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const errorMsg = document.getElementById('modalError');
     const creditContainer = document.getElementById('view-credit-entries');
 
-    // Reset UI Visibility states
     if (loading) loading.classList.remove('d-none');
     if (content) content.classList.add('d-none');
     if (errorMsg) errorMsg.classList.add('d-none');
@@ -316,7 +318,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (el) el.textContent = val && val !== '' ? val : '-';
       };
 
-      // Set Sub-header Titles explicitly showing both transaction_id and dv_no
       const txnId = record.transaction_id || data.transaction_id || '-';
       const dvNo  = record.dv_no || '-';
       const obrNo = record.obr_no || record.ors_no || '-';
@@ -407,12 +408,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       }
 
-      // Action buttons configuration
+      // Action buttons inside Details Modal configuration
       const editBtn = document.getElementById('detailsEditBtn');
       if (editBtn) {
-        editBtn.setAttribute('data-id', record.accounting_id || record.transaction_id || dbId);
-        editBtn.setAttribute('data-dv', dvNo);
-        editBtn.setAttribute('data-txn', txnId);
         editBtn.onclick = function () {
           const detailsModalInstance = bootstrap.Modal.getInstance(document.getElementById('detailsModal'));
           if (detailsModalInstance) detailsModalInstance.hide();
@@ -424,19 +422,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
       const deleteBtn = document.getElementById('detailsDeleteBtn');
       if (deleteBtn) {
-        deleteBtn.setAttribute('data-id', record.accounting_id || record.transaction_id || dbId);
-        deleteBtn.setAttribute('data-dv', dvNo);
-        deleteBtn.setAttribute('data-txn', txnId);
         deleteBtn.onclick = function () {
           const detailsModalInstance = bootstrap.Modal.getInstance(document.getElementById('detailsModal'));
           if (detailsModalInstance) detailsModalInstance.hide();
 
-          const deleteBtnTrigger = document.querySelector(`.action-btn[data-action="delete"][data-id="${dbId}"]`);
-          if (deleteBtnTrigger) deleteBtnTrigger.click();
+          setupDeleteModal(dbId, dvNo);
+
+          const actionModalEl = document.getElementById('actionModal');
+          if (actionModalEl) {
+            const actionModal = new bootstrap.Modal(actionModalEl);
+            actionModal.show();
+          }
         };
       }
 
-      // Display metrics state changes
       if (loading) loading.classList.add('d-none');
       if (content) content.classList.remove('d-none');
     })
