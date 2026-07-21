@@ -7,7 +7,7 @@
         <input type="hidden" name="target_quarter" value="{{ $selectedQuarter }}">
         <input type="hidden" name="target_year" value="{{ $selectedYear }}">
         
-        <div class="modal-header bg-dark text-white py-3">
+        <div class="modal-header text-white" style="background-color: var(--primary);">
           <h5 class="fw-bold mb-0 text-white"><i class="bi bi-pencil-square me-2"></i>Modify Ledger Entry</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
@@ -32,7 +32,7 @@
                   required>
           </div>
 
-          <div class="col-md-6">
+          <div class="col-12">
             <label class="fw-bold small mb-1">Particulars</label>
             <input type="text"
                   name="particulars"
@@ -118,10 +118,9 @@
             </div>
           </div>
         </div>
-        
         <div class="modal-footer bg-light">
-          <button type="button" class="btn btn-sm btn-secondary" id="cancelEditBtn_{{ $rowId }}">Cancel</button>
-          <button type="submit" class="btn btn-sm btn-primary px-3 shadow-sm">Save Changes</button>
+          <x-button type="button" variant="secondary" data-bs-dismiss="modal" id="cancelEditBtn_{{ $rowId }}">Cancel</x-button>
+          <x-button type="submit" variant="primary" >Save Changes</x-button>
         </div>
       </form>
     </div>
