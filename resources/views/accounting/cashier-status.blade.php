@@ -143,15 +143,18 @@
                       </button>
 
                       {{-- CHANGE STATUS FORM --}}
-                      <button type="button" 
-                              class="btn btn-sm btn-success fw-bold px-2 action-btn" 
-                              data-action="pay-confirm"
-                              data-dv="{{ $record->dv_no }}"
-                              data-url="{{ route('accounting.cashier-status.pay', $record->dv_no) }}"
-                              data-bs-toggle="modal"
-                              data-bs-target="#actionModal">
-                          <i class="bi bi-check2-circle"></i> Mark as Paid
-                      </button>
+                      <button
+    type="button"
+    class="btn btn-sm btn-success action-btn"
+    data-action="pay-confirm"
+    data-dv="{{ $record->dv_no }}"
+    data-url="{{ route('accounting.cashier-status.pay', ['dv_no' => $record->dv_no]) }}"
+    data-bs-toggle="modal"
+    data-bs-target="#actionModal">
+    <i class="bi bi-check2-circle"></i>
+    Mark as Paid
+</button>
+                     
                   </div>
                   @else
                       <span class="text-muted">No DV No.</span>

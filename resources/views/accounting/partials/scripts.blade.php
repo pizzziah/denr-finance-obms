@@ -129,21 +129,64 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Helper to configure and trigger the Delete Modal safely
   function setupDeleteModal(dbId, dvNo) {
-    if (!dbId) return;
 
-    // Update form action target
-    const deleteForm = document.getElementById('deleteRecordForm') || document.querySelector('#actionModal form');
-    if (deleteForm) {
-      deleteForm.action = `${deleteUrlBase}/${dbId}/destroy`;
-    }
+    document.getElementById('actionForm').action =
+    `${deleteUrlBase}/${dbId}/destroy`;
 
-    // Update display label in modal
-    const deleteDvText = document.getElementById('deleteDvNoText') || document.getElementById('deleteRecordDvNo');
-    if (deleteDvText) {
-      deleteDvText.textContent = dvNo || dbId;
-    }
-  }
+document.getElementById('actionMethod').innerHTML =
+    '<input type="hidden" name="_method" value="DELETE">';
 
+    document.getElementById('actionModalHeader').className =
+        'modal-header bg-danger text-white';
+
+    document.getElementById('actionModalTitle').innerHTML =
+        '<i class="bi bi-trash me-2"></i>Delete Record';
+
+    document.getElementById('actionModalMessage').innerHTML =
+        'Are you sure you want to delete this transaction?';
+
+    document.getElementById('deleteDvNoText').textContent =
+        dvNo;
+
+    document.getElementById('actionModalNote').textContent =
+        'This action cannot be undone.';
+
+    const btn = document.getElementById('actionSubmitBtn');
+    btn.className = 'btn btn-danger';
+    btn.textContent = 'Delete';
+}
+
+document.addEventListener('click', function (e) {
+
+    const btn = e.target.closest('.action-btn[data-action="pay-confirm"]');
+    if (!btn) return;
+
+    document.getElementById('actionForm').action =
+    btn.dataset.url;
+
+document.getElementById('actionMethod').innerHTML =
+    '<input type="hidden" name="_method" value="PUT">';
+
+    document.getElementById('actionModalHeader').className =
+        'modal-header bg-success text-white';
+
+    document.getElementById('actionModalTitle').innerHTML =
+        '<i class="bi bi-check2-circle me-2"></i>Mark as Paid';
+
+    document.getElementById('actionModalMessage').innerHTML =
+        'Are you sure you want to mark this transaction as <strong>Paid</strong>?';
+
+    document.getElementById('deleteDvNoText').textContent =
+        btn.dataset.dv;
+
+    document.getElementById('actionModalNote').textContent =
+        'This will update the transaction status to Paid.';
+
+    const submitBtn = document.getElementById('actionSubmitBtn');
+    submitBtn.className = 'btn btn-success';
+    submitBtn.textContent = 'Mark as Paid';
+
+});
   /* ---------------------------------------------------------------- *
    * Edit modal: Fetch transaction and prefill
    * ---------------------------------------------------------------- */

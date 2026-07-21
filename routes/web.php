@@ -55,8 +55,10 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/logbook/{transaction_id}/destroy', [AccountingLogbookController::class, 'destroy'])->name('accounting.logbook.destroy');
 
     Route::get('/cashier-status', [AccountingLogbookController::class, 'cashierStatus'])->name('accounting.cashier-status');
-    Route::put('/cashier-status/{transaction_id}/pay', [AccountingLogbookController::class, 'markAsPaid'])->name('accounting.cashier-status.pay');
-
+Route::put(
+    '/cashier-status/{dv_no}/pay',
+    [AccountingLogbookController::class, 'markAsPaid']
+)->name('accounting.cashier-status.pay');
     Route::get('/quarterly-summary', [AccountingQuarterlySummaryController::class, 'index'])->name('accounting.quarterly-summary');
     Route::post('/quarterly-summary', [AccountingQuarterlySummaryController::class, 'store'])->name('accounting.quarterly-summary.store');
     Route::post('/quarterly-summary/manual-lock', [AccountingQuarterlySummaryController::class, 'manualLock'])->name('accounting.quarterly-summary.manual-lock');
