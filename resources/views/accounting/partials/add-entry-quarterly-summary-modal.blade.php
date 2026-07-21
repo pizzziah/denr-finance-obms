@@ -20,7 +20,11 @@
             </div>
             <div class="col-md-6">
               <label class="fw-bold small mb-1">DV/NCA/NTA Number <span class="text-danger">*</span></label>
-              <input type="text" name="particulars" class="form-control form-control-sm shadow-sm" placeholder="Enter Reference Number" required>
+              <input type="text" name="dv_no" class="form-control form-control-sm shadow-sm" placeholder="Enter Reference Number" required>
+            </div>
+            <div class="col-12">
+              <label class="fw-bold small mb-1">Particulars</label>
+              <input type="text" name="particulars" class="form-control form-control-sm shadow-sm">
             </div>
 
             <div class="col-12">
@@ -30,7 +34,7 @@
                 {{-- ADJUSTMENT ROW --}}
                 <div class="d-flex align-items-center gap-3">
                   <div class="form-check m-0" style="min-width: 160px;">
-                    <input class="form-check-input tx-type-radio" type="radio" name="transaction_type" id="type_adjustment" value="adjustment" checked required>
+                    <input class="form-check-input tx-type-radio" type="radio" name="transaction_type" id="type_adjustment" value="Adjustment" checked required>
                     <label class="form-check-label small fw-bold" style="color: #7909FF;" for="type_adjustment">Adjustment</label>
                   </div>
                   <div class="input-group input-group-sm flex-grow-1">
@@ -42,7 +46,7 @@
                 {{-- SIGNED DV ROW --}}
                 <div class="d-flex align-items-center gap-3">
                   <div class="form-check m-0" style="min-width: 160px;">
-                    <input class="form-check-input tx-type-radio" type="radio" name="transaction_type" id="type_signed_dv" value="signed_dv">
+                    <input class="form-check-input tx-type-radio" type="radio" name="transaction_type" id="type_signed_dv" value="Signed DV">
                     <label class="form-check-label small fw-bold" style="color: #20c997;" for="type_signed_dv">Signed DV</label>
                   </div>
                 </div>
@@ -50,7 +54,7 @@
                 {{-- RECEIVED ROW --}}
                 <div class="d-flex align-items-center gap-3">
                   <div class="form-check m-0" style="min-width: 160px;">
-                    <input class="form-check-input tx-type-radio" type="radio" name="transaction_type" id="type_received" value="received">
+                    <input class="form-check-input tx-type-radio" type="radio" name="transaction_type" id="type_received" value="NCA/NTA Received">
                     <label class="form-check-label small fw-bold" style="color: #9D6B0B;" for="type_received">NCA/NTA Received</label>
                   </div>
                 </div>
@@ -58,7 +62,7 @@
                 {{-- DOWNLOADED ROW --}}
                 <div class="d-flex align-items-center gap-3">
                   <div class="form-check m-0" style="min-width: 160px;">
-                    <input class="form-check-input tx-type-radio" type="radio" name="transaction_type" id="type_downloaded" value="downloaded">
+                    <input class="form-check-input tx-type-radio" type="radio" name="transaction_type" id="type_downloaded" value="NCA/NTA Downloaded">                    
                     <label class="form-check-label small fw-bold" style="color: var(--error);" for="type_downloaded">NCA/NTA Downloaded</label>
                   </div>
                 </div>
@@ -84,9 +88,9 @@
             </div>
           </div>
         </div>
-        
+        <p id="debugType" class="text-danger fw-bold"></p>
         <div class="modal-footer bg-light">
-          <button type="button" class="btn btn-sm btn-secondary" id="cancelAddBtn">Cancel</button>
+          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal" id="cancelAddBtn">Cancel</button>
           <button type="submit" class="btn btn-sm btn-primary px-3 shadow-sm">Save Entry</button>
         </div>
       </form>
@@ -101,11 +105,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const amountPreview = document.getElementById('amount_preview');
     const radios = document.querySelectorAll('.tx-type-radio');
 
-    // Dynamically relocate input field visual node contextually on radio toggle selection
     radios.forEach(radio => {
         radio.addEventListener('change', function() {
             const inputGroup = amountInput.closest('.input-group');
             this.closest('.d-flex').appendChild(inputGroup);
+            
+            // Explicitly force the name and active parameters on shift
+            amountInput.setAttribute('name', 'amount');
+            amountInput.disabled = false; 
             amountInput.focus();
         });
     });
@@ -116,6 +123,16 @@ document.addEventListener('DOMContentLoaded', function () {
         amountPreview.textContent = !isNaN(val) ? new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', signDisplay: 'always' }).format(val) : '₱0.00';
       });
     }
+
+    radios.forEach(radio => {
+      radio.addEventListener('change', function() {
+        const inputGroup = amountInput.closest('.input-group');
+        this.closest('.d-flex').appendChild(inputGroup);
+        
+        amountInput.disabled = false;
+        amountInput.focus();
+        });
+    });
 });
 </script>
 @endif
