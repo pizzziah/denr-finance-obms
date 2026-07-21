@@ -7,7 +7,7 @@
         <input type="hidden" name="target_quarter" value="{{ $selectedQuarter }}">
         <input type="hidden" name="target_year" value="{{ $selectedYear }}">        
         
-        <div class="modal-header bg-dark text-white py-3">
+        <div class="modal-header text-white" style="background-color: var(--primary);">
           <h5 class="fw-bold mb-0 text-white"><i class="bi bi-file-earmark-plus me-2"></i>Add Quarterly Summary Entry</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
@@ -90,8 +90,8 @@
         </div>
         <p id="debugType" class="text-danger fw-bold"></p>
         <div class="modal-footer bg-light">
-          <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal" id="cancelAddBtn">Cancel</button>
-          <button type="submit" class="btn btn-sm btn-primary px-3 shadow-sm">Save Entry</button>
+          <x-button type="button" variant="secondary" data-bs-dismiss="modal" id="cancelAddBtn">Cancel</x-button>
+          <x-button type="submit" variant="primary" >Save Record</x-button>
         </div>
       </form>
     </div>
