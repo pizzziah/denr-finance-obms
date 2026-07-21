@@ -165,6 +165,10 @@
                                     <div class="col-5 fw-bold">Remarks:</div>
                                     <div class="col-7" id="view_final_remarks">-</div>
                                 </div>
+                                <div class="row mb-2">
+                                    <div class="col-5 fw-bold">Returned Remarks:</div>
+                                    <div class="col-7"><span id="detailReturnedRemarks">-</span></div>
+                                </div>
                             </div>
                         </div>
 

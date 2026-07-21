@@ -81,11 +81,11 @@
                   </div>
                   <div class="col-md-3">
                     <label class="form-label small fw-semibold">UACS Code <span class="text-danger">*</span></label>
-                    <select  class="small" id="edit_uac_codes" name="uac_codes" class="form-select searchable-select" required>
-                      <option value="">Select UACS Code</option>
-                        @foreach($uacs as $u)
-                            <option value="{{ $u->uac_codes }}"  class="small">
-                              {{ $u->uac_codes }} - {{ $u->classification }}
+                    <select  class="small" id="uac_codes" name="uac_codes" class="form-select">
+                        <option value="">Select UAC</option>
+                        @foreach($uacs as $uac)
+                            <option value="{{ $uac->uac_codes }}"  class="small">
+                              {{ $uac->uac_codes }}
                             </option>
                         @endforeach
                     </select>

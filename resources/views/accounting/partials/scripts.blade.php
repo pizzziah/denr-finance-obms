@@ -209,10 +209,24 @@ document.addEventListener('DOMContentLoaded', function () {
       
       const debitUacs = document.getElementById('edit_uac_codes');
       if (debitUacs) {
-        debitUacs.value = record.uac_codes ?? '';
-        if (debitUacs.tomselect) {
-          debitUacs.tomselect.setValue(record.uac_codes ?? '', true);
-        }
+
+          const uacValue = record.uac_codes ?? '';
+
+          if (debitUacs.tomselect) {
+
+              // Clear old value first
+              debitUacs.tomselect.clear();
+
+              // Set database value
+              if (uacValue) {
+                  debitUacs.tomselect.setValue(uacValue, true);
+              }
+
+          } else {
+
+              debitUacs.value = uacValue;
+
+          }
       }
 
       const debitTotal = document.getElementById('editDebitTotal');
