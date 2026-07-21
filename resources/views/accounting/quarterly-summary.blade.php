@@ -172,11 +172,12 @@
                 </div>
               </div>
             </th>
+            <th style="width: 130px;">DV/NCA/NTA No.</th>
             <th style="width: 250px;">Particulars</th>
             <th style="width: 140px;">Amount</th>
             <th style="width: 160px;">NCA/NTA Received</th>
             <th style="width: 160px;">NCA/NTA Downloaded</th>
-            <th style="width: 150px;">
+            <th style="width: 120px;">
               <div class="d-flex align-items-center justify-content-between">
                 <span>EMDS Date</span>
                 <div class="btn-group btn-group-xs ms-2">
@@ -186,8 +187,8 @@
               </div>
             </th>
             <th style="width: 160px;">Balance</th>
-            <th style="width: 120px;">ADA/Check No. / DV No.</th>
-            <th>Remarks</th>
+            <th style="width: 120px;">ADA/Check No.</th>
+            <th style="width: 150px;">Remarks</th>
             <th style="width: 150px; text-align: center;">Actions</th>
           </tr>
         </thead>
@@ -207,7 +208,8 @@
 
             <tr>
               <td class="small">{{ $record->date_processed ?? '-' }}</td>
-              <td style="color: var(--primary);"><strong>{{ $record->particulars ?? '-' }}</strong></td>
+              <td style="color: var(--primary);"> <strong>{{ $record->dv_no ?? '-' }} </strong></td>
+              <td>{{ $record->particulars ?? '-' }}</td>
               
               {{-- Amount Column: Shared by Adjustments and Signed DVs --}}
               <td style="color: #7909FF;">

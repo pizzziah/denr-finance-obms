@@ -23,10 +23,22 @@
               <input type="date" name="date_processed" class="form-control form-control-sm shadow-sm" value="{{ $formattedProcessedDate }}" required>
             </div>
 
-            <div class="col-md-6">
-              <label class="fw-bold small mb-1">DV/NCA/NTA Number</label>
-              <input type="text" name="particulars" class="form-control form-control-sm shadow-sm" value="{{ $record->particulars }}" required>
-            </div>
+          <div class="col-md-6">
+            <label class="fw-bold small mb-1">DV/NCA/NTA Number</label>
+            <input type="text"
+                  name="dv_no"
+                  class="form-control form-control-sm shadow-sm"
+                  value="{{ $record->dv_no }}"
+                  required>
+          </div>
+
+          <div class="col-md-6">
+            <label class="fw-bold small mb-1">Particulars</label>
+            <input type="text"
+                  name="particulars"
+                  class="form-control form-control-sm shadow-sm"
+                  value="{{ $record->particulars }}">
+          </div>
 
             <div class="col-12">
               <label class="fw-bold small mb-2 d-block">Transaction Type & Value</label>

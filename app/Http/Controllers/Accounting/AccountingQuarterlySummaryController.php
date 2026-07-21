@@ -223,11 +223,11 @@ class AccountingQuarterlySummaryController extends Controller {
 
     $request->validate([
       'date_processed'   => 'required|date',
-      'particulars'      => 'required|string|max:255',
+      'dv_no'            => 'required|string|max:100',
+      'particulars'      => 'nullable|string|max:255',
       'transaction_type' => 'required|in:Adjustment,Signed DV,NCA/NTA Received,NCA/NTA Downloaded',
       'amount'           => $amountRule,
       'emds_date'        => 'nullable|date',
-      'dv_no'            => 'nullable|string|max:100',
       'ada_no'           => 'nullable|string|max:100',
       'remarks'          => 'nullable|string|max:255',
     ]);
@@ -239,10 +239,10 @@ class AccountingQuarterlySummaryController extends Controller {
 
     $data = [
       'date_processed'   => Carbon::parse($request->input('date_processed'))->format('n/j/Y'),
-      'particulars'      => $request->input('particulars'),
+      'dv_no' => $request->dv_no,
+      'particulars' => $request->particulars,
       'transaction_type' => $txType,
       'emds_date'        => $request->filled('emds_date') ? Carbon::parse($request->input('emds_date'))->format('n/j/Y') : null,
-      'dv_no'            => $request->input('dv_no'),
       'ada_no'           => $request->input('ada_no'),
       'remarks'          => $request->input('remarks'),
       'amount'           => $val,
@@ -284,11 +284,11 @@ class AccountingQuarterlySummaryController extends Controller {
 
     $request->validate([
       'date_processed'   => 'required|date',
-      'particulars'      => 'required|string|max:255',
+      'dv_no'            => 'required|string|max:100',
+      'particulars'      => 'nullable|string|max:255',
       'transaction_type' => 'required|in:Adjustment,Signed DV,NCA/NTA Received,NCA/NTA Downloaded',
       'amount'           => $amountRule,
       'emds_date'        => 'nullable|date',
-      'dv_no'            => 'nullable|string|max:100',
       'ada_no'           => 'nullable|string|max:100',
       'remarks'          => 'nullable|string|max:255',
     ]);
@@ -299,10 +299,10 @@ class AccountingQuarterlySummaryController extends Controller {
 
     $data = [
       'date_processed'   => Carbon::parse($request->input('date_processed'))->format('n/j/Y'),
-      'particulars'      => $request->input('particulars'),
+      'dv_no' => $request->dv_no,
+      'particulars' => $request->particulars,
       'transaction_type' => $txType,
       'emds_date'        => $request->filled('emds_date') ? Carbon::parse($request->input('emds_date'))->format('n/j/Y') : null,
-      'dv_no'            => $request->input('dv_no'),
       'ada_no'           => $request->input('ada_no'),
       'remarks'          => $request->input('remarks'),
       'amount'           => number_format($request->input('amount'), 2, '.', ''),

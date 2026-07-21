@@ -20,7 +20,11 @@
             </div>
             <div class="col-md-6">
               <label class="fw-bold small mb-1">DV/NCA/NTA Number <span class="text-danger">*</span></label>
-              <input type="text" name="particulars" class="form-control form-control-sm shadow-sm" placeholder="Enter Reference Number" required>
+              <input type="text" name="dv_no" class="form-control form-control-sm shadow-sm" placeholder="Enter Reference Number" required>
+            </div>
+            <div class="col-12">
+              <label class="fw-bold small mb-1">Particulars</label>
+              <input type="text" name="particulars" class="form-control form-control-sm shadow-sm">
             </div>
 
             <div class="col-12">
