@@ -93,8 +93,8 @@ Route::middleware(['auth'])->group(function () {
   });
   
   Route::prefix('notifications')->group(function () {
-    Route::get('/', [NotificationController::class, 'index'])->name('notifications.index');
-    Route::post('/read/{id}', [NotificationController::class, 'read'])->name('notifications.read');
-    Route::post('/read-all', [NotificationController::class, 'readAll'])->name('notifications.readAll');
+      Route::get('/', [NotificationController::class, 'index'])->name('notifications.index');
+      Route::post('/read/{id}', [NotificationController::class, 'read'])->name('notifications.read');
+      Route::post('/mark-all-read', [NotificationController::class, 'markAllRead'])->name('notifications.markAllRead');
   });
 });
