@@ -1,10 +1,10 @@
 {{-- ADD RECORD MODAL --}}
 <div class="modal fade" id="addRecordModal" tabindex="-1" aria-labelledby="addRecordModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 90%;">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 80%;">
     <div class="modal-content">
       
       {{-- HEADER --}}
-      <div class="modal-header bg-dark text-white">
+      <div class="modal-header text-white" style="background-color: var(--primary);">
         <h5 class="modal-title fw-bold" id="addRecordModalLabel">
           <i class="bi bi-file-earmark-plus me-2"></i>Add New Accounting Record
         </h5>
@@ -16,10 +16,9 @@
         <form id="addRecordForm" action="{{ route('accounting.logbook.store') }}" method="POST">
           @csrf
           <div class="container-fluid">
-
             {{-- SECTION 1: BASIC INFORMATION --}}
-            <div class="row py-2">
-              <div class="col-md-2 fw-bold text-secondary fs-5 border-end-md pe-md-4 mb-3 mb-md-0">
+            <div class="row py-1">
+              <div class="col-md-2 fw-bold fs-5 border-end-md pe-md-4 mb-3 mb-md-0" style="color: var(--primary);">
                 Basic<br>Information
               </div>
               <div class="col-md-10 ps-md-4">
@@ -55,8 +54,8 @@
             <hr class="my-4">
 
             {{-- SECTION 2: DEBIT ENTRY --}}
-            <div class="row py-2">
-              <div class="col-md-2 fw-bold text-secondary fs-5 border-end-md pe-md-4 mb-3 mb-md-0">
+            <div class="row py-1">
+              <div class="col-md-2 fw-bold fs-5 border-end-md pe-md-4 mb-3 mb-md-0" style="color: var(--primary);">
                 Debit<br>Entry
               </div>
               <div class="col-md-10 ps-md-4">
@@ -69,12 +68,12 @@
                     <label class="form-label small fw-semibold">DV No.</label>
                     <input type="text" name="dv_no" id="add_dv_no" class="form-control form-control-sm">
                   </div>
-                  <div class="col-md-3">
-                    <label class="form-label small fw-semibold">UACS Code</label>
-                    <select name="uac_codes" id="add_uac_codes" class="form-select"> 
-                        <option value="">Select UACS Code</option>
+                  <div class="col-md-3 small">
+                    <label class="form-label small fw-semibold">UACS Code</label> <span class="text-danger">*</span></label>
+                    <select name="uac_codes" id="add_uac_codes" class="form-select small"> 
+                        <option value="" class="small">Select UACS Code</option>
                         @foreach($uacs as $u)
-                            <option value="{{ $u->uac_codes }}">
+                            <option  class="small" value="{{ $u->uac_codes }}">
                                 {{ $u->uac_codes }} - {{ $u->classification }}
                             </option>
                         @endforeach
@@ -94,8 +93,8 @@
             <hr class="my-4">
 
             {{-- SECTION 3: CREDIT ENTRIES --}}
-            <div class="row py-2">
-              <div class="col-md-2 fw-bold text-secondary fs-5 border-end-md pe-md-4 mb-3 mb-md-0">
+            <div class="row py-1">
+              <div class="col-md-2 fw-bold fs-5 border-end-md pe-md-4 mb-3 mb-md-0" style="color: var(--primary);">
                 Credit<br>Entries
               </div>
               <div class="col-md-10 ps-md-4">
@@ -114,8 +113,8 @@
             <hr class="my-4">
 
             {{-- SECTION 4: SIGN-OFF --}}
-            <div class="row py-2">
-              <div class="col-md-2 fw-bold text-secondary fs-5 border-end-md pe-md-4 mb-3 mb-md-0">
+            <div class="row py-1">
+              <div class="col-md-2 fw-bold fs-5 border-end-md pe-md-4 mb-3 mb-md-0"  style="color: var(--primary);">
                 Sign-off
               </div>
               <div class="col-md-10 ps-md-4">
@@ -142,8 +141,8 @@
             <hr class="my-4">
 
             {{-- SECTION 5: STATUS --}}
-            <div class="row py-2">
-              <div class="col-md-2 fw-bold text-secondary fs-5 border-end-md pe-md-4 mb-3 mb-md-0">
+            <div class="row py-1">
+              <div class="col-md-2 fw-bold fs-5 border-end-md pe-md-4 mb-3 mb-md-0"  style="color: var(--primary);">
                 Status &<br>Forwarding
               </div>
               <div class="col-md-10 ps-md-4">
@@ -177,10 +176,9 @@
 
       {{-- FOOTER --}}
       <div class="modal-footer bg-light">
-        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-        <button type="submit" form="addRecordForm" class="btn btn-success btn-sm px-4">Save Record</button>
+          <x-button type="button" variant="secondary" data-bs-dismiss="modal">Cancel</x-button>
+          <x-button type="submit" variant="primary"  form="addRecordForm" >Save Record</x-button>
       </div>
-
     </div>
   </div>
 </div>
