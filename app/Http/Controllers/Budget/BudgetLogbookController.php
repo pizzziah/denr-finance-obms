@@ -119,6 +119,20 @@ use Illuminate\Support\Facades\DB;
             ->orderBy('issuing_office')
             ->get();
       
+      $records->transform(function ($record) {
+
+          if (empty($record->display_total_time_budget)) {
+              $record->display_total_time_budget =
+                  $this->formatWorkingTime($record->total_time_budget);
+          }
+
+          if (empty($record->display_total_time)) {
+              $record->display_total_time =
+                  $this->formatWorkingTime($record->total_time);
+          }
+
+          return $record;
+      });
 
       return view('budget.logbook', compact(
         'records',
@@ -663,11 +677,18 @@ use Illuminate\Support\Facades\DB;
     return $hours;
   }
 
-  private function formatWorkingTime($hours) {
-    $days = floor($hours / 24);
-    $remainingHours = $hours % 24;
+  private function formatWorkingTime($hours)
+  {
+      if ($hours === null || $hours === '') {
+          return '-';
+      }
 
-    return $days . 'd' . $remainingHours . 'h';
+      $hours = (int) $hours;
+
+      $days = intdiv($hours, 24);
+      $remainingHours = $hours % 24;
+
+      return "{$days}d{$remainingHours}h";
   }
 
   private function updateWorkingTimes($budgetId) {

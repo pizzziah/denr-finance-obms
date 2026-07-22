@@ -195,8 +195,8 @@ document.addEventListener('DOMContentLoaded', () => {
       $('view_date_received_2').textContent = row.date_received_2 ?? '-';
       $('view_date_forwarded_accounting').textContent = row.date_forwarded_accounting ?? '-';
       $('view_final_remarks').textContent = row.final_remarks ?? '-';
-      $('view_total_time_budget').textContent = calculateBudgetTime(row);
-      $('view_total_time').textContent = formatWorkingTime(calculateWorkingHours(row.date_received, row.date_forwarded_accounting));
+      $('view_total_time_budget').textContent = row.display_total_time_budget ?? row.total_time_budget ?? '-';
+      $('view_total_time').textContent = row.display_total_time ?? row.total_time ?? '-';
 
       $('view_review_history').innerHTML = reviewHtml;
       $('#detailReturnedRemarks').text(data.returned_remarks || '-');
@@ -239,8 +239,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
 
-      $('edit_total_time_budget').value = calculateBudgetTime(row);
-      $('edit_total_time').value = formatWorkingTime(calculateWorkingHours(row.date_received, row.date_forwarded_accounting));
+      $('edit_total_time_budget').value = row.display_total_time_budget ?? row.total_time_budget ?? '';
+      $('edit_total_time').value = row.display_total_time ?? row.total_time ?? '';
 
       // ===========================
       // LOAD REVIEW HISTORY
