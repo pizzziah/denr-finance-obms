@@ -356,6 +356,12 @@ document.getElementById('actionMethod').innerHTML =
       const record = data.record || data || {};
       const creditEntries = data.credit_entries || record.credit_entries || [];
 
+      window.currentPrintRecord = {
+        record,
+        creditEntries,
+        totalDebit: parseFloat(data.total_debit || record.debit || 0)
+      };
+
       const safelyText = (id, val) => {
         const el = document.getElementById(id);
         if (el) el.textContent = val && val !== '' ? val : '-';
