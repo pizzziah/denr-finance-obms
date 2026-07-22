@@ -196,7 +196,6 @@ use Illuminate\Support\Facades\DB;
       'issuing_office' => 'nullable|string|max:255',
       'classification' => 'nullable|string|max:255',
       'particulars' => 'nullable|string',
-      'particulars_remark' => 'nullable|string',
       'uac_codes' => 'nullable|string|max:255',
       'amount' => 'nullable|numeric',
       'review_date_returned.*' => 'nullable|date',
@@ -239,7 +238,6 @@ use Illuminate\Support\Facades\DB;
               'issuing_office' => $request->issuing_office,
               'classification' => $request->classification,
               'particulars' => $request->particulars,
-              'particulars_remark' => $request->particulars_remark,
               'uac_codes' => $request->uac_codes,
               'amount' => $request->amount,
               'date_returned_1' => $request->review_date_returned[0] ?? $request->date_returned_1,
@@ -290,19 +288,18 @@ use Illuminate\Support\Facades\DB;
                       'ors_no'             => $budget->ors_no,
                       'payee'              => $budget->payee,
                       'particulars'        => $budget->particulars,
-                      'particulars_remark' => $budget->particulars_remark,
-                      'uac_codes' => $accountingUacs,
                       'debit'              => $budget->amount,
-                      'status'             => 'Processing',
+                      'status'             => 'Pending',
                       'date_received'      => $budget->date_received,
                       'budget_year'        => Carbon::parse($budget->date_received)->year,
                       'source_month'       => Carbon::parse($budget->date_received)->format('F'),
+                      'returned_remarks' => $budget->final_remarks,
                   ]);
               // Update ALL rows belonging to the same transaction
               DB::table('odms_accounting')
                   ->where('transaction_id', $existing->transaction_id)
                   ->update([
-                      'status' => 'Processing',
+                      'status' => 'Pending',
                   ]);
 
           } else {
@@ -313,11 +310,9 @@ use Illuminate\Support\Facades\DB;
                   'ors_no'         => $budget->ors_no,
                   'payee'          => $budget->payee,
                   'particulars'    => $budget->particulars,
-                  'particulars_remark' => $budget->particulars_remark,
-                  'uac_codes' => $accountingUacs,
                   'debit'          => $budget->amount,
                   'credit'         => 0,
-                  'status'         => 'Processing',
+                  'status'         => 'Pending',
                   'budget_year'    => Carbon::parse($budget->date_received)->year,
                   'source_month'   => Carbon::parse($budget->date_received)->format('F'),
                   'date_received'  => $budget->date_received,
@@ -331,7 +326,7 @@ use Illuminate\Support\Facades\DB;
                   'date_signed'    => null,
                   'date_processed' => null,
                   'date_forwarded' => null,
-                  'returned_remarks' => null,
+                  'returned_remarks' => $budget->final_remarks,
               ]);
           }
 
@@ -470,7 +465,6 @@ use Illuminate\Support\Facades\DB;
       'issuing_office' => 'nullable|string|max:255',
       'classification' => 'nullable|string|max:255',
       'particulars' => 'nullable|string',
-      'particulars_remark' => 'nullable|string',
       'uac_codes' => 'nullable|string|max:255',
       'amount' => 'nullable|numeric',
       'review_date_returned.*' => 'nullable|date',
@@ -500,7 +494,6 @@ use Illuminate\Support\Facades\DB;
         'issuing_office' => $request->issuing_office,
         'classification' => $request->classification,
         'particulars' => $request->particulars,
-        'particulars_remark' => $request->particulars_remark,
         'uac_codes' => $request->uac_codes,
         'amount' => $request->amount,
         'date_returned_1' => $request->date_returned_1,
