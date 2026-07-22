@@ -394,6 +394,7 @@ class AccountingLogbookController extends Controller {
 
   $record = DB::table('odms_accounting')
       ->where('dv_no', $dv_no)
+      ->whereNotNull('budget_id')
       ->first();
 
   if ($record) {
