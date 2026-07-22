@@ -185,7 +185,7 @@
 
       {{-- FOOTER --}}
       <div class="modal-footer">
-        <button class="btn btn-primary" onclick="printDetails()">
+        <button class="btn btn-primary" id="printDetailsBtn">
           <i class="bi bi-printer"></i> Print
         </button>
         <button class="btn btn-success" data-bs-dismiss="modal">
@@ -196,3 +196,138 @@
     </div>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const printBtn = document.getElementById('printDetailsBtn');
+  if (!printBtn) return;
+
+  printBtn.addEventListener('click', () => {
+    if (!window.currentPrintRecord) {
+      alert('No record available to print.');
+      return;
+    }
+
+    const { record, creditEntries, totalDebit } = window.currentPrintRecord;
+    let rows = '';
+
+    rows += `
+      <tr>
+        <td style="background-color:#F0FFE6; color:#044709; font-weight:bold; text-align:center;"> ${record.dv_no ?? '-'}</td>
+        <td>${record.payee ?? '-'}</td>
+        <td>${record.particulars ?? '-'}</td>
+        <td>${record.uac_codes ?? '-'}</td>
+        <td style="text-align:right;">
+          ${Number(totalDebit).toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          })}
+        </td>
+        <td></td>
+        <td></td>
+        <td></td>
+      </tr>
+      `;
+
+    creditEntries.forEach(entry => {
+    rows += `
+      <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td>${entry.uac_codes ?? '-'}</td>
+        <td></td>
+        <td style="text-align:right;">
+          ${Number(entry.credit || 0).toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          })}
+        </td>
+        <td style="text-align:center;">
+          ${entry.tax_percent ? entry.tax_percent + '%' : ''}
+        </td>
+        <td>
+          ${entry.tax_remarks ?? ''}
+        </td>
+      </tr>
+    `;
+  });
+
+  const printWindow = window.open('', '_blank', 'width=1000,height=700');
+
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Accounting Record</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 25px;
+        }
+        h2 {
+          text-align: center;
+          margin-bottom: 20px;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        th, td {
+          border: 1px solid #000;
+          padding: 8px;
+          font-size: 12px;
+        }
+        th {
+          background: #efefef;
+        }
+        th:nth-child(5),
+        th:nth-child(6),
+        td:nth-child(5),
+        td:nth-child(6) {
+          text-align: right;
+        }
+        th:nth-child(7),
+        td:nth-child(7) {
+          text-align: center;
+        }
+      </style>
+    </head>
+    <body>
+      <h3>Accounting Record</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>DV No.</th>
+            <th>PAYEE</th>
+            <th>PARTICULARS</th>
+            <th>UACS CODE</th>
+            <th>Debit</th>
+            <th>Credit</th>
+            <th>% Tax</th>
+            <th>Tax Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
+    </body>
+    </html>
+  `);
+
+  printWindow.document.close();
+
+  printWindow.onload = () => {
+    setTimeout(() => {
+    printWindow.focus();
+    printWindow.print();
+    }, 300);
+  };
+
+  printWindow.onafterprint = () => {
+    printWindow.close();
+    };
+  });
+});
+</script>
