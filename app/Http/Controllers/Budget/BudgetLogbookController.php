@@ -551,14 +551,33 @@ use Illuminate\Support\Facades\DB;
     }
 }
 
-  public function destroy($budget_id) {
-    $command = DB::table('odms_budget')
-      ->where('budget_id', $budget_id)
-      ->delete();
+  public function destroy($budget_id)
+  {
+      DB::transaction(function () use ($budget_id) {
 
-    return redirect()
-      ->route('budget.logbook')
-      ->with('success', 'Record deleted successfully.');
+          // Get the budget record first
+          $budget = DB::table('odms_budget')
+              ->where('budget_id', $budget_id)
+              ->first();
+
+          if ($budget) {
+
+              // Delete related accounting record
+              DB::table('odms_accounting')
+                  ->where('ors_no', $budget->ors_no)
+                  ->delete();
+
+              // Delete budget record
+              DB::table('odms_budget')
+                  ->where('budget_id', $budget_id)
+                  ->delete();
+          }
+
+      });
+
+      return redirect()
+          ->route('budget.logbook')
+          ->with('success', 'Record deleted successfully.');
   }
 
   private function checkDueDateNotifications() {
