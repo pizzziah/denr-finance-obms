@@ -588,13 +588,12 @@ class AccountingLogbookController extends Controller {
               ->where('budget_id', $debitRow->budget_id)
               ->update([
                   'status' => 'Returned by Accounting',
-                  'returned_remarks'  => $request->returned_remarks
+                  'final_remarks'  => $request->returned_remarks
               ]);
 
           $budget = DB::table('odms_budget')
               ->where('budget_id', $debitRow->budget_id)
               ->first();
-
           Notification::updateOrCreate(
               [
                   'type'        => 'returned_by_accounting',

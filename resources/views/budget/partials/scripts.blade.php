@@ -181,7 +181,6 @@ document.addEventListener('DOMContentLoaded', () => {
       $('view_classification').textContent = row.classification ?? '-';
       $('view_ors_no').textContent = row.ors_no ?? '-';
       $('view_particulars').textContent = row.particulars ?? '-';
-      $('view_particulars_remark').textContent = row.particulars_remark ?? '-';
       $('view_due_date').textContent = row.due_date ?? '-';
       $('view_amount').textContent = Number(row.amount ?? 0).toLocaleString(undefined, {
         minimumFractionDigits: 2,
@@ -195,8 +194,8 @@ document.addEventListener('DOMContentLoaded', () => {
       $('view_date_received_2').textContent = row.date_received_2 ?? '-';
       $('view_date_forwarded_accounting').textContent = row.date_forwarded_accounting ?? '-';
       $('view_final_remarks').textContent = row.final_remarks ?? '-';
-      $('view_total_time_budget').textContent = calculateBudgetTime(row);
-      $('view_total_time').textContent = formatWorkingTime(calculateWorkingHours(row.date_received, row.date_forwarded_accounting));
+      $('view_total_time_budget').textContent = row.display_total_time_budget ?? row.total_time_budget ?? '-';
+      $('view_total_time').textContent = row.display_total_time ?? row.total_time ?? '-';
 
       $('view_review_history').innerHTML = reviewHtml;
       $('#detailReturnedRemarks').text(data.returned_remarks || '-');
@@ -216,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
       $('editForm').action = `/budget/logbook/${encodeURIComponent(id)}/update`;
 
       const fields = [
-        'ors_no','date_received','payee','particulars','particulars_remark','amount','due_date',
+        'ors_no','date_received','payee','particulars','amount','due_date',
         'date_returned_1','date_received_1','remarks_1',
         'date_forwarded_1','date_ors_received','remarks_2',
         'date_returned_2','date_received_2',
@@ -239,8 +238,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
 
-      $('edit_total_time_budget').value = calculateBudgetTime(row);
-      $('edit_total_time').value = formatWorkingTime(calculateWorkingHours(row.date_received, row.date_forwarded_accounting));
+      $('edit_total_time_budget').value = row.display_total_time_budget ?? row.total_time_budget ?? '';
+      $('edit_total_time').value = row.display_total_time ?? row.total_time ?? '';
 
       // ===========================
       // LOAD REVIEW HISTORY
@@ -348,7 +347,6 @@ document.addEventListener('DOMContentLoaded', () => {
       $('edit_uac_codes'),
       $('edit_amount'),
       $('edit_particulars'),
-      $('edit_particulars_remark')
     ];
 
     const statusFields = [
