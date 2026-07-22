@@ -1,129 +1,105 @@
-{{-- ADD MODAL --}}
-<div class="modal fade" id="addRecordModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered" style="max-width:90%;">
-    <div class="modal-content" style="height:60vh;">
-      
-    {{-- HEADER --}}
-    <div class="modal-header">
-      <h4 class="fw-bold">Add Budget Record</h4>
-      <button class="btn-close" data-bs-dismiss="modal"></button>
-    </div>
-    
-    {{-- ERROR --}}
+<x-modal-layout 
+    id="addRecordModal" 
+    title="Add Budget Record" 
+    maxWidth="90%"
+    formId="addForm"
+    :action="route('budget.logbook.store')"
+>
     <div id="addError" class="alert alert-danger d-none mx-3"></div>
-    
-    {{-- BODY --}}
-    <div class="modal-body">
-      <form id="addForm" method="POST" action="{{ route('budget.logbook.store') }}">
-        @csrf
-          <div class="container-fluid">
 
-            {{-- REQUEST INFORMATION --}}
-            <div class="row">
-              <div class="col-2 fw-bold fs-5">Request<br>Information</div>
-              <div class="col-10">
-                <div class="row g-2">
-                  <div class="col-md-3">
+    <div class="container-fluid">
+        {{-- SECTION 1: REQUEST INFORMATION --}}
+        <x-modal-section-row title="Request<br>Information">
+            <div class="row g-2">
+                <div class="col-md-3">
                     <label class="form-label small fw-semibold">Date Received <span class="text-danger">*</span></label>
                     <input type="datetime-local" name="date_received" class="form-control form-control-sm" value="{{ now('Asia/Manila')->format('Y-m-d\TH:i') }}" required>                  
-                  </div>
+                </div>
 
-                  <div class="col-md-3">
+                <div class="col-md-3">
                     <label class="form-label small fw-semibold">Due Date</label>
                     <input type="date" id="add_due_date" name="due_date" class="form-control form-control-sm">
-                  </div>
+                </div>
 
-                  <div class="col-md-3">
+                <div class="col-md-3">
                     <label class="form-label small fw-semibold">ORS No.</label>
                     <input type="text" id="add_ors_no" name="ors_no" class="form-control form-control-sm" inputmode="numeric" pattern="[0-9]*">
-                  </div>
+                </div>
 
-                  <div class="col-md-3">
+                <div class="col-md-3">
                     <label class="form-label small fw-semibold">Issuing Office <span class="text-danger">*</span></label>
                     <select id="add_issuing_office" name="issuing_office" class="form-select form-select-sm" required>
-                      <option value="">Select Office</option>
-                      @foreach($issuingOffices as $office)
-                        <option value="{{ $office->issuing_office }}">{{ $office->issuing_office }}</option>
-                      @endforeach
+                        <option value="">Select Office</option>
+                        @foreach($issuingOffices as $office)
+                            <option value="{{ $office->issuing_office }}">{{ $office->issuing_office }}</option>
+                        @endforeach
                     </select>
-                  </div>
+                </div>
 
-                  <div class="col-md-3">
+                <div class="col-md-3">
                     <label class="form-label small fw-semibold">Classification <span class="text-danger">*</span></label>
                     <select id="add_classifications" name="classification" class="form-select form-select-sm" required>
-                      <option value="">Select Classification</option>
-                      @foreach($classifications as $classification)
-                        <option value="{{ $classification->classifications }}">{{ $classification->classifications }}</option>
-                      @endforeach
+                        <option value="">Select Classification</option>
+                        @foreach($classifications as $classification)
+                            <option value="{{ $classification->classifications }}">{{ $classification->classifications }}</option>
+                        @endforeach
                     </select>
-                  </div>
+                </div>
 
-                  <div class="col-md-3">
+                <div class="col-md-3">
                     <label class="form-label small fw-semibold">Payee <span class="text-danger">*</span></label>
                     <input type="text" id="add_payee" name="payee" class="form-control form-control-sm" required>
-                  </div>
+                </div>
 
-                  <div class="col-md-3">
+                <div class="col-md-3">
                     <label class="form-label small fw-semibold">UACS Code</label>
                     <select id="add_uac_codes" name="uac_codes" class="form-select form-select-sm">
-                      <option value="">Select UACS Code</option>
-                      @foreach($uacs as $uac)
-                        <option value="{{ $uac->new_uac }}">
-                          {{ $uac->old_uac }} → {{ $uac->new_uac }}
-                        </option>
-                      @endforeach
+                        <option value="">Select UACS Code</option>
+                        @foreach($uacs as $uac)
+                            <option value="{{ $uac->new_uac }}">
+                                {{ $uac->old_uac }} → {{ $uac->new_uac }}
+                            </option>
+                        @endforeach
                     </select>
-                  </div>
+                </div>
 
-                  <div class="col-md-3">
+                <div class="col-md-3">
                     <label class="form-label small fw-semibold">Amount <span class="text-danger">*</span></label>
                     <input type="number" step="0.01" id="add_amount" name="amount" class="form-control form-control-sm" required>
-                  </div> 
+                </div> 
 
-                  <div class="col-md-6">
+                <div class="col-md-6">
                     <label class="form-label small fw-semibold">Particulars <span class="text-danger">*</span></label>
                     <textarea id="add_particulars" name="particulars" rows="2" class="form-control form-control-sm" required></textarea>
-                  </div>
+                </div>
 
-                  <div class="col-md-6">
+                <div class="col-md-6">
                     <label class="form-label small fw-semibold">Particulars Remark</label>
                     <textarea id="add_particulars_remark" name="particulars_remark" rows="2" class="form-control form-control-sm"></textarea>
-                  </div>
-                                   
                 </div>
-              </div>
             </div>
+        </x-modal-section-row>
 
-            <hr>
+        <hr>
 
-            {{-- STATUS --}}
-            <div class="row">
-              <div class="col-2 fw-bold fs-4">Status</div>
-              <div class="col-10">
-                <div class="row g-2">
-                  <div class="col-md-6">
+        {{-- SECTION 2: STATUS --}}
+        <x-modal-section-row title="Status" titleClass="fw-bold fs-4">
+            <div class="row g-2">
+                <div class="col-md-6">
                     <label class="form-label small fw-semibold">Status <span class="text-danger">*</span></label>
                     <select id="add_status" name="status" class="form-select form-select-sm" required>
-                      <option value="Pending">Pending</option>
-                      <option value="Processing">Processing</option>
-                      <option value="For Review">For Review</option>
-                      <option value="For Obligation"selected>For Obligation</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Processing">Processing</option>
+                        <option value="For Review">For Review</option>
+                        <option value="For Obligation" selected>For Obligation</option>
                     </select>
-                  </div>
                 </div>
-              </div>
             </div>
+        </x-modal-section-row>
+    </div>
 
-          </div>
-        </form>
-      </div>
-
-      {{-- FOOTER --}}
-      <div class="modal-footer">
+    <x-slot:footer>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
         <button type="submit" form="addForm" class="btn btn-success">Save Record</button>
-      </div>
-
-    </div>
-  </div>
-</div>
+    </x-slot:footer>
+</x-modal-layout>
