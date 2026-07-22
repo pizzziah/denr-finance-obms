@@ -118,8 +118,13 @@ class AccountingQuarterlySummaryController extends Controller {
     $totalDownloaded = 0;
 
     foreach ($allRecords as $rec) {
-      $totalReceived += AccountingQuarterlySummary::parseMoney($rec->nca_nta_received);
-      $totalDownloaded += AccountingQuarterlySummary::parseMoney($rec->nca_nta_downloaded);
+      $parsedAmount = AccountingQuarterlySummary::parseMoney($rec->amount);
+
+      if ($rec->transaction_type === 'NCA/NTA Received') {
+        $totalReceived += abs($parsedAmount);
+      } elseif ($rec->transaction_type === 'NCA/NTA Downloaded') {
+        $totalDownloaded += abs($parsedAmount);
+      }
     }
 
     $latestRow = $modelInstance->newQuery()
@@ -143,6 +148,8 @@ class AccountingQuarterlySummaryController extends Controller {
       'isLocked'             => $isLocked,
       'requiresAdminRequest' => $requiresAdminRequest,
       'currentBalance'       => $currentBalance,
+      'totalReceived'        => number_format($totalReceived, 2),
+      'totalDownloaded'      => number_format($totalDownloaded, 2),
     ]);
   }
 
