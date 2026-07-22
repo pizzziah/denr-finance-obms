@@ -237,7 +237,7 @@ document.getElementById('actionMethod').innerHTML =
 
       const record = data.record || data || {};
       const isBudgetSourced = (record.budget_id !== null && record.budget_id !== undefined && record.budget_id !== '');
-      const fieldsToLock = ['edit_payee', 'edit_particulars', 'edit_debit', 'edit_uac_codes', 'edit_obr_no'];
+      const fieldsToLock = ['edit_payee', 'edit_debit', 'edit_obr_no'];
 
       fieldsToLock.forEach(id => {
         const el = document.getElementById(id);

@@ -80,8 +80,8 @@
                     <input type="text" name="dv_no" id="edit_dv_no" class="form-control form-control-sm">
                   </div>
                   <div class="col-md-3">
-                    <label class="form-label small fw-semibold">UACS Code <span class="text-danger">*</span></label>
-                    <select  class="small" id="uac_codes" name="uac_codes" class="form-select">
+                    <label class="form-label small fw-semibold">UACS Code </label>
+                    <select  class="small" id="edit_uac_codes" name="uac_codes" class="form-select">
                         <option value="">Select UAC</option>
                         @foreach($uacs as $uac)
                             <option value="{{ $uac->uac_codes }}"  class="small">

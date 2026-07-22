@@ -189,7 +189,7 @@ class AccountingLogbookController extends Controller {
       'particulars_remark'    => 'nullable|string',
       'date_processed'      => 'nullable|date',
       'dv_no'               => 'nullable|string|max:255',
-      'uac_codes'            => 'required|string|max:255',
+      'uac_codes'            => 'nullable|string|max:255',
       'debit'               => 'nullable|numeric',
       'credit_uac_codes'      => 'nullable|array',
       'credit_uac_codes.*'    => 'nullable|string|max:255',
@@ -451,7 +451,7 @@ class AccountingLogbookController extends Controller {
       'payee'                => 'required|string|max:255',
       'particulars'          => 'required|string',
       'debit'                => 'required|numeric',
-      'uac_codes'            => 'required|string|max:255',
+      'uac_codes'            => 'nullable|string|max:255',
       'obr_no'               => 'nullable|string|max:255',
       'credit_uac_codes'     => 'nullable|array',
       'credit_uac_codes.*'   => 'nullable|string|max:255',
@@ -515,12 +515,12 @@ class AccountingLogbookController extends Controller {
         'date_forwarded'        => $request->date_forwarded,
       ];
 
+      $shared['uac_codes']   = $request->uac_codes;
       // Conditionally merge fields only if it is NOT budget-sourced
       if (!$isBudgetSourced) {
         $shared['payee']       = $request->payee;
         $shared['particulars'] = $request->particulars;
         $shared['debit']       = $request->debit;
-        $shared['uac_codes']   = $request->uac_codes;
         $shared['obr_no']      = $request->obr_no;
       }
 
