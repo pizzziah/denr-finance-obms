@@ -220,28 +220,13 @@ class AccountingLogbookController extends Controller {
     $totalCredit = collect($request->credit_amounts ?? [])
         ->sum(fn($amount) => (float)$amount);
 
-    // Original debit from Budget
-    $originalDebit = (float) DB::table('odms_accounting')
-        ->where('transaction_id', $transaction_id)
-        ->where('debit', '>', 0)
-        ->value('debit');
+    $debit = (float) ($request->debit ?? 0);
 
-    // Additional debit rows
-    $additionalDebitTotal = collect($request->debit_amounts ?? [])
-        ->sum(fn($amount) => (float)$amount);
-
-    // Decide which debit amount to compare
-    $compareDebit = $additionalDebitTotal > 0
-        ? $additionalDebitTotal
-        : $originalDebit;
-
-
-    if (round($compareDebit,2) !== round($totalCredit,2)) {
+    if (round($debit, 2) !== round($totalCredit, 2)) {
         return back()
             ->withInput()
             ->withErrors([
-                'credit_amounts' =>
-                'Debit and Credit totals must be equal.'
+                'credit_amounts' => 'The total Credit amount must be equal to the Debit amount.'
             ]);
     }
 
